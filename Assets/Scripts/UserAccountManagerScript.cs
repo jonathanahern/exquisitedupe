@@ -166,4 +166,25 @@ public class UserAccountManagerScript : MonoBehaviour {
 //		LoggedIn_Data = returnText;
 
 	}
+
+	public void TurnRoomSearch(string roomType){
+		
+		StartCoroutine (turnRoom(roomType, LoggedIn_Username));
+
+	}
+
+	IEnumerator turnRoom (string roomType, string playerName){
+
+		IEnumerator e = DCP.RunCS ("turnRooms", "JoinCreateRoom", new string[2] { roomType, playerName });
+
+		while (e.MoveNext ()) {
+			yield return e.Current;
+		}
+
+		string returnText = e.Current as string;
+
+		Debug.Log (returnText);
+
+	}
+
 }
