@@ -4,12 +4,16 @@ using UnityEngine;
 
 public class LobbyMenu : MonoBehaviour {
 
+	public static LobbyMenu instance;
+
 	public GameObject mainButtons;
 	public GameObject turnBasedButtons;
+	public GameObject loadScreen;
 
 	// Use this for initialization
-	void Start () {
-		
+	void Awake () {
+
+		instance = this;
 	}
 	
 	// Update is called once per frame
@@ -23,4 +27,12 @@ public class LobbyMenu : MonoBehaviour {
 		turnBasedButtons.SetActive (true);
 	
 	}
+
+	public void LoadingScreen (){
+	
+		loadScreen.SetActive (true);
+		turnBasedButtons.SetActive (false);
+	
+	}
+
 }

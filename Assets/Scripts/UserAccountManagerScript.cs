@@ -167,15 +167,15 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 	}
 
-	public void TurnRoomSearch(string roomType){
+	public void TurnRoomSearch(string roomType, string fate){
 		
-		StartCoroutine (turnRoom(roomType, LoggedIn_Username));
+		StartCoroutine (turnRoom(roomType, LoggedIn_Username, fate));
 
 	}
 
-	IEnumerator turnRoom (string roomType, string playerName){
+	IEnumerator turnRoom (string roomType, string playerName, string fate){
 
-		IEnumerator e = DCP.RunCS ("turnRooms", "JoinCreateRoom", new string[2] { roomType, playerName });
+		IEnumerator e = DCP.RunCS ("turnRooms", "JoinCreateRoom", new string[3] { roomType, playerName, fate});
 
 		while (e.MoveNext ()) {
 			yield return e.Current;
@@ -183,7 +183,9 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 		string returnText = e.Current as string;
 
-		Debug.Log (returnText);
+		//Debug.Log (returnText);
+
+		RoomManager.instance.CreateRoom (roomType, returnText);
 
 	}
 
