@@ -12,6 +12,9 @@ public class TurnRoomScript : MonoBehaviour {
 	public string rightword;
 	public string wrongword;
 	public int awardNum;
+	public int myColor;
+
+	public bool activeRoom;
 
 	// Use this for initialization
 	void Start () {

@@ -29,8 +29,6 @@ public class TurnRoomButton : MonoBehaviour {
 
 	public void TurnRoomClicked(){
 
-
-
 		int dupeNum = Random.Range (1, 5);
 		int rightWord = Random.Range (1, 13);
 		int wrongWord = Random.Range (1, 13);
@@ -47,6 +45,8 @@ public class TurnRoomButton : MonoBehaviour {
 		UserAccountManagerScript.instance.TurnRoomSearch(roomType.text, fate);
 
 		LobbyMenu.instance.LoadingScreen ();
+
+
 
 	}
 

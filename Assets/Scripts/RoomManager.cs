@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class RoomManager : MonoBehaviour {
 
@@ -26,41 +27,34 @@ public class RoomManager : MonoBehaviour {
 	private static string WORDS_SYM = "[WORDS]";
 	private static string BRUSHES_SYM = "[BRUSHES]";
 	private static string FATE_SYM = "[FATE]";
+	private static string COLOR_SYM = "[COLOR]";
 
 	private string[] words = new string[12];
 	private string[] brushes = new string[10];
 
 	public void CreateRoom(string roomType, string roomId){
 
-
-//		string roomType;
-//		int roomID;
-//		string [] words = new string [12];
-//		Vector3[] brushes = new Vector3 [10];
-//		public int dupeNum;
-//		public string rightword;
-//		public string wrongword;
-//		public int awardNum;
-
 		GameObject newRoom = (GameObject)Instantiate(roomPrefab, Vector3.zero, Quaternion.identity);
 		newRoom.transform.SetParent (gameObject.transform, false);
 		TurnRoomScript roomScript = newRoom.GetComponent<TurnRoomScript> ();
 
+		roomScript.activeRoom = true;
 		roomScript.roomType = roomType;
 
 		Debug.Log ("Room ID: " + roomId);
 
 		string[] pieces = roomId.Split('|');
 
-		//Debug.Log ("piece one: " + pieces [0]);
-		//Debug.Log ("piece two: " + pieces [1]);
-
-
 		foreach (string piece in pieces) {
 
-			if (piece.StartsWith (ID_SYM)) {
+			if (piece.StartsWith (COLOR_SYM)) {
 
-				//Debug.Log (piece);
+				int color = int.Parse (piece.Substring (COLOR_SYM.Length));
+
+				roomScript.myColor = color - 4;
+
+
+			} else if (piece.StartsWith (ID_SYM)) {
 
 				roomScript.roomID = int.Parse(piece.Substring (ID_SYM.Length));
 
@@ -71,12 +65,9 @@ public class RoomManager : MonoBehaviour {
 
 				words = wordsWhole.Split('/');
 
-				//Debug.Log ("length" + words.Length);
-
 				for (int i = 0; i < words.Length; i++) {
 
 					roomScript.words [i] = words [i];
-					//Debug.Log ("wordy: " + words[i]);
 
 				}
 
@@ -90,7 +81,7 @@ public class RoomManager : MonoBehaviour {
 				for (int i = 0; i < brushes.Length; i++) {
 
 					string[] vectArray = brushes[i].Split(',');
-					Debug.Log (vectArray[0]);
+					//Debug.Log (vectArray[0]);
 
 					// store as a Vector2
 					Vector3 tempVect = new Vector3(
@@ -102,22 +93,16 @@ public class RoomManager : MonoBehaviour {
 
 				}
 
-				//roomScript.brushes = piece.Substring (BRUSHES_SYM.Length);
-
 			} else if (piece.StartsWith (FATE_SYM)) {
 
 				string fateWhole = piece.Substring (FATE_SYM.Length);
 
-				//Debug.Log ("fate whole: " + fateWhole);
-
 				string[] fate = fateWhole.Split('/');
 
 				roomScript.dupeNum = int.Parse(fate [0]);
-				//Debug.Log ("dupeNum: " + roomScript.dupeNum);
 
 				int rightword = int.Parse (fate [1]);
 				roomScript.rightword = words [rightword];
-				//Debug.Log ("rightword: " + roomScript.rightword);
 
 				int wrongword = int.Parse (fate [2]);
 				roomScript.wrongword = words [wrongword];
@@ -125,8 +110,12 @@ public class RoomManager : MonoBehaviour {
 				roomScript.awardNum = int.Parse(fate [3]);
 
 			}
+				
 
 		}
+
+
+		SceneManager.LoadScene ("Turn Based Room");
 
 	}
 
