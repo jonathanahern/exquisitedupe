@@ -14,6 +14,8 @@ public class TurnRoomScript : MonoBehaviour {
 	public int awardNum;
 	public int myColor;
 
+
+	string stringversion;
 	public bool activeRoom;
 
 	// Use this for initialization
@@ -23,6 +25,20 @@ public class TurnRoomScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+
+		if (Input.GetKeyDown (KeyCode.Q)) {
+		
+
+
+			for (int i = 0; i < brushes.Length; i++) {
+
+				stringversion = stringversion + brushes [i].ToString ();
+
+			}
+
+			Debug.Log (stringversion);
+		
+		}
 		
 	}
 }
