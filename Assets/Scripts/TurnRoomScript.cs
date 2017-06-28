@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DatabaseControl;
 
 public class TurnRoomScript : MonoBehaviour {
 
@@ -14,8 +15,6 @@ public class TurnRoomScript : MonoBehaviour {
 	public int awardNum;
 	public int myColor;
 
-
-	string stringversion;
 	public bool activeRoom;
 
 	// Use this for initialization
@@ -27,18 +26,12 @@ public class TurnRoomScript : MonoBehaviour {
 	void Update () {
 
 		if (Input.GetKeyDown (KeyCode.Q)) {
-		
 
-
-			for (int i = 0; i < brushes.Length; i++) {
-
-				stringversion = stringversion + brushes [i].ToString ();
-
-			}
-
-			Debug.Log (stringversion);
 		
 		}
 		
 	}
+
+
+		
 }

@@ -14,6 +14,8 @@ public class LocalRoomManager : MonoBehaviour {
 	public GameObject brushHolder;
 	public Text subject;
 
+	string myLineString;
+
 	// Use this for initialization
 	void Start () {
 
@@ -77,5 +79,34 @@ public class LocalRoomManager : MonoBehaviour {
 			}
 		}
 	}
-}
 
+	public void CollectYourLineData () {
+
+		myLineString = "[MYCOLOR]" + myRoom.myColor.ToString () + "|";
+
+		GameObject[] lines = GameObject.FindGameObjectsWithTag ("Line");
+
+		foreach (GameObject line in lines) {
+
+			LineRenderer lineRend = line.GetComponent<LineRenderer> ();
+			int lineAmount = lineRend.numPositions;
+
+			for (int i = 0; i < lineAmount; i++) {
+
+				myLineString = myLineString + lineRend.GetPosition(i).ToString ();
+
+				if (i == lineAmount - 1) {
+					myLineString = myLineString + "|";
+				}
+
+			}
+
+		}
+
+		Debug.Log (myLineString);
+
+	}
+
+
+
+}
