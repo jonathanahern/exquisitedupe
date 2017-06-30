@@ -309,7 +309,7 @@ public class CategoryChoiceScript : MonoBehaviour {
 
 	void MarkAsTaken (string cat) {
 
-		for (int i = 0; i < buttonHolder.childCount; i++) {
+//		for (int i = 0; i < buttonHolder.childCount; i++) {
 
 //			CategoryButton catButt = buttonHolder.GetChild (i).GetComponent<CategoryButton> ();
 
@@ -318,7 +318,7 @@ public class CategoryChoiceScript : MonoBehaviour {
 //				catButt.clicked = true;
 				return;
 //			}
-		}
+//		}
 	}
 
 	void Category0(){

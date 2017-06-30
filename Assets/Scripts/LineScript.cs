@@ -9,10 +9,14 @@ public class LineScript : MonoBehaviour {
 
 	List<Vector2> points;
 
+	public List<GameObject> hitBrushes; 
+
 	Vector2 midPos;
 	Vector2 thirdPos;
 
 	bool deadLine;
+
+	public GameObject myCollider;
 
 	public void UpdateLine (Vector2 mousePos){
 	
@@ -45,6 +49,8 @@ public class LineScript : MonoBehaviour {
 			points = new List<Vector2> ();
 		}
 
+		myCollider.transform.position = point;
+
 		int pointTotal = points.Count;
 
 		if (pointTotal > 1){
@@ -62,15 +68,17 @@ public class LineScript : MonoBehaviour {
 			lineRend.SetPosition (1, newMidPos);
 			points.RemoveAt (1);
 			points.Insert(1, newMidPos);
-
+		
 		}
 
 		if (pointTotal > 2) {
+			
 			float angle = AnglePoints (point, midPos, thirdPos);
 
 			if (angle < 125) {
 
 				deadLine = true;
+				Destroy (myCollider);
 				lineSpawn.MakeNewLine (point, midPos);
 				return;
 		
@@ -90,6 +98,35 @@ public class LineScript : MonoBehaviour {
 		Vector2 second = (thirdPos - midPos);
 
 		return Vector2.Angle(first, second);
+
+	}
+
+	public void DestroyCollider () {
+
+		if (myCollider != null) {
+			Destroy (myCollider);
+		}
+
+	}
+
+	public void HitBrush (Vector3 brushPos, Vector3 brushPosMid, GameObject brushHit) {
+	
+		deadLine = true;
+		DestroyCollider ();
+		lineRend.numPositions = points.Count;
+		Vector3 lastPoint = lineRend.GetPosition(lineRend.numPositions-1);
+		lineSpawn.MakeNewDot (brushPos, brushPosMid,lastPoint,brushHit);
+		lineSpawn.MakeNewLine (lastPoint, midPos);
+	
+	}
+
+	public void ParentBrush (GameObject brushHit){
+
+		if (hitBrushes == null) {
+			hitBrushes = new List<GameObject> ();
+		}
+
+		hitBrushes.Add (brushHit);
 
 	}
 

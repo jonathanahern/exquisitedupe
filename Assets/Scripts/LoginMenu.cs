@@ -30,7 +30,7 @@ public class LoginMenu : MonoBehaviour {
 	public UnityEngine.UI.Text register_error;
 
 	string databaseName = "";
-	bool canRunSequences = false;
+	//bool canRunSequences = false;
 
 	////These variables cannot be set in the Inspector:
 	
@@ -62,7 +62,7 @@ public class LoginMenu : MonoBehaviour {
 				} else
 				{
 					databaseName = linkScript.databaseName;
-					canRunSequences = true;
+					//canRunSequences = true;
 					isDatabaseSetup = true;
 				}
 			}

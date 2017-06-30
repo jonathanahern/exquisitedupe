@@ -114,7 +114,6 @@ public class RoomManager : MonoBehaviour {
 
 		}
 
-
 		SceneManager.LoadScene ("Turn Based Room");
 
 	}

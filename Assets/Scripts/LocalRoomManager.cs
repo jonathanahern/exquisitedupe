@@ -16,6 +16,20 @@ public class LocalRoomManager : MonoBehaviour {
 
 	string myLineString;
 
+	public Sprite redDone;
+	public Sprite blueDone;
+	public Sprite greenDone;
+	public Sprite orangeDone;
+
+	public Image doneButton;
+
+	public Sprite redUndo;
+	public Sprite blueUndo;
+	public Sprite greenUndo;
+	public Sprite orangeUndo;
+
+	public Image undoButton;
+
 	// Use this for initialization
 	void Start () {
 
@@ -51,6 +65,28 @@ public class LocalRoomManager : MonoBehaviour {
 			subject.text = myRoom.wrongword;
 		} else {
 			subject.text = myRoom.rightword;
+		}
+
+		if (myRoom.myColor == 1) {
+
+			doneButton.sprite = redDone;
+			undoButton.sprite = redUndo;
+
+		} else if (myRoom.myColor == 2) {
+
+			doneButton.sprite = blueDone;
+			undoButton.sprite = blueUndo;
+
+		} else if (myRoom.myColor == 3) {
+
+			doneButton.sprite = greenDone;
+			undoButton.sprite = greenUndo;
+
+		} else if (myRoom.myColor == 4) {
+
+			doneButton.sprite = orangeDone;
+			undoButton.sprite = orangeUndo;
+
 		}
 
 	}
@@ -103,10 +139,27 @@ public class LocalRoomManager : MonoBehaviour {
 
 		}
 
-		Debug.Log (myLineString);
+		StartCoroutine (doneDrawing(myRoom.roomID, myLineString));
 
 	}
 
 
+	IEnumerator doneDrawing (int roomID, string drawingArray){
+
+		string roomIdString = roomID.ToString();
+
+		IEnumerator e = DCP.RunCS ("turnRooms", "AddDrawing", new string[2] { roomIdString, drawingArray});
+
+		while (e.MoveNext ()) {
+			yield return e.Current;
+		}
+
+		//string returnText = e.Current as string;
+
+		//Debug.Log (returnText);
+
+		//RoomManager.instance.CreateRoom (roomID, returnText);
+
+	}
 
 }

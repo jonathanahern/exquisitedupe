@@ -1,16 +1,23 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class LineSpawnerScipt : MonoBehaviour {
 
 	GameObject linePrefab;
+	GameObject dotPrefab;
 	Transform currentLine;
 
 	public GameObject redPrefab;
 	public GameObject bluePrefab;
 	public GameObject greenPrefab;
 	public GameObject orangePrefab;
+
+	public GameObject redDot;
+	public GameObject blueDot;
+	public GameObject greenDot;
+	public GameObject orangeDot;
 
 	LineScript activeLine;
 
@@ -34,6 +41,7 @@ public class LineSpawnerScipt : MonoBehaviour {
 			yMin = 0.033f;
 			yMax = 3.61f;
 			linePrefab = redPrefab;
+			dotPrefab = redDot;
 
 		}
 
@@ -43,6 +51,7 @@ public class LineSpawnerScipt : MonoBehaviour {
 			yMin = 0.033f;
 			yMax = 3.61f;
 			linePrefab = bluePrefab;
+			dotPrefab = blueDot;
 
 		}
 
@@ -52,6 +61,7 @@ public class LineSpawnerScipt : MonoBehaviour {
 			yMin = -3.61f;
 			yMax = -0.033f;
 			linePrefab = greenPrefab;
+			dotPrefab = greenDot;
 		}
 
 		else if (color == 4) {
@@ -60,6 +70,7 @@ public class LineSpawnerScipt : MonoBehaviour {
 			yMin = -3.61f;
 			yMax = -0.033f;
 			linePrefab = orangePrefab;
+			dotPrefab = orangeDot;
 		}
 	
 	}
@@ -98,7 +109,11 @@ public class LineSpawnerScipt : MonoBehaviour {
 		}
 
 		if (Input.GetMouseButtonUp (0)) {
-		
+			
+			if (activeLine != null) {
+				activeLine.DestroyCollider ();
+			}
+
 			activeLine = null;
 		
 		}
@@ -127,6 +142,11 @@ public class LineSpawnerScipt : MonoBehaviour {
 
 	public void MakeNewLine (Vector2 point, Vector2 midPoint) {
 
+		if (midPoint == Vector2.zero) {
+			Vector2 newMid = new Vector2 (point.x, point.y);
+			midPoint = newMid;
+		}
+
 		activeLine = null;
 		GameObject lineGo = Instantiate (linePrefab);
 		activeLine = lineGo.GetComponent<LineScript> ();
@@ -134,6 +154,20 @@ public class LineSpawnerScipt : MonoBehaviour {
 		activeLine.SetPoint (midPoint);
 		activeLine.SetPoint (point);
 		lineGo.transform.SetParent (currentLine, false);
+
+	}
+
+	public void MakeNewDot (Vector3 firstPoint, Vector3 secondPoint, Vector3 thirdPoint, GameObject brushHit){
+	
+		GameObject dotGo = Instantiate (dotPrefab);
+		LineRenderer dotRend = dotGo.GetComponent<LineRenderer> ();
+
+		dotRend.numPositions = 3;
+		dotRend.SetPosition (0, firstPoint);
+		dotRend.SetPosition (1, secondPoint);
+		dotRend.SetPosition (2, thirdPoint);
+		dotGo.transform.SetParent (currentLine, false);
+		currentLine.GetComponent<LineScript> ().ParentBrush (brushHit);
 
 	}
 
@@ -146,6 +180,22 @@ public class LineSpawnerScipt : MonoBehaviour {
 		}
 
 		GameObject line = transform.GetChild(transform.childCount - 1).gameObject;
+
+		List<GameObject> brushes = line.GetComponent<LineScript> ().hitBrushes;
+
+		foreach (GameObject brush in brushes) {
+
+			if (brush.tag == "Brush X") {
+			
+				brush.transform.DOLocalMoveY (0, 1.0f);
+			
+			} else {
+			
+				brush.transform.DOLocalMoveX (0, 1.0f);
+			
+			}
+
+		}
 
 		Destroy (line);
 
