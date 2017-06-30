@@ -13,6 +13,7 @@ public class LineSpawnerScipt : MonoBehaviour {
 	public GameObject bluePrefab;
 	public GameObject greenPrefab;
 	public GameObject orangePrefab;
+	public GameObject blackPrefab;
 
 	public GameObject redDot;
 	public GameObject blueDot;
@@ -26,11 +27,18 @@ public class LineSpawnerScipt : MonoBehaviour {
 	private float yMin;
 	private float yMax;
 
+	public bool drawingScene;
 
 	// Use this for initialization
 	void Start () {
 
-		
+		if (drawingScene == true) {
+			linePrefab = blackPrefab;
+			xMin = -2222.43f;
+			xMax = 2222.033f;
+			yMin = -2222.033f;
+			yMax = 2222.61f;
+		}
 	}
 
 	public void GetColor(int color) {
