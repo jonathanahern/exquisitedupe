@@ -6,6 +6,8 @@ using DatabaseControl;
 public class TurnRoomScript : MonoBehaviour {
 
 	public string roomType;
+	public string status;
+	public int statusNum;
 	public int roomID;
 	public string [] words = new string [12];
 	public Vector3[] brushes;
@@ -14,6 +16,7 @@ public class TurnRoomScript : MonoBehaviour {
 	public string wrongword;
 	public int awardNum;
 	public int myColor;
+	public string grounding;
 
 	public bool activeRoom;
 

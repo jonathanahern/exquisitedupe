@@ -32,6 +32,12 @@ public class LobbyMenu : MonoBehaviour {
 		oneEighty = new Vector3 (0, 0, 180.0f);
 		zeroCounter = new Vector3 (0, 0, 360.0f);
 		startPos = newCats.position.x;
+		RoomManager roomMan = GameObject.FindGameObjectWithTag ("Room Manager").GetComponent<RoomManager> ();
+		if (roomMan.cameFromTurnBased == true) {
+			TurnBasedClicked ();
+			roomMan.UpdateTurnRooms();
+
+		}
 
 	}
 	

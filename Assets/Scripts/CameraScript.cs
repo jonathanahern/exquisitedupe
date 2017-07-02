@@ -53,7 +53,6 @@ public class CameraScript : MonoBehaviour {
 				direction = -1.0f;
 			} else {
 				moveCamera = false;
-				MoveToSection ();
 			}
 
 				Vector3 nextPos = new Vector3 (seekerCam.transform.position.x + moveRate * direction,
@@ -104,7 +103,7 @@ public class CameraScript : MonoBehaviour {
 	
 	}
 
-	void MoveToSection () {
+	public void MoveToSection () {
 
 		Camera.main.transform.DOMove (seekerCam.transform.position, 2.0f).OnComplete(StartTimer);
 		DOTween.To(()=> Camera.main.orthographicSize, x=> Camera.main.orthographicSize = x, seekerCam.orthographicSize, 2.0f);

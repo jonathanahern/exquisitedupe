@@ -7,6 +7,7 @@ public class RoomManager : MonoBehaviour {
 
 	public static RoomManager instance;
 
+
 	void Awake () {
 
 		if (instance != null) {
@@ -19,18 +20,21 @@ public class RoomManager : MonoBehaviour {
 		instance = this;
 		DontDestroyOnLoad (this);
 
-
 	}
 
 	public GameObject roomPrefab;
+	public GameObject statusPrefab;
 	private static string ID_SYM = "[ID]";
 	private static string WORDS_SYM = "[WORDS]";
 	private static string BRUSHES_SYM = "[BRUSHES]";
 	private static string FATE_SYM = "[FATE]";
 	private static string COLOR_SYM = "[COLOR]";
+	private static string GROUNDING_SYM = "[GROUNDING]";
 
 	private string[] words = new string[12];
 	private string[] brushes = new string[10];
+
+	public bool cameFromTurnBased;
 
 	public void CreateRoom(string roomType, string roomId){
 
@@ -70,6 +74,10 @@ public class RoomManager : MonoBehaviour {
 					roomScript.words [i] = words [i];
 
 				}
+
+			} else if (piece.StartsWith (GROUNDING_SYM)) {
+
+				roomScript.grounding = piece.Substring (GROUNDING_SYM.Length);
 
 			} else if (piece.StartsWith (BRUSHES_SYM)) {
 
@@ -116,6 +124,29 @@ public class RoomManager : MonoBehaviour {
 
 		SceneManager.LoadScene ("Turn Based Room");
 
+	}
+
+	public void UpdateTurnRooms(){
+		cameFromTurnBased = false;
+		GameObject statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
+
+		int children = transform.childCount;
+		for (int i = 0; i < children; ++i){
+			GameObject roomStatus = Instantiate (statusPrefab);
+			roomStatus.transform.SetParent (statusHolder.transform, false);
+			TurnRoomScript turnRoom = transform.GetChild (i).GetComponent<TurnRoomScript>();
+			TurnGameStatus status = roomStatus.GetComponent<TurnGameStatus> ();
+			status.categoryName.text = turnRoom.roomType;
+			status.gameStatus.text = turnRoom.status;
+			if (turnRoom.statusNum == 2) {
+			
+				status.doneDrawing.SetActive (true);
+				status.doneDrawingCheck.SetActive (true);
+			
+			}
+
+		}
+			
 	}
 
 }

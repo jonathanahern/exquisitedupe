@@ -65,7 +65,7 @@ public class GroundingMaker : MonoBehaviour {
 			myLineString = myLineString + "|";
 		}
 		myLineString = myLineString.TrimEnd('|');
-
+		Debug.Log (myLineString);
 		foreach (GameObject line in lines) {
 			Destroy (line);
 		}
@@ -103,3 +103,4 @@ public class GroundingMaker : MonoBehaviour {
 	}
 
 }
+

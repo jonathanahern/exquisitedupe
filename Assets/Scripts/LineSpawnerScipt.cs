@@ -34,10 +34,10 @@ public class LineSpawnerScipt : MonoBehaviour {
 
 		if (drawingScene == true) {
 			linePrefab = blackPrefab;
-			xMin = -2222.43f;
-			xMax = 2222.033f;
-			yMin = -2222.033f;
-			yMax = 2222.61f;
+			xMin = -3.8f;
+			xMax = 3.8f;
+			yMin = -3.83f;
+			yMax = 3.8f;
 		}
 	}
 
