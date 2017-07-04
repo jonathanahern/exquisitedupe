@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using DatabaseControl;
 
 public class RoomManager : MonoBehaviour {
 
@@ -24,17 +25,29 @@ public class RoomManager : MonoBehaviour {
 
 	public GameObject roomPrefab;
 	public GameObject statusPrefab;
+	public int[] rooms = new int[5];
 	private static string ID_SYM = "[ID]";
 	private static string WORDS_SYM = "[WORDS]";
 	private static string BRUSHES_SYM = "[BRUSHES]";
 	private static string FATE_SYM = "[FATE]";
 	private static string COLOR_SYM = "[COLOR]";
 	private static string GROUNDING_SYM = "[GROUNDING]";
+	private static string PLAYERSREADY_SYM = "[PLAYERSREADY]";
 
 	private string[] words = new string[12];
 	private string[] brushes = new string[10];
 
 	public bool cameFromTurnBased;
+
+	public string[] roomNum = new string[5];
+	public string[] playersReady = new string[5];
+
+	GameObject statusHolder;
+
+	void Start (){
+
+
+	}
 
 	public void CreateRoom(string roomType, string roomId){
 
@@ -110,10 +123,10 @@ public class RoomManager : MonoBehaviour {
 				roomScript.dupeNum = int.Parse(fate [0]);
 
 				int rightword = int.Parse (fate [1]);
-				roomScript.rightword = words [rightword];
+				roomScript.rightword = words [rightword-1];
 
 				int wrongword = int.Parse (fate [2]);
-				roomScript.wrongword = words [wrongword];
+				roomScript.wrongword = words [wrongword-1];
 
 				roomScript.awardNum = int.Parse(fate [3]);
 
@@ -128,7 +141,10 @@ public class RoomManager : MonoBehaviour {
 
 	public void UpdateTurnRooms(){
 		cameFromTurnBased = false;
-		GameObject statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
+		if (statusHolder == null) {
+			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
+		}
+		rooms = new int[5];
 
 		int children = transform.childCount;
 		for (int i = 0; i < children; ++i){
@@ -136,6 +152,7 @@ public class RoomManager : MonoBehaviour {
 			roomStatus.transform.SetParent (statusHolder.transform, false);
 			TurnRoomScript turnRoom = transform.GetChild (i).GetComponent<TurnRoomScript>();
 			TurnGameStatus status = roomStatus.GetComponent<TurnGameStatus> ();
+			status.roomId = turnRoom.roomID;
 			status.categoryName.text = turnRoom.roomType;
 			status.gameStatus.text = turnRoom.status;
 			if (turnRoom.statusNum == 2) {
@@ -144,9 +161,136 @@ public class RoomManager : MonoBehaviour {
 				status.doneDrawingCheck.SetActive (true);
 			
 			}
+			rooms [i] = turnRoom.roomID;
 
 		}
+
+		Invoke ("StatusUpdate", 3.0f);
 			
+	}
+
+	public void StatusUpdate(){
+
+		string roomID1;
+		string roomID2;
+		string roomID3;
+		string roomID4;
+		string roomID5;
+
+		roomID1 = "|[ID]" + rooms [0].ToString();
+		roomID2 = "|[ID]" + rooms [1].ToString();
+		roomID3 = "|[ID]" + rooms [2].ToString();
+		roomID4 = "|[ID]" + rooms [3].ToString();
+		roomID5 = "|[ID]" + rooms [4].ToString();
+
+		Debug.Log ("ROOM 1: " + roomID1);
+
+		StartCoroutine (statusUpdateCheck(roomID1,roomID2, roomID3, roomID4, roomID5));
+	
+	}
+
+	IEnumerator statusUpdateCheck (string roomID1, string roomID2, string roomID3, string roomID4, string roomID5){
+
+		IEnumerator e = DCP.RunCS ("turnRooms", "UpdateStatus", new string[5] {roomID1,roomID2,roomID3,roomID4,roomID5});
+
+		while (e.MoveNext ()) {
+			yield return e.Current;
+		}
+
+		string returnText = e.Current as string;
+
+		returnText = returnText.TrimStart ('|');
+
+		Debug.Log ("Returned:" + returnText);
+
+//		string linesWhole = myLineString.Substring (GROUNDING_SYM.Length);
+//		string[] lines = linesWhole.Split ('|');
+//
+//		foreach (string line in lines) {
+//
+//			GameObject lineGo = Instantiate (blackLine);
+//			LineRenderer lineRend = lineGo.GetComponent <LineRenderer> ();
+//
+//			string[] points = line.Split ('@');
+//
+//			lineRend.numPositions = points.Length;
+//
+//			for (int i = 0; i < points.Length; i++) {
+//
+//				string[] vectArray = points[i].Split(',');
+//
+//				Vector3 tempVect = new Vector3(
+//					float.Parse(vectArray[0]),
+//					float.Parse(vectArray[1]),
+//					0);
+//				lineRend.SetPosition (i, tempVect);
+//
+//			}
+
+
+		//need to know non zero roomIDs with column 4 nums
+		//|[ID]3
+		if (returnText != "Error") {
+		
+			LookForSets (returnText);
+
+		} 
+
+	}
+
+
+	void LookForSets (string returned){
+	
+		roomNum = new string[5];
+		playersReady = new string[5];
+
+		string[] roomsDone = returned.Split ('|');
+
+		for (int i = 0; i < roomsDone.Length; i++) {
+
+			string[] roomInfo = returned.Split ('$');
+
+
+			roomNum[i] = roomInfo[0].Substring (ID_SYM.Length);
+			playersReady[i] = roomInfo[1].Substring (PLAYERSREADY_SYM.Length);
+
+
+		}
+
+		for (int i = 0; i < roomNum.Length; i++) {
+
+			if (playersReady[i] == null) {
+				return;
+			}
+
+
+			if (playersReady[i].Contains ("1") && playersReady [i].Contains ("2") && playersReady [i].Contains ("3") && playersReady [i].Contains ("4")) {
+			
+				UpdateStatusObject (roomNum[i]);
+			
+			}
+
+		}
+
+	}
+
+	void UpdateStatusObject (string roomId){
+	
+		int roomInt = int.Parse(roomId);
+		if (statusHolder == null) {
+			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
+		}
+		int childCount = statusHolder.transform.childCount;
+		for (int i = 0; i < childCount; i++) {
+			TurnGameStatus turnStat = statusHolder.transform.GetChild (i).GetComponent<TurnGameStatus>();
+			if (turnStat.roomId == roomInt) {
+			
+				turnStat.PhaseTwoReady ();
+			
+			}
+				
+		}
+
 	}
 
 }
