@@ -36,7 +36,10 @@ public class UserAccountManagerScript : MonoBehaviour {
 	public string loggedOutSceneName = "Login";
 
 	public string databaseName;
+	public string loggedInUsername;
 
+	string roomId;
+	public string activeRooms;
 
 	public void LogOut(){
 	
@@ -56,10 +59,13 @@ public class UserAccountManagerScript : MonoBehaviour {
 	
 	}
 
-	public void LogIn(string username, string password){
+	public void LogIn(string username, string password, string rooms){
 
 		LoggedIn_Username = username;
 		LoggedIn_Password = password;
+		loggedInUsername = username;
+
+		activeRooms = rooms;
 
 		IsLoggedIn = true;
 
@@ -183,10 +189,41 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 		string returnText = e.Current as string;
 
-		//Debug.Log (returnText);
+		Debug.Log ("HERE?" + returnText);
 
-		RoomManager.instance.CreateRoom (roomType, returnText);
+		string[] fates = returnText.Split ('|');
 
+		foreach (string data in fates) {
+
+			if (data.StartsWith ("[ID]")){
+
+				roomId = data.Substring ("[ID]".Length);
+				roomId = roomId + "/";
+
+			}
+			
+		}
+
+		StartCoroutine (storeRoomId(LoggedIn_Username, roomId));
+
+		RoomManager.instance.CreateRoom (roomType, returnText, 0);
+
+	}
+
+	IEnumerator storeRoomId (string username, string roomId){
+	
+		IEnumerator e = DCP.RunCS ("accounts", "StoreRoomId", new string[2] { username, roomId });
+
+			while (e.MoveNext ()) {
+				yield return e.Current;
+			}
+
+		string returnText = e.Current as string;
+			
+		//activeRooms = returnText; 	
+
+		Debug.Log ("Stored: " + returnText);
+	
 	}
 
 }

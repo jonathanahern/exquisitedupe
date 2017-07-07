@@ -11,6 +11,7 @@ public class TurnRoomScript : MonoBehaviour {
 	public int roomID;
 	public string [] words = new string [12];
 	public Vector3[] brushes;
+	public string[] players;
 	public int dupeNum;
 	public string rightword;
 	public string wrongword;
@@ -18,7 +19,10 @@ public class TurnRoomScript : MonoBehaviour {
 	public int myColor;
 	public string grounding;
 
+	public string drawings;
+
 	public bool activeRoom;
+	public bool activeVoteRoom;
 
 	// Use this for initialization
 	void Start () {

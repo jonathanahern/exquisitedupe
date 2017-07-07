@@ -23,6 +23,11 @@ public class RoomManager : MonoBehaviour {
 
 	}
 
+	public LobbyMenu lobbyMenu;
+
+	string[]roomIds = new string[5];
+
+	public string username;
 	public GameObject roomPrefab;
 	public GameObject statusPrefab;
 	public int[] rooms = new int[5];
@@ -33,6 +38,10 @@ public class RoomManager : MonoBehaviour {
 	private static string COLOR_SYM = "[COLOR]";
 	private static string GROUNDING_SYM = "[GROUNDING]";
 	private static string PLAYERSREADY_SYM = "[PLAYERSREADY]";
+	private static string CATEGORY_SYM = "[CATEGORY]";
+	private static string STATUS_SYM = "[STATUS]";
+	private static string DRAWING_SYM = "[DRAWING]";
+	private static string PLAYERS_SYM = "[PLAYERS]";
 
 	private string[] words = new string[12];
 	private string[] brushes = new string[10];
@@ -46,19 +55,98 @@ public class RoomManager : MonoBehaviour {
 
 	void Start (){
 
+		GetRooms ();
+		//StartCoroutine (getRoomData(room));
 
 	}
 
-	public void CreateRoom(string roomType, string roomId){
+	void GetRooms (){
+	
+		roomIds = new string [] { "0", "0", "0", "0", "0"};
+		UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
+
+		string roomsString = userAccount.activeRooms;
+		username = userAccount.loggedInUsername;
+
+		Debug.Log (roomsString);
+
+		if (roomsString == "") {
+			return;
+		}
+		roomsString = roomsString.Substring (ID_SYM.Length);
+		roomsString = roomsString.TrimEnd ('/');
+		string[] rooms = roomsString.Split ('/');
+
+		for (int i = 0; i < rooms.Length; i++) {
+
+//			if (rooms[i] == "") {
+//				rooms [i] = "0";
+//			}
+
+			roomIds [i] = "|[ID]" + rooms[i];
+			Debug.Log ("ROOOOOM " + roomIds [i]);
+
+
+		}
+
+
+		StartCoroutine (getRoomData(roomIds[0],roomIds[1], roomIds[2], roomIds[3], roomIds[4]));
+
+	}
+
+	IEnumerator getRoomData (string roomID1, string roomID2, string roomID3, string roomID4, string roomID5){
+
+		IEnumerator e = DCP.RunCS ("turnRooms", "GetRoomData", new string[5] {roomID1,roomID2,roomID3,roomID4,roomID5});
+
+		while (e.MoveNext ()) {
+			yield return e.Current;
+		}
+
+		string returnText = e.Current as string;
+
+		returnText = returnText.TrimStart ('|');
+		returnText = returnText.TrimEnd ('^');
+
+		Debug.Log ("All Data:" + returnText);
+
+		string[] pieces = returnText.Split ('^');
+
+		foreach (string piece in pieces) {
+
+
+
+		}
+
+		for (int i = 0; i < pieces.Length; i++) {
+
+			int goNum = -1;
+
+			if (pieces.Length - 1 == i){
+				goNum = 1;
+			}
+
+			CreateRoom ("junk", pieces[i], goNum);
+
+
+		}
+
+	}
+
+
+	public void CreateRoom(string roomType, string roomId, int startRoom){
 
 		GameObject newRoom = (GameObject)Instantiate(roomPrefab, Vector3.zero, Quaternion.identity);
 		newRoom.transform.SetParent (gameObject.transform, false);
 		TurnRoomScript roomScript = newRoom.GetComponent<TurnRoomScript> ();
 
-		roomScript.activeRoom = true;
-		roomScript.roomType = roomType;
+		if (startRoom == 0) {
+			
+			roomScript.activeRoom = true;
+			roomScript.roomType = roomType;
 
-		Debug.Log ("Room ID: " + roomId);
+		}
+
+		//Debug.Log ("Room ID: " + roomId);
 
 		string[] pieces = roomId.Split('|');
 
@@ -130,13 +218,96 @@ public class RoomManager : MonoBehaviour {
 
 				roomScript.awardNum = int.Parse(fate [3]);
 
+			} else if (piece.StartsWith (PLAYERS_SYM)) {
+
+				string playersWhole = piece.Substring (PLAYERS_SYM.Length);
+				string[] players = playersWhole.Split('/');
+
+				roomScript.players = new string[players.Length];
+
+				for (int i = 0; i < players.Length; i++) {
+
+					Debug.Log (username + players [i]);
+					roomScript.players [i] = players [i];
+
+					if (players[i] == username) {
+						roomScript.myColor = i + 1;
+					}
+
+				}
+
+
+			} else if (piece.StartsWith (CATEGORY_SYM)) {
+
+				string category = piece.Substring (CATEGORY_SYM.Length);
+				roomScript.roomType = category;
+			}
+
+			else if (piece.StartsWith (STATUS_SYM)) {
+
+				string status = piece.Substring (STATUS_SYM.Length);
+
+				roomScript.status = "waiting...";
+
+				roomScript.statusNum = 1;
+
+				if (status.Contains ("1") && status.Contains ("2") && status.Contains ("3") && status.Contains ("4")) {
+
+					roomScript.statusNum = 2;
+
+				}
+					
+			}
+
+			else if (piece.StartsWith (DRAWING_SYM)) {
+
+				string drawingString = piece.Substring (DRAWING_SYM.Length);
+				roomScript.drawings = drawingString;
+
 			}
 				
+		}
+
+		if (startRoom == 0) {
+			SceneManager.LoadScene ("Turn Based Room");
+		} else if (startRoom == 1) {
+			UpdateTurnRoomsFromLogin ();
+			lobbyMenu.TurnBasedClicked ();
 
 		}
 
-		SceneManager.LoadScene ("Turn Based Room");
+	}
+		
 
+	public void UpdateTurnRoomsFromLogin(){
+		
+		if (statusHolder == null) {
+			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
+		}
+		rooms = new int[5];
+
+		int children = transform.childCount;
+		Debug.Log (children);
+		for (int i = 0; i < children; ++i){
+			GameObject roomStatus = Instantiate (statusPrefab);
+			roomStatus.transform.SetParent (statusHolder.transform, false);
+			TurnRoomScript turnRoom = transform.GetChild (i).GetComponent<TurnRoomScript>();
+			TurnGameStatus status = roomStatus.GetComponent<TurnGameStatus> ();
+			status.roomId = turnRoom.roomID;
+			status.categoryName.text = turnRoom.roomType;
+			status.gameStatus.text = turnRoom.status;
+			if (turnRoom.statusNum == 1) {
+				
+				status.PhaseOneReady ();
+
+
+			} else if (turnRoom.statusNum == 2) {
+
+				status.doneDrawing.SetActive (true);
+				status.doneDrawingCheck.SetActive (true);
+
+			}
+		}
 	}
 
 	public void UpdateTurnRooms(){
@@ -201,35 +372,8 @@ public class RoomManager : MonoBehaviour {
 
 		returnText = returnText.TrimStart ('|');
 
-		Debug.Log ("Returned:" + returnText);
+		//Debug.Log ("Returned:" + returnText);
 
-//		string linesWhole = myLineString.Substring (GROUNDING_SYM.Length);
-//		string[] lines = linesWhole.Split ('|');
-//
-//		foreach (string line in lines) {
-//
-//			GameObject lineGo = Instantiate (blackLine);
-//			LineRenderer lineRend = lineGo.GetComponent <LineRenderer> ();
-//
-//			string[] points = line.Split ('@');
-//
-//			lineRend.numPositions = points.Length;
-//
-//			for (int i = 0; i < points.Length; i++) {
-//
-//				string[] vectArray = points[i].Split(',');
-//
-//				Vector3 tempVect = new Vector3(
-//					float.Parse(vectArray[0]),
-//					float.Parse(vectArray[1]),
-//					0);
-//				lineRend.SetPosition (i, tempVect);
-//
-//			}
-
-
-		//need to know non zero roomIDs with column 4 nums
-		//|[ID]3
 		if (returnText != "Error") {
 		
 			LookForSets (returnText);
@@ -250,7 +394,6 @@ public class RoomManager : MonoBehaviour {
 
 			string[] roomInfo = returned.Split ('$');
 
-
 			roomNum[i] = roomInfo[0].Substring (ID_SYM.Length);
 			playersReady[i] = roomInfo[1].Substring (PLAYERSREADY_SYM.Length);
 
@@ -266,7 +409,8 @@ public class RoomManager : MonoBehaviour {
 
 			if (playersReady[i].Contains ("1") && playersReady [i].Contains ("2") && playersReady [i].Contains ("3") && playersReady [i].Contains ("4")) {
 			
-				UpdateStatusObject (roomNum[i]);
+				StartCoroutine(grabDrawing(roomNum[i]));
+				//UpdateStatusObject (roomNum[i]);
 			
 			}
 
@@ -274,9 +418,18 @@ public class RoomManager : MonoBehaviour {
 
 	}
 
-	void UpdateStatusObject (string roomId){
-	
+	void UpdateStatusObject (string roomId, string drawing){
+		
 		int roomInt = int.Parse(roomId);
+		int children = transform.childCount;
+		for (int i = 0; i < children; ++i){
+			TurnRoomScript turnRoom = transform.GetChild (i).GetComponent<TurnRoomScript>();
+			if (turnRoom.roomID == roomInt) {
+				turnRoom.drawings = drawing;
+			}
+
+		}
+
 		if (statusHolder == null) {
 			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
 		}
@@ -290,6 +443,31 @@ public class RoomManager : MonoBehaviour {
 			}
 				
 		}
+
+	}
+
+	IEnumerator grabDrawing (string roomID){
+
+		string roomIDServer;
+		roomIDServer = "|[ID]" + roomID;
+
+		IEnumerator e = DCP.RunCS ("turnRooms", "GrabDrawing", new string[1] {roomIDServer});
+
+		while (e.MoveNext ()) {
+			yield return e.Current;
+		}
+
+		string returnText = e.Current as string;
+
+		//returnText = returnText.TrimStart ('|');
+
+		Debug.Log ("Drawing:" + returnText);
+
+		if (returnText != "No Room") {
+
+			UpdateStatusObject (roomID, returnText);
+
+		} 
 
 	}
 

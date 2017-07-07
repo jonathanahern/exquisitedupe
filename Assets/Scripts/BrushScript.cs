@@ -46,6 +46,24 @@ public class BrushScript : MonoBehaviour {
 		} 
 			
 		hit = true;
+
+		parentBrush = transform.parent.gameObject;
+		parentBrushPos = parentBrush.transform.position;
+
+		if (XNeg == true) {
+			brushPosMid = new Vector3 (parentBrushPos.x, parentBrushPos.y - .01f, parentBrushPos.z);
+
+		} else if (XPos == true) {
+			brushPosMid = new Vector3 (parentBrushPos.x, parentBrushPos.y + .01f, parentBrushPos.z);
+
+		} else if (YNeg == true) {
+			brushPosMid = new Vector3 (parentBrushPos.x - .01f, parentBrushPos.y, parentBrushPos.z);
+
+		} else if (YPos == true) {
+			brushPosMid = new Vector3 (parentBrushPos.x + .01f, parentBrushPos.y, parentBrushPos.z);
+
+		}
+
 		Invoke ("MakeUnHit", 1.5f);
 
 		if (XNeg == true) {

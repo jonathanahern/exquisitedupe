@@ -179,7 +179,15 @@ public class LoginMenu : MonoBehaviour {
 
 			Debug.Log (returnText);
 
-			if (returnText == "Success") {
+			string[] returnBroken = returnText.Split ('|');
+			string success = returnBroken [0];
+
+			//Debug.Log("SUCCESSa" + returnBroken[0]);
+
+			if (success == "Success") {
+
+				//Debug.Log("SUCCESSb" + returnBroken[1]);
+
 				//Password was correct
 				blankErrors ();
 				part = 2; //show logged in UI
@@ -187,7 +195,7 @@ public class LoginMenu : MonoBehaviour {
 				//blank username field
 				input_login_username.text = ""; //password field is blanked at the end of this function, even when error is returned
 		
-				UserAccountManagerScript.instance.LogIn (username, password);
+				UserAccountManagerScript.instance.LogIn (username, password, returnBroken[1]);
 
 			} else {
 				
@@ -300,7 +308,7 @@ public class LoginMenu : MonoBehaviour {
 				//blank username field
 				input_register_username.text = ""; //password field is blanked at the end of this function, even when error is returned
 				
-		UserAccountManagerScript.instance.LogIn (username, password);
+		UserAccountManagerScript.instance.LogIn (username, password, "");
 
 			} else if (returnText == "username in use") {
 				//Account Not Created due to username being used on another Account

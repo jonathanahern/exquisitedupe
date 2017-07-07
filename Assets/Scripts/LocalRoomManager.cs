@@ -201,7 +201,7 @@ public class LocalRoomManager : MonoBehaviour {
 
 		GameObject[] lines = GameObject.FindGameObjectsWithTag ("Line");
 
-		myLineString = "[MYCOLOR]" + myRoom.myColor.ToString () + ":";
+		myLineString = "$[MYCOLOR]" + myRoom.myColor.ToString () + ":";
 
 		foreach (GameObject line in lines) {
 
@@ -230,6 +230,40 @@ public class LocalRoomManager : MonoBehaviour {
 			myLineString = myLineString + "|";
 		}
 		myLineString = myLineString.TrimEnd('|');
+		myLineString = myLineString + ":";
+
+		GameObject[] dots = GameObject.FindGameObjectsWithTag ("Dot");
+
+		foreach (GameObject dot in dots) {
+
+			LineRenderer lineRend = dot.GetComponent<LineRenderer> ();
+			int lineAmount = lineRend.numPositions;
+
+			for (int i = 0; i < lineAmount; i++) {
+
+				Vector2 point = lineRend.GetPosition (i);
+
+				myLineString = myLineString + point.ToString ("F2") + "@";
+
+				if (i == lineAmount - 1) {
+
+					string[] charsToRemove = new string[] { "(", ")" };
+					foreach (string character in charsToRemove)
+					{
+						myLineString = myLineString.Replace(character, string.Empty);
+					}
+
+				}
+
+			}
+
+			myLineString = myLineString.TrimEnd('@');
+			myLineString = myLineString + "|";
+		}
+
+		myLineString = myLineString.TrimEnd('|');
+
+		Debug.Log (myLineString);
 
 		StartCoroutine (doneDrawing(myRoom.roomID, myLineString));
 
@@ -253,9 +287,8 @@ public class LocalRoomManager : MonoBehaviour {
 		myRoom.status = "waiting...";
 		myRoom.statusNum = 2;
 
-		SceneManager.LoadScene ("Lobby Menu");
-
 		RoomManager.instance.cameFromTurnBased=true;
+		SceneManager.LoadScene ("Lobby Menu");
 
 	}
 
