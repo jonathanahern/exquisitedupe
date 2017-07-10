@@ -57,20 +57,29 @@ public class LocalTurnVoting : MonoBehaviour {
 
 	void CreateDrawing (){
 
-		drawing = drawing.TrimStart ('$');
+		drawing = drawing.TrimEnd ('$');
 		string[] drawingInfos = drawing.Split ('$');
+
+		Debug.Log ("drawing: " + drawing);
 
 		foreach (string drawingInfo in drawingInfos) {
 
 			string drawingString;
 			string colorNum;
-			string dotsString;
+			string dotsString = "";
 
 			string[] drawings = drawingInfo.Split (':');
 
 			colorNum = drawings[0].Substring (MYCOLOR_SYM.Length);
 			drawingString = drawings [1];
 			dotsString = drawings [2];
+
+
+//			if (drawings.Length > 2) {
+//				dotsString = drawings [2];
+//			} else {
+//				dotsString = "";
+//			}
 
 			DrawLine (colorNum, drawingString, dotsString);
 
@@ -97,7 +106,7 @@ public class LocalTurnVoting : MonoBehaviour {
 			dotFab = orangeDot;
 		}
 
-		string[] lines = drawing.Split ('|');
+		string[] lines = drawing.Split ('+');
 
 		foreach (string line in lines) {
 			
@@ -121,7 +130,11 @@ public class LocalTurnVoting : MonoBehaviour {
 			}
 		}
 
-		string[] dots = dotsString.Split ('|');
+		if (dotsString == "") {
+			return;
+		}
+
+		string[] dots = dotsString.Split ('+');
 
 		foreach (string dot in dots) {
 

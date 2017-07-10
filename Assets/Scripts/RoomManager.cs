@@ -146,7 +146,7 @@ public class RoomManager : MonoBehaviour {
 
 		}
 
-		//Debug.Log ("Room ID: " + roomId);
+		Debug.Log ("Room ID: " + roomId);
 
 		string[] pieces = roomId.Split('|');
 
@@ -157,7 +157,6 @@ public class RoomManager : MonoBehaviour {
 				int color = int.Parse (piece.Substring (COLOR_SYM.Length));
 
 				roomScript.myColor = color - 4;
-
 
 			} else if (piece.StartsWith (ID_SYM)) {
 
@@ -245,15 +244,23 @@ public class RoomManager : MonoBehaviour {
 
 			else if (piece.StartsWith (STATUS_SYM)) {
 
+				string stringID = roomScript.myColor.ToString ();
+
 				string status = piece.Substring (STATUS_SYM.Length);
 
 				roomScript.status = "waiting...";
 
 				roomScript.statusNum = 1;
 
+				Debug.Log ("Status: " + status + ", StringID: " + stringID);
+
 				if (status.Contains ("1") && status.Contains ("2") && status.Contains ("3") && status.Contains ("4")) {
 
 					roomScript.statusNum = 2;
+
+				} else if (status.Contains(stringID)){
+
+					roomScript.statusNum = 1;
 
 				}
 					
@@ -262,6 +269,8 @@ public class RoomManager : MonoBehaviour {
 			else if (piece.StartsWith (DRAWING_SYM)) {
 
 				string drawingString = piece.Substring (DRAWING_SYM.Length);
+				Debug.Log ("Drawing: " + drawingString);
+
 				roomScript.drawings = drawingString;
 
 			}
@@ -287,7 +296,7 @@ public class RoomManager : MonoBehaviour {
 		rooms = new int[5];
 
 		int children = transform.childCount;
-		Debug.Log (children);
+		//Debug.Log (children);
 		for (int i = 0; i < children; ++i){
 			GameObject roomStatus = Instantiate (statusPrefab);
 			roomStatus.transform.SetParent (statusHolder.transform, false);
@@ -296,17 +305,22 @@ public class RoomManager : MonoBehaviour {
 			status.roomId = turnRoom.roomID;
 			status.categoryName.text = turnRoom.roomType;
 			status.gameStatus.text = turnRoom.status;
-			if (turnRoom.statusNum == 1) {
-				
+
+			if (turnRoom.statusNum == 0) {
+
 				status.PhaseOneReady ();
+
+
+			} else if (turnRoom.statusNum == 1) {
+				
+				status.PhaseOneDone ();
 
 
 			} else if (turnRoom.statusNum == 2) {
 
-				status.doneDrawing.SetActive (true);
-				status.doneDrawingCheck.SetActive (true);
+				status.PhaseTwoReady ();
 
-			}
+			}  
 		}
 	}
 
@@ -381,7 +395,6 @@ public class RoomManager : MonoBehaviour {
 		} 
 
 	}
-
 
 	void LookForSets (string returned){
 	

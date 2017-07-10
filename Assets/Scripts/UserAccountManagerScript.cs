@@ -204,6 +204,9 @@ public class UserAccountManagerScript : MonoBehaviour {
 			
 		}
 
+		Debug.Log ("UserName: " + LoggedIn_Username);
+		Debug.Log ("roomId: " + roomId);
+
 		StartCoroutine (storeRoomId(LoggedIn_Username, roomId));
 
 		RoomManager.instance.CreateRoom (roomType, returnText, 0);

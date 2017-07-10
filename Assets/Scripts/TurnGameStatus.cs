@@ -36,6 +36,7 @@ public class TurnGameStatus : MonoBehaviour {
 		
 	}
 
+	//0
 	public void PhaseOneReady () {
 
 		phaseOneReady = true;
@@ -45,10 +46,24 @@ public class TurnGameStatus : MonoBehaviour {
 
 	}
 
+	//1
+	public void PhaseOneDone () {
+
+		phaseOneReady = false;
+		doneDrawing.SetActive (true);
+		doneDrawingCheck.SetActive (true);
+		gameStatus.text = "waiting...";
+		button.color = wait;
+
+	}
+
+	//2
 	public void PhaseTwoReady () {
 
 		phaseTwoReady = true;
 		doneVoting.SetActive (true);
+		doneDrawing.SetActive (true);
+		doneDrawingCheck.SetActive (true);
 		gameStatus.text = "VOTE!";
 		button.color = ready;
 

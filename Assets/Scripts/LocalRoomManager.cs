@@ -201,7 +201,7 @@ public class LocalRoomManager : MonoBehaviour {
 
 		GameObject[] lines = GameObject.FindGameObjectsWithTag ("Line");
 
-		myLineString = "$[MYCOLOR]" + myRoom.myColor.ToString () + ":";
+		myLineString = "[MYCOLOR]" + myRoom.myColor.ToString () + ":";
 
 		foreach (GameObject line in lines) {
 
@@ -227,9 +227,9 @@ public class LocalRoomManager : MonoBehaviour {
 
 			}
 			myLineString = myLineString.TrimEnd('@');
-			myLineString = myLineString + "|";
+			myLineString = myLineString + "+";
 		}
-		myLineString = myLineString.TrimEnd('|');
+		myLineString = myLineString.TrimEnd('+');
 		myLineString = myLineString + ":";
 
 		GameObject[] dots = GameObject.FindGameObjectsWithTag ("Dot");
@@ -258,10 +258,11 @@ public class LocalRoomManager : MonoBehaviour {
 			}
 
 			myLineString = myLineString.TrimEnd('@');
-			myLineString = myLineString + "|";
+			myLineString = myLineString + "+";
 		}
 
-		myLineString = myLineString.TrimEnd('|');
+		myLineString = myLineString.TrimEnd('+');
+		myLineString = myLineString + "$";
 
 		Debug.Log (myLineString);
 
