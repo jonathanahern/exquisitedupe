@@ -86,6 +86,13 @@ public class LobbyMenu : MonoBehaviour {
 	
 	}
 
+	public void LoadingScreenAbort(){
+	
+		loadScreen.DOLocalMoveY (startPos*-1.0f, 2.0f).SetEase(Ease.OutBounce);
+		centerTurnButts.DOLocalMoveX (0, 2.0f).SetEase(Ease.OutBounce);
+	
+	}
+
 	void MoveCurtain () {
 	
 		//curtain.DOAnchorPos (Vector2.zero, 2.0f).SetEase (Ease.InOutCirc).on;

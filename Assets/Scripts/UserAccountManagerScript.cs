@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DatabaseControl;
 using UnityEngine.SceneManagement;
+using DG.Tweening;
 
 public class UserAccountManagerScript : MonoBehaviour {
 
@@ -41,6 +42,9 @@ public class UserAccountManagerScript : MonoBehaviour {
 	string roomId;
 	public string activeRooms;
 
+	public GameObject messageBoard;
+	LobbyMenu lobbyMenu;
+
 	public void LogOut(){
 	
 		LoggedIn_Username = "";
@@ -51,6 +55,17 @@ public class UserAccountManagerScript : MonoBehaviour {
 		Debug.Log ("User out");
 		SceneManager.LoadScene (loggedOutSceneName);
 	
+	}
+
+	void Update (){
+
+//		if (Input.GetKeyDown (KeyCode.H)) {
+//		
+//			BackToLobbyError ();
+//		
+//		}
+
+
 	}
 
 	public void AddName(string username){
@@ -189,6 +204,18 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 		string returnText = e.Current as string;
 
+		if (returnText == "") {
+
+			if (lobbyMenu == null) {
+				lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
+			}
+
+			lobbyMenu.LoadingScreenAbort ();
+			BackToLobbyError ();
+			yield break;
+
+		}
+
 		Debug.Log ("HERE?" + returnText);
 
 		string[] fates = returnText.Split ('|');
@@ -227,6 +254,19 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 		Debug.Log ("Stored: " + returnText);
 	
+	}
+
+	void BackToLobbyError() {
+	
+		messageBoard.transform.DOLocalMoveY (1300, 0.0001f);
+		messageBoard.transform.DOLocalMoveY (0, 1.0f).SetEase (Ease.OutBounce);
+		Invoke ("TakeOffScreen", 2.0f);
+	
+	}
+
+	void TakeOffScreen(){
+	
+		messageBoard.transform.DOLocalMoveY (-1300, 1.0f).SetEase (Ease.InQuad);
 	}
 
 }

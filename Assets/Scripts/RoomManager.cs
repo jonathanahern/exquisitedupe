@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using DatabaseControl;
+using UnityEngine.UI;
 
 public class RoomManager : MonoBehaviour {
 
@@ -52,11 +53,22 @@ public class RoomManager : MonoBehaviour {
 	public string[] playersReady = new string[5];
 
 	GameObject statusHolder;
+	GameObject statusLoad;
+
+	public Text frameText;
 
 	void Start (){
 
 		GetRooms ();
 		//StartCoroutine (getRoomData(room));
+
+	}
+
+	void Update () {
+
+		if (Input.GetKeyDown (KeyCode.J)) {
+			UpdateTurnRooms ();
+		}
 
 	}
 
@@ -71,26 +83,22 @@ public class RoomManager : MonoBehaviour {
 		Debug.Log (roomsString);
 
 		if (roomsString == "") {
+
+			frameText.text = "Nothin happenin";
 			return;
 		}
+
 		roomsString = roomsString.Substring (ID_SYM.Length);
 		roomsString = roomsString.TrimEnd ('/');
 		string[] rooms = roomsString.Split ('/');
 
 		for (int i = 0; i < rooms.Length; i++) {
 
-//			if (rooms[i] == "") {
-//				rooms [i] = "0";
-//			}
-
-			roomIds [i] = "|[ID]" + rooms[i];
+			roomIds [0] = "|[ID]" + rooms[i];
 			Debug.Log ("ROOOOOM " + roomIds [i]);
-
+			StartCoroutine (getRoomData(roomIds[0],roomIds[1], roomIds[2], roomIds[3], roomIds[4]));
 
 		}
-
-
-		StartCoroutine (getRoomData(roomIds[0],roomIds[1], roomIds[2], roomIds[3], roomIds[4]));
 
 	}
 
@@ -126,7 +134,6 @@ public class RoomManager : MonoBehaviour {
 			}
 
 			CreateRoom ("junk", pieces[i], goNum);
-
 
 		}
 
@@ -250,7 +257,7 @@ public class RoomManager : MonoBehaviour {
 
 				roomScript.status = "waiting...";
 
-				roomScript.statusNum = 1;
+				roomScript.statusNum = 0;
 
 				Debug.Log ("Status: " + status + ", StringID: " + stringID);
 
@@ -280,7 +287,7 @@ public class RoomManager : MonoBehaviour {
 		if (startRoom == 0) {
 			SceneManager.LoadScene ("Turn Based Room");
 		} else if (startRoom == 1) {
-			UpdateTurnRoomsFromLogin ();
+			UpdateTurnRoomsFromLogin (roomScript.roomID);
 			lobbyMenu.TurnBasedClicked ();
 
 		}
@@ -288,7 +295,7 @@ public class RoomManager : MonoBehaviour {
 	}
 		
 
-	public void UpdateTurnRoomsFromLogin(){
+	public void UpdateTurnRoomsFromLogin(int statusRoomId){
 		
 		if (statusHolder == null) {
 			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
@@ -297,33 +304,39 @@ public class RoomManager : MonoBehaviour {
 
 		int children = transform.childCount;
 		//Debug.Log (children);
+
+
 		for (int i = 0; i < children; ++i){
-			GameObject roomStatus = Instantiate (statusPrefab);
-			roomStatus.transform.SetParent (statusHolder.transform, false);
 			TurnRoomScript turnRoom = transform.GetChild (i).GetComponent<TurnRoomScript>();
-			TurnGameStatus status = roomStatus.GetComponent<TurnGameStatus> ();
-			status.roomId = turnRoom.roomID;
-			status.categoryName.text = turnRoom.roomType;
-			status.gameStatus.text = turnRoom.status;
 
-			if (turnRoom.statusNum == 0) {
+			if (turnRoom.roomID == statusRoomId) {
+			
+				GameObject roomStatus = Instantiate (statusPrefab);
+				roomStatus.transform.SetParent (statusHolder.transform, false);
+				TurnGameStatus status = roomStatus.GetComponent<TurnGameStatus> ();
+				status.roomId = turnRoom.roomID;
+				status.categoryName.text = turnRoom.roomType;
+				status.gameStatus.text = turnRoom.status;
 
-				status.PhaseOneReady ();
-
-
-			} else if (turnRoom.statusNum == 1) {
-				
-				status.PhaseOneDone ();
-
-
-			} else if (turnRoom.statusNum == 2) {
-
-				status.PhaseTwoReady ();
-
-			}  
+				if (turnRoom.statusNum == 0) {
+					status.PhaseOneReady ();
+				} else if (turnRoom.statusNum == 1) {
+					status.PhaseOneDone ();
+				} else if (turnRoom.statusNum == 2) {
+					status.PhaseTwoReady ();
+				} 
+			} 
 		}
+
+		if (statusLoad == null) {
+			statusLoad = GameObject.FindGameObjectWithTag ("Status Load");
+		}
+
+		statusLoad.SetActive (false);
+
 	}
 
+	//Instantiate status objs, match their status to rooms, create array of room Id #s
 	public void UpdateTurnRooms(){
 		cameFromTurnBased = false;
 		if (statusHolder == null) {
@@ -340,20 +353,23 @@ public class RoomManager : MonoBehaviour {
 			status.roomId = turnRoom.roomID;
 			status.categoryName.text = turnRoom.roomType;
 			status.gameStatus.text = turnRoom.status;
-			if (turnRoom.statusNum == 2) {
-			
-				status.doneDrawing.SetActive (true);
-				status.doneDrawingCheck.SetActive (true);
-			
-			}
-			rooms [i] = turnRoom.roomID;
+		
+			if (turnRoom.statusNum == 0) {
+				status.PhaseOneReady ();
+			} else if (turnRoom.statusNum == 1) {
+				status.PhaseOneDone ();
+			} else if (turnRoom.statusNum == 2) {
+				status.PhaseTwoReady ();
+			} 
 
+			rooms [i] = turnRoom.roomID;
 		}
 
-		Invoke ("StatusUpdate", 3.0f);
-			
+		Invoke ("StatusUpdate", 1.0f);
+
 	}
 
+	//send room IDs to server
 	public void StatusUpdate(){
 
 		string roomID1;
@@ -374,6 +390,7 @@ public class RoomManager : MonoBehaviour {
 	
 	}
 
+	//returns ids with players checked in and drawings.
 	IEnumerator statusUpdateCheck (string roomID1, string roomID2, string roomID3, string roomID4, string roomID5){
 
 		IEnumerator e = DCP.RunCS ("turnRooms", "UpdateStatus", new string[5] {roomID1,roomID2,roomID3,roomID4,roomID5});
@@ -386,102 +403,117 @@ public class RoomManager : MonoBehaviour {
 
 		returnText = returnText.TrimStart ('|');
 
-		//Debug.Log ("Returned:" + returnText);
+		Debug.Log ("Returned Status:" + returnText);
 
 		if (returnText != "Error") {
 		
-			LookForSets (returnText);
+			BreakDownStatus (returnText);
 
 		} 
 
 	}
 
-	void LookForSets (string returned){
+	//checks status
+	void BreakDownStatus (string returned){
 	
-		roomNum = new string[5];
-		playersReady = new string[5];
+		string[] roomsData = returned.Split ('|');
 
-		string[] roomsDone = returned.Split ('|');
+		foreach (string roomData in roomsData) {
 
-		for (int i = 0; i < roomsDone.Length; i++) {
+			string[] roomPiece = roomData.Split('/');
 
-			string[] roomInfo = returned.Split ('$');
+			string idString = roomPiece[0].Substring (ID_SYM.Length);
+			string playersReadyString = roomPiece[1].Substring (PLAYERSREADY_SYM.Length);
+			string drawingString = roomPiece [2];
+			drawingString = drawingString.TrimEnd('$');
 
-			roomNum[i] = roomInfo[0].Substring (ID_SYM.Length);
-			playersReady[i] = roomInfo[1].Substring (PLAYERSREADY_SYM.Length);
-
-
-		}
-
-		for (int i = 0; i < roomNum.Length; i++) {
-
-			if (playersReady[i] == null) {
-				return;
-			}
-
-
-			if (playersReady[i].Contains ("1") && playersReady [i].Contains ("2") && playersReady [i].Contains ("3") && playersReady [i].Contains ("4")) {
-			
-				StartCoroutine(grabDrawing(roomNum[i]));
-				//UpdateStatusObject (roomNum[i]);
-			
-			}
+			UpdateRoom (idString, playersReadyString, drawingString);
 
 		}
+
+		Invoke ("UpdateStatusObjects", 1.0f);
 
 	}
 
-	void UpdateStatusObject (string roomId, string drawing){
-		
+	void UpdateRoom (string roomId, string status, string drawing){
+	
 		int roomInt = int.Parse(roomId);
 		int children = transform.childCount;
+		string myColorNumNow;
+
+
 		for (int i = 0; i < children; ++i){
+			
 			TurnRoomScript turnRoom = transform.GetChild (i).GetComponent<TurnRoomScript>();
+
 			if (turnRoom.roomID == roomInt) {
 				turnRoom.drawings = drawing;
+				myColorNumNow = turnRoom.myColor.ToString ();
+
+				Debug.Log ("myColor: " + myColorNumNow + " status: " + status + " RoomId: " + roomInt);
+
+				if (status.Contains ("1") && status.Contains ("2") && status.Contains ("3") && status.Contains ("4")) {
+
+					turnRoom.statusNum = 2;
+
+				} else if (status.Contains (myColorNumNow)) {
+				
+					turnRoom.statusNum = 1;
+
+				} else {
+				
+					turnRoom.statusNum = 0;
+
+				}
+
 			}
 
 		}
+
+		UpdateStatusObjects ();
+	
+	}
+
+	//Updates status objects to their room's status
+	void UpdateStatusObjects (){
 
 		if (statusHolder == null) {
 			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
 		}
-		int childCount = statusHolder.transform.childCount;
-		for (int i = 0; i < childCount; i++) {
-			TurnGameStatus turnStat = statusHolder.transform.GetChild (i).GetComponent<TurnGameStatus>();
-			if (turnStat.roomId == roomInt) {
+
+		for (int i = 0; i < statusHolder.transform.childCount; ++i){
+
+			Destroy (statusHolder.transform.GetChild (i).gameObject);
+
+		}
 			
-				turnStat.PhaseTwoReady ();
+		int children = transform.childCount;
+
+		for (int i = 0; i < children; ++i){
 			
-			}
-				
+			TurnRoomScript turnRoom = transform.GetChild (i).GetComponent<TurnRoomScript>();
+			GameObject roomStatus = Instantiate (statusPrefab);
+			roomStatus.transform.SetParent (statusHolder.transform, false);
+			TurnGameStatus status = roomStatus.GetComponent<TurnGameStatus> ();
+			status.roomId = turnRoom.roomID;
+			status.categoryName.text = turnRoom.roomType;
+			status.gameStatus.text = turnRoom.status;
+
+			if (turnRoom.statusNum == 0) {
+				status.PhaseOneReady ();
+			} else if (turnRoom.statusNum == 1) {
+				status.PhaseOneDone ();
+			} else if (turnRoom.statusNum == 2) {
+				status.PhaseTwoReady ();
+			} 
+
 		}
 
-	}
-
-	IEnumerator grabDrawing (string roomID){
-
-		string roomIDServer;
-		roomIDServer = "|[ID]" + roomID;
-
-		IEnumerator e = DCP.RunCS ("turnRooms", "GrabDrawing", new string[1] {roomIDServer});
-
-		while (e.MoveNext ()) {
-			yield return e.Current;
+		if (statusLoad == null) {
+			statusLoad = GameObject.FindGameObjectWithTag ("Status Load");
 		}
 
-		string returnText = e.Current as string;
-
-		//returnText = returnText.TrimStart ('|');
-
-		Debug.Log ("Drawing:" + returnText);
-
-		if (returnText != "No Room") {
-
-			UpdateStatusObject (roomID, returnText);
-
-		} 
+		statusLoad.SetActive (false);
 
 	}
-
 }
