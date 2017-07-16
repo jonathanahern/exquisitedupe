@@ -270,6 +270,22 @@ public class RoomManager : MonoBehaviour {
 					roomScript.statusNum = 1;
 
 				}
+
+				if (status.Contains ("e")) {
+
+					roomScript.dupeCaught = "e";
+
+				} else if (status.Contains ("c")) {
+
+					roomScript.dupeCaught = "c";
+
+				} else {
+				
+					roomScript.dupeCaught = "n";
+
+				}
+
+
 					
 			}
 

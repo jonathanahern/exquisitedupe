@@ -39,7 +39,7 @@ public class TurnRoomButton : MonoBehaviour {
 			wrongWord = Random.Range (1, 13);
 		}
 
-		int awardNum = Random.Range (1, 3);
+		int awardNum = Random.Range (1, 4);
 
 		fate = "|[WORDS]" + words + "|[BRUSHES]" + brushes + "|" + grounding + "|[FATE]" + dupeNum + "/" + rightWord + "/" + wrongWord + "/" + awardNum;
 

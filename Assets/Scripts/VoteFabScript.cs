@@ -23,15 +23,19 @@ public class VoteFabScript : MonoBehaviour {
 	public Color offWhite;
 
 	public SpriteRenderer outerLayer;
-	public Sprite dupeSprite;
-	public Sprite deadGiveawaySprite;
-	public Sprite simplyDivineSprite;
-	public Sprite monkeyArtistSprite;
+	public SpriteRenderer innerSprite;
 
 	public Sprite redDupe;
 	public Sprite blueDupe;
 	public Sprite greenDupe;
 	public Sprite orangeDupe;
+
+	public Sprite redMonkey;
+	public Sprite blueMonkey;
+	public Sprite greenMonkey;
+	public Sprite orangeMonkey;
+
+	public LocalTurnVoting localTurn;
 
 
 	void Start() {
@@ -44,7 +48,6 @@ public class VoteFabScript : MonoBehaviour {
 //		if (stuck == true) {
 //			return;
 //		}
-
 
 		mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 		mousePos.z = -1.0f;
@@ -62,21 +65,29 @@ public class VoteFabScript : MonoBehaviour {
 			} else if (mousePos.y > maxY) {
 				mousePos.y = maxY;
 			}
-				
+
 			CheckColor ();
 
 		} else if (mousePos.x > minX && mousePos.x < maxX && mousePos.y > minY && mousePos.y < maxY) {
 			
-				inFrame = true;
+			inFrame = true;
 
-			}
+		} else if (mousePos.y > minY && mousePos.x < minX) {
+
+			mousePos.y = minY;
+
+		} else if (mousePos.y > minY && mousePos.x > maxX) {
+
+			mousePos.y = minY;
+
+		}
 
 		transform.position = mousePos;
 
 	}
 
-//	void OnMouseDown(){
-//		
+	void OnMouseDown(){
+		
 //		if (stuck == true) {
 //			return;
 //		}
@@ -87,20 +98,28 @@ public class VoteFabScript : MonoBehaviour {
 //			awardScript.MoveItOut ();
 //		
 //		}
-//
-//
-//	}
-//
-//
-//	void OnMouseUpAsButton(){
-//	
+
+		if (transform.parent != null) {
+			transform.parent = null;
+		}
+
+		localTurn.FlipSignToWords ();
+
+
+	}
+
+
+	void OnMouseUpAsButton(){
+	
 //		if (stuck == true) {
 //			return;
 //		}
 //
 //		awardScript.CheckLocation ();
-//	
-//	}
+
+		localTurn.FlipSignToConfirm ();
+	
+	}
 
 //	public void StopMoving(){
 //	
@@ -118,13 +137,13 @@ public class VoteFabScript : MonoBehaviour {
 
 		pos = transform.position;
 
-		if (pos.x < -.3f && pos.y > .3f) {
+		if (pos.x < -.003f && pos.y > .003f) {
 			outerLayer.color = red;
-		} else if (pos.x > .3f && pos.y > .3f) {
+		} else if (pos.x > .003f && pos.y > .003f) {
 			outerLayer.color = blue;
-		} else if (pos.x > .3f && pos.y < -.3f) {
+		} else if (pos.x > .003f && pos.y < -.003f) {
 			outerLayer.color = green;
-		} else if (pos.x < -.3f && pos.y < -.3f) {
+		} else if (pos.x < -.003f && pos.y < -.003f) {
 			outerLayer.color = orange;
 		} else {
 			outerLayer.color = offWhite;
@@ -171,5 +190,34 @@ public class VoteFabScript : MonoBehaviour {
 //		}
 //
 //	}
+
+	public void SetupDupeVote(int fromColor){
+
+		if (fromColor == 1) {
+			innerSprite.sprite = redDupe;
+		} else if (fromColor == 2) {
+			innerSprite.sprite = blueDupe;
+		} else if (fromColor == 3) {
+			innerSprite.sprite = greenDupe;
+		} else if (fromColor == 4) {
+			innerSprite.sprite = orangeDupe;
+		}
+
+	}
+
+	public void SetupSecondVote(int fromColor, int awardNum){
+
+		if (awardNum > 0) {
+			if (fromColor == 1) {
+				innerSprite.sprite = redMonkey;
+			} else if (fromColor == 2) {
+				innerSprite.sprite = blueMonkey;
+			} else if (fromColor == 3) {
+				innerSprite.sprite = greenMonkey;
+			} else if (fromColor == 4) {
+				innerSprite.sprite = orangeMonkey;
+			}
+		}
+	}
 
 }

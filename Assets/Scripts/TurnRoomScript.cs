@@ -24,6 +24,8 @@ public class TurnRoomScript : MonoBehaviour {
 	public bool activeRoom;
 	public bool activeVoteRoom;
 
+	public string dupeCaught;
+
 	// Use this for initialization
 	void Start () {
 		
