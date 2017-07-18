@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
 using DatabaseControl;
+using UnityEngine.SceneManagement;
 
 public class LocalTurnVoting : MonoBehaviour {
 
@@ -11,14 +12,17 @@ public class LocalTurnVoting : MonoBehaviour {
 	string drawing;
 	int currentVote;
 	bool fateSet;
+	string myColor;
 
 	int secondVote;
 	int thirdVote;
 
+	public GameObject guessObject;
+
 	public GameObject pedestal;
 	public Transform spawnPos;
 	public GameObject sign;
-	public SpriteRenderer signWords;
+	public Image signWords;
 	private Sprite voteSprite;
 
 	float pedScreenPos;
@@ -28,11 +32,15 @@ public class LocalTurnVoting : MonoBehaviour {
 
 	public GameObject voteFab;
 
-	Vector3 dupeVotePos;
-	Vector3 secondVotePos;
+	Vector2 dupeVotePos;
+	Vector2 secondVotePos;
+	Vector2 thirdVotePos;
 
 	public Sprite monkeyArtistWords;
-
+	public Sprite vagueArtistWords;
+	public Sprite captainObviousWords;
+	public Sprite dupeVotedElsewhere;
+	public Sprite dupeVotedSelf;
 
 	public GameObject redLine;
 	public GameObject blueLine;
@@ -77,6 +85,13 @@ public class LocalTurnVoting : MonoBehaviour {
 
 		}
 
+		GameObject[] buttonTexts = GameObject.FindGameObjectsWithTag ("Button Text");
+		int childCount = buttonTexts.Length;
+
+		for (int i = 0; i < childCount; i++) {
+			buttonTexts [i].GetComponent<Text> ().text = myRoom.words [i];
+		}
+			
 		GameObject dupeVote = Instantiate (voteFab);
 		dupeVote.transform.SetParent (spawnPos, false);
 		VoteFabScript voteScript = dupeVote.GetComponent<VoteFabScript> ();
@@ -93,7 +108,7 @@ public class LocalTurnVoting : MonoBehaviour {
 
 		if (Input.GetKeyDown (KeyCode.D)) {
 			
-			FlipSignToConfirm();
+			LaunchDupeGuess();
 
 		}
 
@@ -227,6 +242,12 @@ public class LocalTurnVoting : MonoBehaviour {
 
 	}
 
+	void MoveInGuesser(){
+	
+		guessObject.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce);
+	
+	}
+
 	public void FlipSignToConfirm(){
 
 		Vector3 oneEighty = new Vector3 (0, 180, 0);
@@ -265,28 +286,52 @@ public class LocalTurnVoting : MonoBehaviour {
 		}
 
 
+
 		if (currentVote == 1) {
 			dupeVotePos = pos;
 			string dupeStatus;
 
-			if (myRoom.dupeNum == artistNum) {
-				dupeStatus = "c";
-			} else {
-				dupeStatus = "e";
-			}
+			if (myRoom.myColor != myRoom.dupeNum) {
 				
-			if (myRoom.dupeCaught != "c" || myRoom.dupeCaught != "e" ) {
-				string stringRoomId = "|[ID]" + myRoom.roomID.ToString ();
+				if (myRoom.dupeNum == artistNum) {
+					dupeStatus = "o";
+				} else {
+					dupeStatus = "x";
+				}
+					
+				if (myRoom.dupeCaught != "o" || myRoom.dupeCaught != "x") {
+					string stringRoomId = "|[ID]" + myRoom.roomID.ToString ();
 					StartCoroutine (checkVoteStatus (stringRoomId, dupeStatus));
-			}
+				}
+					
+				Invoke ("LaunchVote2", 1.5f);
+			} else {
 
-			Invoke ("LaunchVote2", 1.5f);
+				if (myRoom.dupeNum == artistNum) {
+					signWords.sprite = dupeVotedSelf;
+				} else {
+					signWords.sprite = dupeVotedElsewhere;
+				}
+
+				FlipSignToWords ();
+
+				Invoke ("MoveUpSign", 1.5f);
+				Invoke ("MoveDownSign", 4.5f);
+				Invoke ("LaunchDupeGuess", 4.5f);
+
+			}
 		}
 
 		if (currentVote == 2) {
 			secondVotePos = pos;
 
-			//Invoke ("LaunchVote2", 1.5f);
+			Invoke ("LaunchVote3", 1.0f);
+		}
+
+		if (currentVote == 3) {
+			thirdVotePos = pos;
+
+			Invoke ("EndPhase2", 1.0f);
 		}
 
 		Destroy (vote);
@@ -310,20 +355,20 @@ public class LocalTurnVoting : MonoBehaviour {
 		if (returnText == "Error") {
 		
 			Debug.Log ("caught dupe error");
-			myRoom.dupeCaught = "c";
+			myRoom.dupeCaught = "o";
 		
-		} else if (returnText.Contains ("e")) {
+		} else if (returnText.Contains ("x")) {
 
-			myRoom.dupeCaught = "e";
+			myRoom.dupeCaught = "x";
 
-		} else if (returnText.Contains ("c")) {
+		} else if (returnText.Contains ("o")) {
 
-			myRoom.dupeCaught = "c";
+			myRoom.dupeCaught = "o";
 
 		} else {
 
 			Debug.Log ("caught dupe error 2");
-			myRoom.dupeCaught = "c";
+			myRoom.dupeCaught = "o";
 
 		}
 
@@ -347,6 +392,155 @@ public class LocalTurnVoting : MonoBehaviour {
 
 		voteScript.SetupSecondVote (myRoom.myColor,myRoom.awardNum);
 		MoveUpPedestal ();
+
+	}
+
+	void LaunchVote3(){
+
+		FlipSignToWords ();
+
+		if (myRoom.dupeCaught == "x") {
+			signWords.sprite = vagueArtistWords;
+		} else {
+			signWords.sprite = captainObviousWords;
+		}
+
+		MoveUpSign ();
+
+		GameObject thirdVote = Instantiate (voteFab);
+		thirdVote.transform.SetParent (spawnPos, false);
+		VoteFabScript voteScript = thirdVote.GetComponent<VoteFabScript> ();
+		voteScript.localTurn = this;
+		currentVote = 3;
+
+		voteScript.SetupThirdVote (myRoom.myColor, myRoom.dupeCaught);
+		MoveUpPedestal ();
+
+	}
+
+	void LaunchDupeGuess (){
+
+		pedestal.SetActive (false);
+		sign.SetActive (false);
+
+		Camera.main.transform.DOLocalMoveY (-3.35f, 1.5f).OnComplete(MoveInGuesser);
+		DOTween.To(()=> Camera.main.orthographicSize, x=> Camera.main.orthographicSize = x, 7.5f, 1.5f);
+	
+	}
+
+	public void GuessSubmitted (string subject) {
+	
+		string roomId = "|[ID]" + myRoom.roomID.ToString();
+
+		string[] charsToRemove = new string[] { "(", ")" };
+		string voteOne = dupeVotePos.ToString ("F2");
+		foreach (string character in charsToRemove)
+
+		{
+			voteOne = voteOne.Replace(character, string.Empty);
+		}
+
+		string dupeString = "|[DUPEGUESS]" + subject + "$" + voteOne;
+
+		string myColor;
+
+		if (myRoom.myColor == 1) {
+			myColor = "a";
+		} else if (myRoom.myColor == 2) {
+			myColor = "b";
+		} else if (myRoom.myColor == 3) {
+			myColor = "c";
+		} else if (myRoom.myColor == 4) {
+			myColor = "d";
+		} else {
+			myColor = "poop";
+		}
+
+		StartCoroutine (addDupeGuess (roomId, dupeString, myColor));
+
+
+	}
+
+	IEnumerator addDupeGuess (string roomId, string dupeString, string playerId){
+
+		IEnumerator e = DCP.RunCS ("turnRooms", "AddDupeGuess", new string[3] {roomId, dupeString, playerId});
+
+		while (e.MoveNext ()) {
+			yield return e.Current;
+		}
+
+		string returnText = e.Current as string;
+
+
+		Debug.Log ("Returned Dupe:" + returnText);
+
+		myRoom.activeVoteRoom = false;
+		myRoom.status = "waiting...";
+		myRoom.statusNum = 3;
+
+		RoomManager.instance.cameFromTurnBased=true;
+		SceneManager.LoadScene ("Lobby Menu");
+
+	}
+
+	void EndPhase2 () {
+	
+		string[] charsToRemove = new string[] { "(", ")" };
+
+		string voteOne = dupeVotePos.ToString ("F2");
+		string voteTwo = secondVotePos.ToString ("F2");
+		string voteThree  = thirdVotePos.ToString ("F2");
+
+		foreach (string character in charsToRemove)
+
+		{
+			voteOne = voteOne.Replace(character, string.Empty);
+			voteTwo = voteTwo.Replace(character, string.Empty);
+			voteThree = voteThree.Replace(character, string.Empty);
+		}
+
+		string colorString = myRoom.myColor.ToString();
+		string votingPositions = colorString + "$" + voteOne + "$" + voteTwo + "$" + voteThree + "^";
+
+		string roomId = "|[ID]" + myRoom.roomID.ToString();
+
+		if (myRoom.myColor == 1) {
+			myColor = "a";
+		} else if (myRoom.myColor == 2) {
+			myColor = "b";
+		} else if (myRoom.myColor == 3) {
+			myColor = "c";
+		} else if (myRoom.myColor == 4) {
+			myColor = "d";
+		}
+
+		StartCoroutine (addVotingPos (roomId, votingPositions, myColor));
+
+		Debug.Log (votingPositions);
+
+	}
+
+	IEnumerator addVotingPos (string roomId, string votingPositions, string myColor){
+
+		IEnumerator e = DCP.RunCS ("turnRooms", "AddVotingPos", new string[3] {roomId, votingPositions, myColor});
+
+		while (e.MoveNext ()) {
+			yield return e.Current;
+		}
+
+		string returnText = e.Current as string;
+
+		returnText = returnText.TrimStart ('|');
+		returnText = returnText.TrimEnd ('^');
+
+		Debug.Log ("Returned Positions:" + returnText);
+
+		myRoom.activeVoteRoom = false;
+		myRoom.status = "waiting...";
+		myRoom.statusNum = 3;
+
+		RoomManager.instance.cameFromTurnBased=true;
+		SceneManager.LoadScene ("Lobby Menu");
 
 	}
 

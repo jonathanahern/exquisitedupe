@@ -43,6 +43,7 @@ public class RoomManager : MonoBehaviour {
 	private static string STATUS_SYM = "[STATUS]";
 	private static string DRAWING_SYM = "[DRAWING]";
 	private static string PLAYERS_SYM = "[PLAYERS]";
+	private static string VOTEPOS_SYM = "[VOTEPOS]";
 
 	private string[] words = new string[12];
 	private string[] brushes = new string[10];
@@ -146,6 +147,8 @@ public class RoomManager : MonoBehaviour {
 		newRoom.transform.SetParent (gameObject.transform, false);
 		TurnRoomScript roomScript = newRoom.GetComponent<TurnRoomScript> ();
 
+		Debug.Log ("StartRoom" + startRoom);
+
 		if (startRoom == 0) {
 			
 			roomScript.activeRoom = true;
@@ -241,8 +244,7 @@ public class RoomManager : MonoBehaviour {
 					}
 
 				}
-
-
+					
 			} else if (piece.StartsWith (CATEGORY_SYM)) {
 
 				string category = piece.Substring (CATEGORY_SYM.Length);
@@ -250,6 +252,8 @@ public class RoomManager : MonoBehaviour {
 			}
 
 			else if (piece.StartsWith (STATUS_SYM)) {
+
+				int myColor = roomScript.myColor;
 
 				string stringID = roomScript.myColor.ToString ();
 
@@ -261,32 +265,46 @@ public class RoomManager : MonoBehaviour {
 
 				Debug.Log ("Status: " + status + ", StringID: " + stringID);
 
-				if (status.Contains ("1") && status.Contains ("2") && status.Contains ("3") && status.Contains ("4")) {
+				string stringIdLetter;
 
-					roomScript.statusNum = 2;
-
-				} else if (status.Contains(stringID)){
-
-					roomScript.statusNum = 1;
-
+				if (myColor == 1) {
+					stringIdLetter = "a";
+				} else if (myColor == 2) {
+					stringIdLetter = "b";
+				} else if (myColor == 3) {
+					stringIdLetter = "c";
+				} else if (myColor == 4) {
+					stringIdLetter = "d";
+				} else {
+					stringIdLetter = "z";
 				}
 
-				if (status.Contains ("e")) {
+				Debug.Log ("letter id: " + stringIdLetter);
+					
+				if (status.Contains ("a") && status.Contains ("b") && status.Contains ("c") && status.Contains ("d")) {
+					roomScript.statusNum = 4;
+				} else if (status.Contains(stringIdLetter)){
+					roomScript.statusNum = 3;
+				} else if (status.Contains ("1") && status.Contains ("2") && status.Contains ("3") && status.Contains ("4")) {
+					roomScript.statusNum = 2;
+				} else if (status.Contains(stringID)){
+					roomScript.statusNum = 1;
+				}
 
-					roomScript.dupeCaught = "e";
+				if (status.Contains ("x")) {
 
-				} else if (status.Contains ("c")) {
+					roomScript.dupeCaught = "x";
 
-					roomScript.dupeCaught = "c";
+				} else if (status.Contains ("o")) {
+
+					roomScript.dupeCaught = "o";
 
 				} else {
 				
 					roomScript.dupeCaught = "n";
 
 				}
-
-
-					
+		
 			}
 
 			else if (piece.StartsWith (DRAWING_SYM)) {
@@ -295,6 +313,17 @@ public class RoomManager : MonoBehaviour {
 				Debug.Log ("Drawing: " + drawingString);
 
 				roomScript.drawings = drawingString;
+
+			}
+
+			else if (piece.StartsWith (VOTEPOS_SYM)) {
+
+				string votePoses = piece.Substring (VOTEPOS_SYM.Length);
+
+				Debug.Log ("Vote Poses: " + votePoses);
+
+				votePoses = votePoses.TrimEnd ('^');
+				roomScript.votePoses = votePoses;
 
 			}
 				
@@ -312,7 +341,9 @@ public class RoomManager : MonoBehaviour {
 		
 
 	public void UpdateTurnRoomsFromLogin(int statusRoomId){
-		
+
+
+
 		if (statusHolder == null) {
 			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
 		}
@@ -329,6 +360,7 @@ public class RoomManager : MonoBehaviour {
 			
 				GameObject roomStatus = Instantiate (statusPrefab);
 				roomStatus.transform.SetParent (statusHolder.transform, false);
+				Debug.Log (turnRoom.votePoses);
 				TurnGameStatus status = roomStatus.GetComponent<TurnGameStatus> ();
 				status.roomId = turnRoom.roomID;
 				status.categoryName.text = turnRoom.roomType;
@@ -340,6 +372,10 @@ public class RoomManager : MonoBehaviour {
 					status.PhaseOneDone ();
 				} else if (turnRoom.statusNum == 2) {
 					status.PhaseTwoReady ();
+				} else if (turnRoom.statusNum == 3) {
+					status.PhaseTwoDone ();
+				} else if (turnRoom.statusNum == 4) {
+					status.PhaseThreeReady ();
 				} 
 			} 
 		}
@@ -376,6 +412,10 @@ public class RoomManager : MonoBehaviour {
 				status.PhaseOneDone ();
 			} else if (turnRoom.statusNum == 2) {
 				status.PhaseTwoReady ();
+			} else if (turnRoom.statusNum == 3) {
+				status.PhaseTwoDone ();
+			} else if (turnRoom.statusNum == 4) {
+				status.PhaseThreeReady ();
 			} 
 
 			rooms [i] = turnRoom.roomID;
@@ -466,19 +506,40 @@ public class RoomManager : MonoBehaviour {
 				turnRoom.drawings = drawing;
 				myColorNumNow = turnRoom.myColor.ToString ();
 
-				Debug.Log ("myColor: " + myColorNumNow + " status: " + status + " RoomId: " + roomInt);
+				string stringIdLetter;
 
-				if (status.Contains ("1") && status.Contains ("2") && status.Contains ("3") && status.Contains ("4")) {
+				if (turnRoom.myColor == 1) {
+					stringIdLetter = "a";
+				} else if (turnRoom.myColor == 2) {
+					stringIdLetter = "b";
+				} else if (turnRoom.myColor == 3) {
+					stringIdLetter = "c";
+				} else if (turnRoom.myColor == 4) {
+					stringIdLetter = "d";
+				} else {
+					stringIdLetter = "z";
+				}
 
+				Debug.Log ("myID: " + stringIdLetter + " myColor: " + myColorNumNow + " status: " + status + " RoomId: " + roomInt);
+
+
+				if (status.Contains ("a") && status.Contains ("b") && status.Contains ("c") && status.Contains ("d")) {
+
+					turnRoom.statusNum = 4;
+
+				} else if (status.Contains(stringIdLetter)){
+
+					Debug.Log ("MAKE IT 3");
+					turnRoom.statusNum = 3;
+
+				} else if (status.Contains ("1") && status.Contains ("2") && status.Contains ("3") && status.Contains ("4")) {
+					
+					Debug.Log ("MAKE IT 2");
 					turnRoom.statusNum = 2;
 
-				} else if (status.Contains (myColorNumNow)) {
-				
-					turnRoom.statusNum = 1;
+				} else if (status.Contains(myColorNumNow)){
 
-				} else {
-				
-					turnRoom.statusNum = 0;
+					turnRoom.statusNum = 1;
 
 				}
 
@@ -521,6 +582,10 @@ public class RoomManager : MonoBehaviour {
 				status.PhaseOneDone ();
 			} else if (turnRoom.statusNum == 2) {
 				status.PhaseTwoReady ();
+			} else if (turnRoom.statusNum == 3) {
+				status.PhaseTwoDone ();
+			} else if (turnRoom.statusNum == 4) {
+				status.PhaseThreeReady ();
 			} 
 
 		}

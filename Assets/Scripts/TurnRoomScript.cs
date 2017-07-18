@@ -20,9 +20,11 @@ public class TurnRoomScript : MonoBehaviour {
 	public string grounding;
 
 	public string drawings;
+	public string votePoses;
 
 	public bool activeRoom;
 	public bool activeVoteRoom;
+	public bool activeScoreRoom;
 
 	public string dupeCaught;
 

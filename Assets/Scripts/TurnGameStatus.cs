@@ -23,18 +23,13 @@ public class TurnGameStatus : MonoBehaviour {
 
 	bool phaseOneReady;
 	bool phaseTwoReady;
-	//bool phaseThreeReady;
-
+	bool phaseThreeReady;
 
 	// Use this for initialization
 	void Start () {
 		
 	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+
 
 	//0
 	public void PhaseOneReady () {
@@ -69,6 +64,33 @@ public class TurnGameStatus : MonoBehaviour {
 
 	}
 
+	//3
+	public void PhaseTwoDone(){
+
+		phaseThreeReady = false;
+		doneDrawing.SetActive (true);
+		doneDrawingCheck.SetActive (true);
+		doneVoting.SetActive (true);
+		doneVotingCheck.SetActive (true);
+		gameStatus.text = "waiting...";
+		button.color = wait;
+
+	}
+
+	//4
+	public void PhaseThreeReady(){
+
+		phaseThreeReady = true;
+		doneDrawing.SetActive (true);
+		doneDrawingCheck.SetActive (true);
+		doneVoting.SetActive (true);
+		doneVotingCheck.SetActive (true);
+		doneAwards.SetActive (true);
+		gameStatus.text = "SCORE IT!";
+		button.color = ready;
+
+	}
+
 	public void StartNextPhase(){
 
 		if (phaseTwoReady == true) {
@@ -77,10 +99,36 @@ public class TurnGameStatus : MonoBehaviour {
 		} else if (phaseOneReady == true) {
 			EnterPhaseOne ();
 			phaseOneReady = false;
-
+		} else if (phaseThreeReady == true) {
+			EnterPhaseThree ();
+			phaseThreeReady = false;
 		}
 
 	}
+
+	void EnterPhaseThree (){
+
+		GameObject roomMan = GameObject.FindGameObjectWithTag ("Room Manager");
+
+		int children = roomMan.transform.childCount;
+
+		Debug.Log (roomMan.name + children);
+
+		for (int i = 0; i < children; ++i){
+
+			TurnRoomScript turnRoom = roomMan.transform.GetChild (i).GetComponent<TurnRoomScript>();
+
+			if (turnRoom.roomID == roomId) {
+				turnRoom.activeScoreRoom = true;
+				i = children;
+			}
+
+		}
+
+		SceneManager.LoadScene ("Turn Based Scoring");
+
+	}
+
 
 	void EnterPhaseTwo (){
 	
@@ -93,9 +141,6 @@ public class TurnGameStatus : MonoBehaviour {
 		for (int i = 0; i < children; ++i){
 			
 			TurnRoomScript turnRoom = roomMan.transform.GetChild (i).GetComponent<TurnRoomScript>();
-
-//			Debug.Log (turnRoom.roomID);
-//			Debug.Log (roomId);
 
 			if (turnRoom.roomID == roomId) {
 				turnRoom.activeVoteRoom = true;

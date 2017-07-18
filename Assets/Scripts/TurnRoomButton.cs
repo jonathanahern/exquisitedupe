@@ -31,12 +31,12 @@ public class TurnRoomButton : MonoBehaviour {
 	public void TurnRoomClicked(){
 
 		int dupeNum = Random.Range (1, 5);
-		int rightWord = Random.Range (1, 13);
-		int wrongWord = Random.Range (1, 13);
+		int rightWord = Random.Range (1, 11);
+		int wrongWord = Random.Range (1, 11);
 
 		while(rightWord == wrongWord)
 		{
-			wrongWord = Random.Range (1, 13);
+			wrongWord = Random.Range (1, 11);
 		}
 
 		int awardNum = Random.Range (1, 4);

@@ -35,6 +35,16 @@ public class VoteFabScript : MonoBehaviour {
 	public Sprite greenMonkey;
 	public Sprite orangeMonkey;
 
+	public Sprite redVagueArtist;
+	public Sprite blueVagueArtist;
+	public Sprite greenVagueArtist;
+	public Sprite orangeVagueArtist;
+
+	public Sprite redCaptObvious;
+	public Sprite blueCaptObvious;
+	public Sprite greenCaptObvious;
+	public Sprite orangeCaptObvious;
+
 	public LocalTurnVoting localTurn;
 
 
@@ -216,6 +226,31 @@ public class VoteFabScript : MonoBehaviour {
 				innerSprite.sprite = greenMonkey;
 			} else if (fromColor == 4) {
 				innerSprite.sprite = orangeMonkey;
+			}
+		}
+	}
+
+	public void SetupThirdVote(int fromColor, string dupeCaught){
+
+		if (dupeCaught == "e") {
+			if (fromColor == 1) {
+				innerSprite.sprite = redVagueArtist;
+			} else if (fromColor == 2) {
+				innerSprite.sprite = blueVagueArtist;
+			} else if (fromColor == 3) {
+				innerSprite.sprite = greenVagueArtist;
+			} else if (fromColor == 4) {
+				innerSprite.sprite = orangeVagueArtist;
+			}
+		}  else {
+			if (fromColor == 1) {
+				innerSprite.sprite = redCaptObvious;
+			} else if (fromColor == 2) {
+				innerSprite.sprite = blueCaptObvious;
+			} else if (fromColor == 3) {
+				innerSprite.sprite = greenCaptObvious;
+			} else if (fromColor == 4) {
+				innerSprite.sprite = orangeCaptObvious;
 			}
 		}
 	}
