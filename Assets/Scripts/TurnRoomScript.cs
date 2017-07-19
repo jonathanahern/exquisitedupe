@@ -21,6 +21,7 @@ public class TurnRoomScript : MonoBehaviour {
 
 	public string drawings;
 	public string votePoses;
+	public string dupeGuess;
 
 	public bool activeRoom;
 	public bool activeVoteRoom;

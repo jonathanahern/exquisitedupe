@@ -462,7 +462,7 @@ public class LocalTurnVoting : MonoBehaviour {
 	}
 
 	IEnumerator addDupeGuess (string roomId, string dupeString, string playerId){
-
+		
 		IEnumerator e = DCP.RunCS ("turnRooms", "AddDupeGuess", new string[3] {roomId, dupeString, playerId});
 
 		while (e.MoveNext ()) {
@@ -470,7 +470,6 @@ public class LocalTurnVoting : MonoBehaviour {
 		}
 
 		string returnText = e.Current as string;
-
 
 		Debug.Log ("Returned Dupe:" + returnText);
 
@@ -500,7 +499,7 @@ public class LocalTurnVoting : MonoBehaviour {
 		}
 
 		string colorString = myRoom.myColor.ToString();
-		string votingPositions = colorString + "$" + voteOne + "$" + voteTwo + "$" + voteThree + "^";
+		string votingPositions = colorString + "$" + voteOne + "$" + voteTwo + "$" + voteThree + "@";
 
 		string roomId = "|[ID]" + myRoom.roomID.ToString();
 
@@ -531,7 +530,7 @@ public class LocalTurnVoting : MonoBehaviour {
 		string returnText = e.Current as string;
 
 		returnText = returnText.TrimStart ('|');
-		returnText = returnText.TrimEnd ('^');
+		returnText = returnText.TrimEnd ('@');
 
 		Debug.Log ("Returned Positions:" + returnText);
 

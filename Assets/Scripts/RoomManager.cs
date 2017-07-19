@@ -44,6 +44,7 @@ public class RoomManager : MonoBehaviour {
 	private static string DRAWING_SYM = "[DRAWING]";
 	private static string PLAYERS_SYM = "[PLAYERS]";
 	private static string VOTEPOS_SYM = "[VOTEPOS]";
+	private static string DUPEGUESS_SYM = "[DUPEGUESS]";
 
 	private string[] words = new string[12];
 	private string[] brushes = new string[10];
@@ -75,13 +76,13 @@ public class RoomManager : MonoBehaviour {
 
 	void GetRooms (){
 	
-		roomIds = new string [] { "0", "0", "0", "0", "0"};
+		//roomIds = new string [] { "0", "0", "0", "0", "0"};
 		UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
 
 		string roomsString = userAccount.activeRooms;
 		username = userAccount.loggedInUsername;
 
-		Debug.Log (roomsString);
+		//Debug.Log (roomsString);
 
 		if (roomsString == "") {
 
@@ -91,21 +92,26 @@ public class RoomManager : MonoBehaviour {
 
 		roomsString = roomsString.Substring (ID_SYM.Length);
 		roomsString = roomsString.TrimEnd ('/');
+
+		Debug.Log (roomsString);
+
 		string[] rooms = roomsString.Split ('/');
+
+
 
 		for (int i = 0; i < rooms.Length; i++) {
 
-			roomIds [0] = "|[ID]" + rooms[i];
-			Debug.Log ("ROOOOOM " + roomIds [i]);
-			StartCoroutine (getRoomData(roomIds[0],roomIds[1], roomIds[2], roomIds[3], roomIds[4]));
+			string roomId = "|[ID]" + rooms[i];
+			Debug.Log ("ROOOOOM: " + roomId);
+			StartCoroutine (getRoomData(roomId));
 
 		}
 
 	}
 
-	IEnumerator getRoomData (string roomID1, string roomID2, string roomID3, string roomID4, string roomID5){
+	IEnumerator getRoomData (string roomID){
 
-		IEnumerator e = DCP.RunCS ("turnRooms", "GetRoomData", new string[5] {roomID1,roomID2,roomID3,roomID4,roomID5});
+		IEnumerator e = DCP.RunCS ("turnRooms", "GetRoomData", new string[1] {roomID});
 
 		while (e.MoveNext ()) {
 			yield return e.Current;
@@ -120,11 +126,6 @@ public class RoomManager : MonoBehaviour {
 
 		string[] pieces = returnText.Split ('^');
 
-		foreach (string piece in pieces) {
-
-
-
-		}
 
 		for (int i = 0; i < pieces.Length; i++) {
 
@@ -279,7 +280,7 @@ public class RoomManager : MonoBehaviour {
 					stringIdLetter = "z";
 				}
 
-				Debug.Log ("letter id: " + stringIdLetter);
+				//Debug.Log ("letter id: " + stringIdLetter);
 					
 				if (status.Contains ("a") && status.Contains ("b") && status.Contains ("c") && status.Contains ("d")) {
 					roomScript.statusNum = 4;
@@ -322,8 +323,16 @@ public class RoomManager : MonoBehaviour {
 
 				Debug.Log ("Vote Poses: " + votePoses);
 
-				votePoses = votePoses.TrimEnd ('^');
+				votePoses = votePoses.TrimEnd ('@');
 				roomScript.votePoses = votePoses;
+
+			} else if (piece.StartsWith (DUPEGUESS_SYM)) {
+
+				string dupeGuess = piece.Substring (DUPEGUESS_SYM.Length);
+
+				Debug.Log ("Dupe Guess: " + dupeGuess);
+
+				roomScript.dupeGuess = dupeGuess;
 
 			}
 				
