@@ -232,7 +232,9 @@ public class VoteFabScript : MonoBehaviour {
 
 	public void SetupThirdVote(int fromColor, string dupeCaught){
 
-		if (dupeCaught == "e") {
+		Debug.Log ("DUPED?: " + dupeCaught);
+
+		if (dupeCaught == "x") {
 			if (fromColor == 1) {
 				innerSprite.sprite = redVagueArtist;
 			} else if (fromColor == 2) {

@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: 0c84b425e5345429f9fb2ee3a48cd8db
+timeCreated: 1500496732
+licenseType: Free
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Chubby Thumbs
+  fontNames:
+  - Chubby Thumbs
+  fallbackFontReferences: []
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -295,8 +295,10 @@ public class LocalTurnVoting : MonoBehaviour {
 				
 				if (myRoom.dupeNum == artistNum) {
 					dupeStatus = "o";
+					//myRoom.dupeCaught = "o";
 				} else {
 					dupeStatus = "x";
+					//myRoom.dupeCaught = "x";
 				}
 					
 				if (myRoom.dupeCaught != "o" || myRoom.dupeCaught != "x") {
@@ -433,7 +435,7 @@ public class LocalTurnVoting : MonoBehaviour {
 		string roomId = "|[ID]" + myRoom.roomID.ToString();
 
 		string[] charsToRemove = new string[] { "(", ")" };
-		string voteOne = dupeVotePos.ToString ("F2");
+		string voteOne = dupeVotePos.ToString ("F3");
 		foreach (string character in charsToRemove)
 
 		{
