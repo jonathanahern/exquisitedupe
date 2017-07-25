@@ -16,6 +16,7 @@ public class LobbyMenu : MonoBehaviour {
 	public RectTransform newCats;
 	private float startPos;
 	public RectTransform centerTurnButts;
+	public RectTransform highScores;
 
 	Vector3 zeroCounter;
 	Vector3 oneEighty;
@@ -93,9 +94,33 @@ public class LobbyMenu : MonoBehaviour {
 	
 	}
 
+	public void GoToHighScores(){
+
+		highScores.DOLocalMoveX (0, 2.0f).SetEase(Ease.OutBounce);
+		centerTurnButts.DOLocalMoveX (startPos, 2.0f);
+
+
+	}
+
+	public void BackToMainMenu(){
+
+		centerMainButts.DOLocalRotate (zeroCounter, 1.0f).SetEase(Ease.OutQuad);
+		centerTurnButts.DOLocalRotate (oneEighty, 1.0f).SetEase(Ease.OutQuad);
+
+
+	}
+
+	public void BackToMainTurnMenu(){
+
+		highScores.DOLocalMoveX (startPos * -1, 2.0f);
+		centerTurnButts.DOLocalMoveX (0, 2.0f).SetEase(Ease.OutBounce);
+
+
+	}
+
 	void MoveCurtain () {
 	
-		//curtain.DOAnchorPos (Vector2.zero, 2.0f).SetEase (Ease.InOutCirc).on;
+
 	
 	}
 

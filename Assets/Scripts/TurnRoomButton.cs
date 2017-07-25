@@ -30,6 +30,9 @@ public class TurnRoomButton : MonoBehaviour {
 
 	public void TurnRoomClicked(){
 
+		GameObject roomMan = GameObject.FindGameObjectWithTag ("Room Manager");
+		roomMan.GetComponent<RoomManager> ().CurtainsIn();
+
 		int dupeNum = Random.Range (1, 5);
 		int rightWord = Random.Range (1, 11);
 		int wrongWord = Random.Range (1, 11);

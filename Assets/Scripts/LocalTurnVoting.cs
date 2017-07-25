@@ -14,6 +14,8 @@ public class LocalTurnVoting : MonoBehaviour {
 	bool fateSet;
 	string myColor;
 
+	GameObject roomMan;
+
 	int secondVote;
 	int thirdVote;
 
@@ -67,7 +69,7 @@ public class LocalTurnVoting : MonoBehaviour {
 
 
 	
-		GameObject roomMan = GameObject.FindGameObjectWithTag ("Room Manager");
+		roomMan = GameObject.FindGameObjectWithTag ("Room Manager");
 
 		if (roomMan == null) {
 			Debug.Log ("not logged in");
@@ -99,9 +101,14 @@ public class LocalTurnVoting : MonoBehaviour {
 		currentVote = 1;
 
 		voteScript.SetupDupeVote (myRoom.myColor);
-		MoveUpPedestal ();
+
+		Invoke ("OpenCurtains", 1.5f);
+
+		Invoke ("MoveUpPedestal" , 3.0f);
 
 	}
+
+
 	
 	// Update is called once per frame
 	void Update () {
@@ -111,6 +118,12 @@ public class LocalTurnVoting : MonoBehaviour {
 			LaunchDupeGuess();
 
 		}
+
+	}
+
+	void OpenCurtains(){
+
+		roomMan.GetComponent<RoomManager> ().CurtainsOut();
 
 	}
 
@@ -458,6 +471,8 @@ public class LocalTurnVoting : MonoBehaviour {
 			myColor = "poop";
 		}
 
+		roomMan.GetComponent<RoomManager> ().CurtainsIn ();
+
 		StartCoroutine (addDupeGuess (roomId, dupeString, myColor));
 
 
@@ -486,6 +501,8 @@ public class LocalTurnVoting : MonoBehaviour {
 
 	void EndPhase2 () {
 	
+		roomMan.GetComponent<RoomManager> ().CurtainsIn ();
+
 		string[] charsToRemove = new string[] { "(", ")" };
 
 		string voteOne = dupeVotePos.ToString ("F2");

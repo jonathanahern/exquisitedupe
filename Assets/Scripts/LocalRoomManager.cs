@@ -34,6 +34,8 @@ public class LocalRoomManager : MonoBehaviour {
 	public Image undoButton;
 	public Material blackMat;
 
+	GameObject roomMan;
+
 	// Use this for initialization
 	void Start () {
 
@@ -48,8 +50,8 @@ public class LocalRoomManager : MonoBehaviour {
 
 	void FindMyRoom (){
 	
-		GameObject roomMan = GameObject.FindGameObjectWithTag ("Room Manager");
-
+		roomMan = GameObject.FindGameObjectWithTag ("Room Manager");
+		
 		if (roomMan == null) {
 			Debug.Log ("not logged in");
 			return;
@@ -94,6 +96,8 @@ public class LocalRoomManager : MonoBehaviour {
 			undoButton.sprite = orangeUndo;
 
 		}
+
+		roomMan.GetComponent<RoomManager> ().CurtainsOut();
 
 		Invoke ("MoveToSection", 3.0f);
 
@@ -198,6 +202,8 @@ public class LocalRoomManager : MonoBehaviour {
 	}
 
 	public void CollectYourLineData () {
+
+		roomMan.GetComponent<RoomManager> ().CurtainsIn ();
 
 		GameObject[] lines = GameObject.FindGameObjectsWithTag ("Line");
 

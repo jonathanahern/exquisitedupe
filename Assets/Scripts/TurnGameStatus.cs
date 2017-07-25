@@ -25,9 +25,19 @@ public class TurnGameStatus : MonoBehaviour {
 	bool phaseTwoReady;
 	bool phaseThreeReady;
 
+	GameObject roomMan;
+	RoomManager roomManScript;
+
+	Transform roomHolder;
+
 	// Use this for initialization
 	void Start () {
-		
+
+		roomMan = GameObject.FindGameObjectWithTag ("Room Manager");
+		roomManScript = roomMan.GetComponent<RoomManager> ();
+
+		roomHolder = GameObject.FindGameObjectWithTag ("Room Holder").transform;
+
 	}
 
 
@@ -93,6 +103,13 @@ public class TurnGameStatus : MonoBehaviour {
 
 	public void StartNextPhase(){
 
+		roomManScript.CurtainsIn ();
+		Invoke ("StartAfterDelay", 1.5f);
+
+	}
+
+	void StartAfterDelay (){
+
 		if (phaseTwoReady == true) {
 			EnterPhaseTwo ();
 			phaseTwoReady = false;
@@ -108,15 +125,11 @@ public class TurnGameStatus : MonoBehaviour {
 
 	void EnterPhaseThree (){
 
-		GameObject roomMan = GameObject.FindGameObjectWithTag ("Room Manager");
-
 		int children = roomMan.transform.childCount;
-
-		Debug.Log (roomMan.name + children);
 
 		for (int i = 0; i < children; ++i){
 
-			TurnRoomScript turnRoom = roomMan.transform.GetChild (i).GetComponent<TurnRoomScript>();
+			TurnRoomScript turnRoom = roomHolder.GetChild (i).GetComponent<TurnRoomScript>();
 
 			if (turnRoom.roomID == roomId) {
 				turnRoom.activeScoreRoom = true;
@@ -125,14 +138,13 @@ public class TurnGameStatus : MonoBehaviour {
 
 		}
 
+
 		SceneManager.LoadScene ("Turn Based Scoring");
 
 	}
 
 
 	void EnterPhaseTwo (){
-	
-		GameObject roomMan = GameObject.FindGameObjectWithTag ("Room Manager");
 
 		int children = roomMan.transform.childCount;
 
@@ -140,7 +152,7 @@ public class TurnGameStatus : MonoBehaviour {
 
 		for (int i = 0; i < children; ++i){
 			
-			TurnRoomScript turnRoom = roomMan.transform.GetChild (i).GetComponent<TurnRoomScript>();
+			TurnRoomScript turnRoom = roomHolder.GetChild (i).GetComponent<TurnRoomScript>();
 
 			if (turnRoom.roomID == roomId) {
 				turnRoom.activeVoteRoom = true;
@@ -155,15 +167,13 @@ public class TurnGameStatus : MonoBehaviour {
 
 	void EnterPhaseOne (){
 
-		GameObject roomMan = GameObject.FindGameObjectWithTag ("Room Manager");
-
 		int children = roomMan.transform.childCount;
 
 		Debug.Log (roomMan.name + children);
 
 		for (int i = 0; i < children; ++i){
 
-			TurnRoomScript turnRoom = roomMan.transform.GetChild (i).GetComponent<TurnRoomScript>();
+			TurnRoomScript turnRoom = roomHolder.GetChild (i).GetComponent<TurnRoomScript>();
 
 			if (turnRoom.roomID == roomId) {
 				turnRoom.activeRoom = true;

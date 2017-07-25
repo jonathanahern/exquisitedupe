@@ -8,6 +8,7 @@ using UnityEngine.SceneManagement;
 
 public class LocalTurnScoring : MonoBehaviour {
 
+	GameObject roomMan;
 	TurnRoomScript myRoom;
 	string dupeGuess;
 	string drawing;
@@ -79,7 +80,8 @@ public class LocalTurnScoring : MonoBehaviour {
 		greenPos = new Vector3[3];
 		orangePos = new Vector3[3];
 	
-		GameObject roomMan = GameObject.FindGameObjectWithTag ("Room Manager");
+		roomMan = GameObject.FindGameObjectWithTag ("Room Manager");
+
 
 		if (roomMan == null) {
 			Debug.Log ("not logged in");
@@ -230,8 +232,15 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		dupeGuessed = DupeWinner (FindWinner (0));
 
-		Invoke ("BeginDupeReveal", 1.5f);
+		Invoke ("OpenCurtains", 1.5f);
+		Invoke ("BeginDupeReveal", 4);
 
+	}
+
+	void OpenCurtains (){
+		
+		roomMan.GetComponent<RoomManager> ().CurtainsOut();
+	
 	}
 
 	int[] FindWinner (int awardNum){
@@ -644,8 +653,6 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		award3Winner = AwardWinner (FindWinner (2));
 
-		Debug.Log (award3Winner);
-
 		if (award3Winner == 0) {
 			nameText.text = "Noboby!? It's a TIE!!!";
 		} else {
@@ -759,9 +766,33 @@ public class LocalTurnScoring : MonoBehaviour {
 			dupeStatusObj.transform.DOLocalMoveX (0, 1.0f);
 		}
 
+		Invoke ("EndTheRound", 2.5f);
 
 	}
 
+
+	void EndTheRound (){
+
+		roomMan.GetComponent<RoomManager> ().CurtainsIn ();
+		int myScore = 0;
+
+		if (myRoom.myColor == 1) {
+			myScore = redScore;
+		} else if (myRoom.myColor == 2) {
+			myScore = blueScore;
+		} else if (myRoom.myColor == 3) {
+			myScore = greenScore;
+		} else if (myRoom.myColor == 4) {
+			myScore = orangeScore;
+		}
+
+		string username = players [myRoom.myColor - 1].text;
+
+		roomMan.GetComponent<RoomManager>().SendTheScore (myScore);
+		RoomManager.instance.cameFromTurnBased=true;
+		SceneManager.LoadScene ("Lobby Menu");
+
+	}
 
 	//play animation = 1
 	void GivePoints (int playerNum, int points, int animation) {

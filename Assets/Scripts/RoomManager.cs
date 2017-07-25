@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using DatabaseControl;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class RoomManager : MonoBehaviour {
 
@@ -59,6 +60,12 @@ public class RoomManager : MonoBehaviour {
 
 	public Text frameText;
 
+	HighScoreScript highscore;
+	public GameObject leftCurtain;
+	public GameObject rightCurtain;
+	public GameObject centerCurtain;
+	public Transform roomHolder;
+
 	void Start (){
 
 		GetRooms ();
@@ -68,8 +75,12 @@ public class RoomManager : MonoBehaviour {
 
 	void Update () {
 
-		if (Input.GetKeyDown (KeyCode.J)) {
-			UpdateTurnRooms ();
+		if (Input.GetKeyDown (KeyCode.A)) {
+			CurtainsIn ();
+		}
+
+		if (Input.GetKeyDown (KeyCode.S)) {
+			CurtainsOut ();
 		}
 
 	}
@@ -145,7 +156,7 @@ public class RoomManager : MonoBehaviour {
 	public void CreateRoom(string roomType, string roomId, int startRoom){
 
 		GameObject newRoom = (GameObject)Instantiate(roomPrefab, Vector3.zero, Quaternion.identity);
-		newRoom.transform.SetParent (gameObject.transform, false);
+		newRoom.transform.SetParent (roomHolder, false);
 		TurnRoomScript roomScript = newRoom.GetComponent<TurnRoomScript> ();
 
 		Debug.Log ("StartRoom" + startRoom);
@@ -335,10 +346,12 @@ public class RoomManager : MonoBehaviour {
 				roomScript.dupeGuess = dupeGuess;
 
 			}
-				
+
 		}
 
 		if (startRoom == 0) {
+			CurtainsIn ();
+			Debug.Log ("Curtains In");
 			SceneManager.LoadScene ("Turn Based Room");
 		} else if (startRoom == 1) {
 			UpdateTurnRoomsFromLogin (roomScript.roomID);
@@ -352,19 +365,19 @@ public class RoomManager : MonoBehaviour {
 	public void UpdateTurnRoomsFromLogin(int statusRoomId){
 
 
-
 		if (statusHolder == null) {
 			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
 		}
 		rooms = new int[5];
 
-		int children = transform.childCount;
+		int children = roomHolder.childCount;
 		//Debug.Log (children);
 
 
 		for (int i = 0; i < children; ++i){
-			TurnRoomScript turnRoom = transform.GetChild (i).GetComponent<TurnRoomScript>();
+			TurnRoomScript turnRoom = roomHolder.GetChild (i).GetComponent<TurnRoomScript>();
 
+	
 			if (turnRoom.roomID == statusRoomId) {
 			
 				GameObject roomStatus = Instantiate (statusPrefab);
@@ -400,16 +413,17 @@ public class RoomManager : MonoBehaviour {
 	//Instantiate status objs, match their status to rooms, create array of room Id #s
 	public void UpdateTurnRooms(){
 		cameFromTurnBased = false;
+		CurtainsOut ();
 		if (statusHolder == null) {
 			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
 		}
 		rooms = new int[5];
 
-		int children = transform.childCount;
+		int children = roomHolder.childCount;
 		for (int i = 0; i < children; ++i){
 			GameObject roomStatus = Instantiate (statusPrefab);
 			roomStatus.transform.SetParent (statusHolder.transform, false);
-			TurnRoomScript turnRoom = transform.GetChild (i).GetComponent<TurnRoomScript>();
+			TurnRoomScript turnRoom = roomHolder.GetChild (i).GetComponent<TurnRoomScript>();
 			TurnGameStatus status = roomStatus.GetComponent<TurnGameStatus> ();
 			status.roomId = turnRoom.roomID;
 			status.categoryName.text = turnRoom.roomType;
@@ -503,13 +517,13 @@ public class RoomManager : MonoBehaviour {
 	void UpdateRoom (string roomId, string status, string drawing){
 	
 		int roomInt = int.Parse(roomId);
-		int children = transform.childCount;
+		int children = roomHolder.childCount;
 		string myColorNumNow;
 
 
 		for (int i = 0; i < children; ++i){
 			
-			TurnRoomScript turnRoom = transform.GetChild (i).GetComponent<TurnRoomScript>();
+			TurnRoomScript turnRoom = roomHolder.GetChild (i).GetComponent<TurnRoomScript>();
 
 			if (turnRoom.roomID == roomInt) {
 				turnRoom.drawings = drawing;
@@ -573,11 +587,11 @@ public class RoomManager : MonoBehaviour {
 
 		}
 			
-		int children = transform.childCount;
+		int children = roomHolder.childCount;
 
 		for (int i = 0; i < children; ++i){
 			
-			TurnRoomScript turnRoom = transform.GetChild (i).GetComponent<TurnRoomScript>();
+			TurnRoomScript turnRoom = roomHolder.GetChild (i).GetComponent<TurnRoomScript>();
 			GameObject roomStatus = Instantiate (statusPrefab);
 			roomStatus.transform.SetParent (statusHolder.transform, false);
 			TurnGameStatus status = roomStatus.GetComponent<TurnGameStatus> ();
@@ -604,6 +618,70 @@ public class RoomManager : MonoBehaviour {
 		}
 
 		statusLoad.SetActive (false);
+
+	}
+
+	public void SendTheScore (int pointsToAdd){
+	
+		string points = pointsToAdd.ToString ();
+
+		if (username == null) {
+			UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
+			username = userAccount.loggedInUsername;
+		}
+
+		StartCoroutine (updateHighScore(points, username));
+
+		Debug.Log (points + username);
+
+	}
+
+	IEnumerator updateHighScore (string points, string username){
+
+		IEnumerator e = DCP.RunCS ("accounts", "UpdateHighScore", new string[2] {points,username});
+
+		while (e.MoveNext ()) {
+			yield return e.Current;
+		}
+
+		string returnText = e.Current as string;
+
+		//returnText = returnText.TrimStart ('|');
+
+		Debug.Log ("HighScore List:" + returnText);
+
+		if (returnText.Length < 2) {
+			SendTheScore (int.Parse(points));
+			yield break;
+		}
+
+		if (highscore == null) {
+
+			highscore = GameObject.FindGameObjectWithTag ("High Score").GetComponent<HighScoreScript> ();
+
+		} 
+
+		highscore.TranslateToHighScoreList (returnText);
+
+	}
+
+	public void CurtainsIn(){
+
+		rightCurtain.GetComponent<RectTransform> ().DOAnchorPos (Vector2.zero, 1.0f).SetEase (Ease.OutExpo);
+		leftCurtain.GetComponent<RectTransform> ().DOAnchorPos (Vector2.zero, 1.0f).SetEase (Ease.OutExpo);
+		centerCurtain.GetComponent<RectTransform> ().DOAnchorPos (Vector2.zero, 1.0f).SetEase (Ease.OutExpo);
+	
+	}
+
+	public void CurtainsOut(){
+
+		Vector2 rightPos = new Vector2 (1300, 0);
+		Vector2 leftPos = new Vector2 (-1300, 0);
+		Vector2 centerPos = new Vector2 (0, 700);
+
+		rightCurtain.GetComponent<RectTransform> ().DOAnchorPos (rightPos, 1.0f).SetEase (Ease.InExpo);
+		leftCurtain.GetComponent<RectTransform> ().DOAnchorPos (leftPos, 1.0f).SetEase (Ease.InExpo);
+		centerCurtain.GetComponent<RectTransform> ().DOAnchorPos (centerPos, 1.0f).SetEase (Ease.InExpo);
 
 	}
 }
