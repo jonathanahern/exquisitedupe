@@ -9,8 +9,6 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 	public static UserAccountManagerScript instance;
 
-
-
 	void Awake () {
 	
 		if (instance != null) {
@@ -23,9 +21,7 @@ public class UserAccountManagerScript : MonoBehaviour {
 		instance = this;
 		DontDestroyOnLoad (this);
 	
-	
 	}
-
 
 	public static string LoggedIn_Username { get; protected set;} //stores username once logged in
 	private static string LoggedIn_Password =""; //stores password once logged in

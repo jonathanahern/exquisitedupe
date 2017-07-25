@@ -65,6 +65,9 @@ public class RoomManager : MonoBehaviour {
 	public GameObject rightCurtain;
 	public GameObject centerCurtain;
 	public Transform roomHolder;
+	int tempColor;
+	string tempID;
+	string tempPoints;
 
 	void Start (){
 
@@ -108,8 +111,6 @@ public class RoomManager : MonoBehaviour {
 
 		string[] rooms = roomsString.Split ('/');
 
-
-
 		for (int i = 0; i < rooms.Length; i++) {
 
 			string roomId = "|[ID]" + rooms[i];
@@ -151,7 +152,6 @@ public class RoomManager : MonoBehaviour {
 		}
 
 	}
-
 
 	public void CreateRoom(string roomType, string roomId, int startRoom){
 
@@ -349,16 +349,20 @@ public class RoomManager : MonoBehaviour {
 
 		}
 
-		if (startRoom == 0) {
-			CurtainsIn ();
-			Debug.Log ("Curtains In");
-			SceneManager.LoadScene ("Turn Based Room");
-		} else if (startRoom == 1) {
-			UpdateTurnRoomsFromLogin (roomScript.roomID);
-			lobbyMenu.TurnBasedClicked ();
+		UpdateTurnRoomsFromLogin (roomScript.roomID);
 
-		}
+		lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
+		lobbyMenu.TurnBasedClicked ();
 
+//		if (startRoom == 0) {
+//			CurtainsIn ();
+//			SceneManager.LoadScene ("Turn Based Room");
+//		} else if (startRoom == 1) {
+//			UpdateTurnRoomsFromLogin (roomScript.roomID);
+//			lobbyMenu.TurnBasedClicked ();
+//
+//		}
+//
 	}
 		
 
@@ -417,34 +421,45 @@ public class RoomManager : MonoBehaviour {
 		if (statusHolder == null) {
 			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
 		}
-		rooms = new int[5];
 
 		int children = roomHolder.childCount;
-		for (int i = 0; i < children; ++i){
-			GameObject roomStatus = Instantiate (statusPrefab);
-			roomStatus.transform.SetParent (statusHolder.transform, false);
-			TurnRoomScript turnRoom = roomHolder.GetChild (i).GetComponent<TurnRoomScript>();
-			TurnGameStatus status = roomStatus.GetComponent<TurnGameStatus> ();
-			status.roomId = turnRoom.roomID;
-			status.categoryName.text = turnRoom.roomType;
-			status.gameStatus.text = turnRoom.status;
-		
-			if (turnRoom.statusNum == 0) {
-				status.PhaseOneReady ();
-			} else if (turnRoom.statusNum == 1) {
-				status.PhaseOneDone ();
-			} else if (turnRoom.statusNum == 2) {
-				status.PhaseTwoReady ();
-			} else if (turnRoom.statusNum == 3) {
-				status.PhaseTwoDone ();
-			} else if (turnRoom.statusNum == 4) {
-				status.PhaseThreeReady ();
-			} 
+
+		for (int i = 0; i < children; ++i) {
+//			GameObject roomStatus = Instantiate (statusPrefab);
+//			roomStatus.transform.SetParent (statusHolder.transform, false);
+			TurnRoomScript turnRoom = roomHolder.GetChild (i).GetComponent<TurnRoomScript> ();
+//			TurnGameStatus status = roomStatus.GetComponent<TurnGameStatus> ();
+//			status.roomId = turnRoom.roomID;
+//			status.categoryName.text = turnRoom.roomType;
+//			status.gameStatus.text = turnRoom.status;
+//		
+//			if (turnRoom.statusNum == 0) {
+//				status.PhaseOneReady ();
+//			} else if (turnRoom.statusNum == 1) {
+//				status.PhaseOneDone ();
+//			} else if (turnRoom.statusNum == 2) {
+//				status.PhaseTwoReady ();
+//			} else if (turnRoom.statusNum == 3) {
+//				status.PhaseTwoDone ();
+//			} else if (turnRoom.statusNum == 4) {
+//				status.PhaseThreeReady ();
+//			} 
 
 			rooms [i] = turnRoom.roomID;
+
+			string stringId = "|[ID]" + turnRoom.roomID.ToString ();
+
+			StartCoroutine (getRoomData (stringId));
+
 		}
 
-		Invoke ("StatusUpdate", 1.0f);
+		for (int i = 0; i < children; i++) {
+
+			Destroy(roomHolder.GetChild (i).gameObject);
+
+		}
+
+		//Invoke ("StatusUpdate", 1.0f);
 
 	}
 
@@ -621,24 +636,36 @@ public class RoomManager : MonoBehaviour {
 
 	}
 
-	public void SendTheScore (int pointsToAdd){
+	public void SendTheScore (int pointsToAdd, int playerColor, string roomIDstring){
 	
 		string points = pointsToAdd.ToString ();
+		string currentRooms = "[ID]";
+		int children = roomHolder.childCount;
+		tempColor = playerColor;
+		tempID = roomIDstring;
+		tempPoints = pointsToAdd.ToString ();
+
+		for (int i = 0; i < children; ++i){
+
+			TurnRoomScript turnRoom = roomHolder.GetChild (i).GetComponent<TurnRoomScript>();
+			currentRooms = currentRooms + turnRoom.roomID.ToString () + "/";
+
+		}
 
 		if (username == null) {
 			UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
 			username = userAccount.loggedInUsername;
 		}
 
-		StartCoroutine (updateHighScore(points, username));
+		StartCoroutine (updateHighScore(points, username, currentRooms));
+		StartCoroutine (statusUpdateScoring(roomIDstring, playerColor.ToString()));
 
-		Debug.Log (points + username);
 
 	}
 
-	IEnumerator updateHighScore (string points, string username){
+	IEnumerator updateHighScore (string points, string username, string currentRooms){
 
-		IEnumerator e = DCP.RunCS ("accounts", "UpdateHighScore", new string[2] {points,username});
+		IEnumerator e = DCP.RunCS ("accounts", "UpdateHighScore", new string[3] {points,username,currentRooms});
 
 		while (e.MoveNext ()) {
 			yield return e.Current;
@@ -651,7 +678,7 @@ public class RoomManager : MonoBehaviour {
 		Debug.Log ("HighScore List:" + returnText);
 
 		if (returnText.Length < 2) {
-			SendTheScore (int.Parse(points));
+			SendTheScore (int.Parse(points), tempColor, tempID);
 			yield break;
 		}
 
@@ -662,6 +689,22 @@ public class RoomManager : MonoBehaviour {
 		} 
 
 		highscore.TranslateToHighScoreList (returnText);
+
+	}
+
+	IEnumerator statusUpdateScoring (string roomIDstring, string myColor){
+
+	//	Debug.Log ("STUFF: " + roomIDstring + myColor);
+
+		IEnumerator e = DCP.RunCS ("turnRooms", "StatusUpdateScoring", new string[2] {roomIDstring, myColor});
+
+		while (e.MoveNext ()) {
+			yield return e.Current;
+		}
+
+		string returnText = e.Current as string;
+
+		Debug.Log ("UpdatedScoring:" + returnText);
 
 	}
 

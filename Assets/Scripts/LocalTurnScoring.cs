@@ -17,6 +17,8 @@ public class LocalTurnScoring : MonoBehaviour {
 	int dupeGuessed;
 	int award2Winner;
 	int award3Winner;
+	int myColor;
+	int myRoomID;
 
 	public GameObject intro;
 	public Text questionText;
@@ -82,13 +84,14 @@ public class LocalTurnScoring : MonoBehaviour {
 	
 		roomMan = GameObject.FindGameObjectWithTag ("Room Manager");
 
+		Transform roomHolder = GameObject.FindGameObjectWithTag ("Room Holder").transform;
 
 		if (roomMan == null) {
 			Debug.Log ("not logged in");
 			return;
 		}
 
-		TurnRoomScript[] rooms = roomMan.transform.GetComponentsInChildren<TurnRoomScript> ();
+		TurnRoomScript[] rooms = roomHolder.GetComponentsInChildren<TurnRoomScript> ();
 		foreach (TurnRoomScript room in rooms) {
 
 			if (room.activeScoreRoom == true) {
@@ -100,12 +103,16 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		}
 
+		//Debug.Log (myRoom.gameObject.name);
+
 		for (int i = 0; i < myRoom.players.Length; i++) {
 
 			players[i].text = myRoom.players [i];
 
 		}
 
+		myColor = myRoom.myColor;
+		myRoomID = myRoom.roomID;
 	}
 	
 	// Update is called once per frame
@@ -773,25 +780,33 @@ public class LocalTurnScoring : MonoBehaviour {
 
 	void EndTheRound (){
 
+		Destroy(myRoom.gameObject);
+
 		roomMan.GetComponent<RoomManager> ().CurtainsIn ();
+		Invoke ("ReallyEndRound", 2.0f);
+
+	}
+
+	void ReallyEndRound (){
+	
 		int myScore = 0;
 
-		if (myRoom.myColor == 1) {
+		if (myColor == 1) {
 			myScore = redScore;
-		} else if (myRoom.myColor == 2) {
+		} else if (myColor == 2) {
 			myScore = blueScore;
-		} else if (myRoom.myColor == 3) {
+		} else if (myColor == 3) {
 			myScore = greenScore;
-		} else if (myRoom.myColor == 4) {
+		} else if (myColor == 4) {
 			myScore = orangeScore;
 		}
 
-		string username = players [myRoom.myColor - 1].text;
+		string roomIDstring = "|[ID]" + myRoomID.ToString ();
 
-		roomMan.GetComponent<RoomManager>().SendTheScore (myScore);
+		roomMan.GetComponent<RoomManager>().SendTheScore (myScore, myColor, roomIDstring);
 		RoomManager.instance.cameFromTurnBased=true;
 		SceneManager.LoadScene ("Lobby Menu");
-
+	
 	}
 
 	//play animation = 1

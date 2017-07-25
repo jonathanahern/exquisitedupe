@@ -125,7 +125,7 @@ public class TurnGameStatus : MonoBehaviour {
 
 	void EnterPhaseThree (){
 
-		int children = roomMan.transform.childCount;
+		int children = roomHolder.childCount;
 
 		for (int i = 0; i < children; ++i){
 
@@ -146,7 +146,7 @@ public class TurnGameStatus : MonoBehaviour {
 
 	void EnterPhaseTwo (){
 
-		int children = roomMan.transform.childCount;
+		int children = roomHolder.childCount;
 
 		Debug.Log (roomMan.name + children);
 
@@ -167,7 +167,7 @@ public class TurnGameStatus : MonoBehaviour {
 
 	void EnterPhaseOne (){
 
-		int children = roomMan.transform.childCount;
+		int children = roomHolder.childCount;
 
 		Debug.Log (roomMan.name + children);
 

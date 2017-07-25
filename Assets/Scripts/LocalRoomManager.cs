@@ -57,7 +57,9 @@ public class LocalRoomManager : MonoBehaviour {
 			return;
 		}
 
-		TurnRoomScript[] rooms = roomMan.transform.GetComponentsInChildren<TurnRoomScript> ();
+		Transform roomHolder = GameObject.FindGameObjectWithTag ("Room Holder").transform;
+
+		TurnRoomScript[] rooms = roomHolder.GetComponentsInChildren<TurnRoomScript> ();
 		foreach (TurnRoomScript room in rooms) {
 
 			if (room.activeRoom == true) {
