@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
+using UnityEngine.UI;
 
 public class LobbyMenu : MonoBehaviour {
 
 	public static LobbyMenu instance;
 
+	bool okToClick = true;
+
 	public GameObject mainButtons;
-//	public GameObject turnBasedButtons;
 	public RectTransform loadScreen;
 
 	public RectTransform loginName;
@@ -21,6 +23,15 @@ public class LobbyMenu : MonoBehaviour {
 	Vector3 zeroCounter;
 	Vector3 oneEighty;
 
+	public GameObject frameMessage;
+	Vector2 offScreen;
+
+	public Transform statusHolder;
+	GameObject statusLoad;
+
+	RoomManager roomMan;
+	public GameObject frameText;
+
 	// Use this for initialization
 	void Awake () {
 
@@ -29,14 +40,35 @@ public class LobbyMenu : MonoBehaviour {
 	}
 
 	void Start(){
-
+		statusLoad = GameObject.FindGameObjectWithTag ("Status Load");
 		oneEighty = new Vector3 (0, 0, 180.0f);
 		zeroCounter = new Vector3 (0, 0, 360.0f);
 		startPos = newCats.position.x;
-		RoomManager roomMan = GameObject.FindGameObjectWithTag ("Room Manager").GetComponent<RoomManager> ();
+		roomMan = GameObject.FindGameObjectWithTag ("Room Manager").GetComponent<RoomManager> ();
 		if (roomMan.cameFromTurnBased == true) {
 			TurnBasedClicked ();
 			roomMan.UpdateTurnRooms();
+		}
+
+		if (roomMan.cameFromScoring == false) {
+			highScores.gameObject.GetComponent<HighScoreScript> ().UpdateTheScore ();
+		} else {
+			GoToHighScores ();
+			roomMan.cameFromScoring = false;
+			UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
+			string roomsString = userAccount.activeRooms;
+
+			if (roomsString.Length < 5) {
+			
+				if (frameText == null) {
+
+					frameText = GameObject.FindGameObjectWithTag ("Frame Text");
+
+				}
+
+				frameText.GetComponent<Text>().text = "Nothin happenin";
+
+			}
 
 		}
 
@@ -47,7 +79,7 @@ public class LobbyMenu : MonoBehaviour {
 
 		if (Input.GetKeyDown (KeyCode.C)) {
 		
-			//MoveCurtain ();
+			FiveRoomsOnly ();
 		
 		}
 		
@@ -66,10 +98,25 @@ public class LobbyMenu : MonoBehaviour {
 	}
 
 	public void NewTurnBased() {
+
+		if (okToClick == false) {
+			return;
+		}
+
+		okToClick = false;
+
+		Invoke ("OkToClickAgain", 2.5f);
+
+		if (statusHolder.childCount > 4) {
+			FiveRoomsOnly ();
+			return;
+		}
 	
 		newCats.DOLocalMoveX (0, 2.0f).SetEase(Ease.OutBounce);
 		centerTurnButts.DOLocalMoveX (startPos * -1.0f, 2.0f).SetEase(Ease.OutBounce);
 
+
+	
 	}
 
 	public void NewCatsOffScreen(){
@@ -96,6 +143,14 @@ public class LobbyMenu : MonoBehaviour {
 
 	public void GoToHighScores(){
 
+		if (okToClick == false) {
+			return;
+		}
+
+		okToClick = false;
+
+		Invoke ("OkToClickAgain", 2.5f);
+
 		highScores.DOLocalMoveX (0, 2.0f).SetEase(Ease.OutBounce);
 		centerTurnButts.DOLocalMoveX (startPos, 2.0f);
 
@@ -118,9 +173,44 @@ public class LobbyMenu : MonoBehaviour {
 
 	}
 
-	void MoveCurtain () {
-	
+	public void FiveRoomsOnly(){
 
+		offScreen = frameMessage.transform.position;
+
+		frameMessage.transform.DOLocalMoveY(0,1.0f).SetEase (Ease.OutBounce);
+		Invoke ("MoveOff", 2.5f);
+	}
+
+	void MoveOff() {
+
+		frameMessage.transform.DOLocalMoveY(offScreen.y * -1, 1.0f).OnComplete (MoveBack);
+
+	}
+
+	void MoveBack(){
+
+		frameMessage.transform.DOLocalMoveY(offScreen.y, 0.0f);
+
+	}
+
+	public void RefreshList (){
+
+		if (okToClick == false) {
+			return;
+		}
+
+		okToClick = false;
+
+		Invoke ("OkToClickAgain", 6.0f);
+
+		statusLoad.SetActive (true);
+		roomMan.GetRooms ();
+	
+	}
+
+	void OkToClickAgain (){
+	
+		okToClick = true;
 	
 	}
 

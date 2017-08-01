@@ -51,7 +51,15 @@ public class TurnRoomButton : MonoBehaviour {
 		LobbyMenu.instance.LoadingScreenFromNewCats ();
 
 
+	}
 
+	public void PopulateButton(string roomTypeString, string wordsString, string brushesString, string groundingString){
+	
+		roomType.text = roomTypeString;
+		words = wordsString;
+		brushes = brushesString;
+		grounding = groundingString;
+	
 	}
 
 }

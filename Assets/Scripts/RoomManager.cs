@@ -51,6 +51,7 @@ public class RoomManager : MonoBehaviour {
 	private string[] brushes = new string[10];
 
 	public bool cameFromTurnBased;
+	public bool cameFromScoring = false;
 
 	public string[] roomNum = new string[5];
 	public string[] playersReady = new string[5];
@@ -58,7 +59,7 @@ public class RoomManager : MonoBehaviour {
 	GameObject statusHolder;
 	GameObject statusLoad;
 
-	public Text frameText;
+	public GameObject frameText;
 
 	HighScoreScript highscore;
 	public GameObject leftCurtain;
@@ -69,6 +70,8 @@ public class RoomManager : MonoBehaviour {
 	string tempID;
 	string tempPoints;
 
+	int roomCount;
+
 	void Start (){
 
 		GetRooms ();
@@ -78,29 +81,52 @@ public class RoomManager : MonoBehaviour {
 
 	void Update () {
 
-		if (Input.GetKeyDown (KeyCode.A)) {
-			CurtainsIn ();
-		}
-
-		if (Input.GetKeyDown (KeyCode.S)) {
-			CurtainsOut ();
-		}
+//		if (Input.GetKeyDown (KeyCode.A)) {
+//			CurtainsIn ();
+//		}
+//
+//		if (Input.GetKeyDown (KeyCode.S)) {
+//			CurtainsOut ();
+//		}
 
 	}
 
-	void GetRooms (){
+	public void GetRooms (){
 	
+		roomCount = 0;
+
+		if (statusHolder == null) {
+			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
+		}
+
+		int childCount = roomHolder.transform.childCount;
+
+		if (childCount > 0) {
+			for (int i = 0; i < childCount; i++) {
+				Destroy(statusHolder.transform.GetChild(i).gameObject);
+				Destroy(roomHolder.transform.GetChild(i).gameObject);
+			}
+		}
+
 		//roomIds = new string [] { "0", "0", "0", "0", "0"};
 		UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
 
 		string roomsString = userAccount.activeRooms;
 		username = userAccount.loggedInUsername;
 
-		//Debug.Log (roomsString);
+		Debug.Log ("roomsString " + roomsString);
 
-		if (roomsString == "") {
+		if (roomsString == string.Empty) {
 
-			frameText.text = "Nothin happenin";
+			Debug.Log ("roomsString2 " + roomsString);
+
+			if (frameText == null) {
+			
+				frameText = GameObject.FindGameObjectWithTag ("Frame Text");
+
+			}
+
+			frameText.GetComponent<Text>().text = "Nothin happenin";
 			return;
 		}
 
@@ -158,17 +184,6 @@ public class RoomManager : MonoBehaviour {
 		GameObject newRoom = (GameObject)Instantiate(roomPrefab, Vector3.zero, Quaternion.identity);
 		newRoom.transform.SetParent (roomHolder, false);
 		TurnRoomScript roomScript = newRoom.GetComponent<TurnRoomScript> ();
-
-		Debug.Log ("StartRoom" + startRoom);
-
-		if (startRoom == 0) {
-			
-			roomScript.activeRoom = true;
-			roomScript.roomType = roomType;
-
-		}
-
-		Debug.Log ("Room ID: " + roomId);
 
 		string[] pieces = roomId.Split('|');
 
@@ -248,7 +263,7 @@ public class RoomManager : MonoBehaviour {
 
 				for (int i = 0; i < players.Length; i++) {
 
-					Debug.Log (username + players [i]);
+					//Debug.Log (username + players [i]);
 					roomScript.players [i] = players [i];
 
 					if (players[i] == username) {
@@ -349,20 +364,19 @@ public class RoomManager : MonoBehaviour {
 
 		}
 
-		UpdateTurnRoomsFromLogin (roomScript.roomID);
 
-		lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
-		lobbyMenu.TurnBasedClicked ();
+		if (startRoom == -2) {
+			roomScript.activeRoom = true;
+			roomScript.roomType = roomType;
+			CurtainsIn ();
+			SceneManager.LoadScene ("Turn Based Room");
+		} else {
+			UpdateTurnRoomsFromLogin (roomScript.roomID);
+			lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
+			lobbyMenu.TurnBasedClicked ();
 
-//		if (startRoom == 0) {
-//			CurtainsIn ();
-//			SceneManager.LoadScene ("Turn Based Room");
-//		} else if (startRoom == 1) {
-//			UpdateTurnRoomsFromLogin (roomScript.roomID);
-//			lobbyMenu.TurnBasedClicked ();
-//
-//		}
-//
+		}
+
 	}
 		
 
@@ -375,18 +389,19 @@ public class RoomManager : MonoBehaviour {
 		rooms = new int[5];
 
 		int children = roomHolder.childCount;
-		//Debug.Log (children);
+		Debug.Log ("kid count: " + children);
 
 
 		for (int i = 0; i < children; ++i){
 			TurnRoomScript turnRoom = roomHolder.GetChild (i).GetComponent<TurnRoomScript>();
 
-	
 			if (turnRoom.roomID == statusRoomId) {
-			
+				
+
+
 				GameObject roomStatus = Instantiate (statusPrefab);
 				roomStatus.transform.SetParent (statusHolder.transform, false);
-				Debug.Log (turnRoom.votePoses);
+			//	Debug.Log (turnRoom.votePoses);
 				TurnGameStatus status = roomStatus.GetComponent<TurnGameStatus> ();
 				status.roomId = turnRoom.roomID;
 				status.categoryName.text = turnRoom.roomType;
@@ -445,7 +460,7 @@ public class RoomManager : MonoBehaviour {
 //				status.PhaseThreeReady ();
 //			} 
 
-			rooms [i] = turnRoom.roomID;
+			//rooms [i] = turnRoom.roomID;
 
 			string stringId = "|[ID]" + turnRoom.roomID.ToString ();
 
@@ -636,21 +651,21 @@ public class RoomManager : MonoBehaviour {
 
 	}
 
-	public void SendTheScore (int pointsToAdd, int playerColor, string roomIDstring){
+	public void SendTheScore (int pointsToAdd, int playerColor, string roomIDstring, string currentRooms){
 	
 		string points = pointsToAdd.ToString ();
-		string currentRooms = "[ID]";
+		//string currentRooms = "[ID]";
 		int children = roomHolder.childCount;
 		tempColor = playerColor;
 		tempID = roomIDstring;
 		tempPoints = pointsToAdd.ToString ();
 
-		for (int i = 0; i < children; ++i){
-
-			TurnRoomScript turnRoom = roomHolder.GetChild (i).GetComponent<TurnRoomScript>();
-			currentRooms = currentRooms + turnRoom.roomID.ToString () + "/";
-
-		}
+//		for (int i = 0; i < children; ++i){
+//
+//			TurnRoomScript turnRoom = roomHolder.GetChild (i).GetComponent<TurnRoomScript>();
+//			currentRooms = currentRooms + turnRoom.roomID.ToString () + "/";
+//
+//		}
 
 		if (username == null) {
 			UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
@@ -678,7 +693,7 @@ public class RoomManager : MonoBehaviour {
 		Debug.Log ("HighScore List:" + returnText);
 
 		if (returnText.Length < 2) {
-			SendTheScore (int.Parse(points), tempColor, tempID);
+			SendTheScore (int.Parse(points), tempColor, tempID, currentRooms);
 			yield break;
 		}
 

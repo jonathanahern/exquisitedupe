@@ -25,6 +25,12 @@ public class VoteFabScript : MonoBehaviour {
 	public SpriteRenderer outerLayer;
 	public SpriteRenderer innerSprite;
 
+	public Sprite xOut;
+	public Sprite outline;
+
+	bool postDupe = false;
+	int dupeNum;
+
 	public Sprite redDupe;
 	public Sprite blueDupe;
 	public Sprite greenDupe;
@@ -81,15 +87,30 @@ public class VoteFabScript : MonoBehaviour {
 		} else if (mousePos.x > minX && mousePos.x < maxX && mousePos.y > minY && mousePos.y < maxY) {
 			
 			inFrame = true;
+			// -3, -4.5
+		} else if (mousePos.y > -4.5f && mousePos.x < -2.5f) {
 
-		} else if (mousePos.y > minY && mousePos.x < minX) {
+			mousePos.y = -4.5f;
 
-			mousePos.y = minY;
 
-		} else if (mousePos.y > minY && mousePos.x > maxX) {
+		} else if (mousePos.y > -4.5f && mousePos.x > 2.5f) {
 
-			mousePos.y = minY;
+			mousePos.y = -4.5f;
 
+		}
+
+		if (inFrame == false) {
+		
+			if (mousePos.x > 2.5f) {
+				mousePos.x = 2.5f;
+			} else if (mousePos.x < -2.5f) {
+				mousePos.x = -2.5f;
+			} 
+
+			if (mousePos.y < -6f) {
+				mousePos.y = -6f;
+			}
+		
 		}
 
 		transform.position = mousePos;
@@ -119,87 +140,103 @@ public class VoteFabScript : MonoBehaviour {
 	}
 
 
-	void OnMouseUpAsButton(){
-	
-//		if (stuck == true) {
-//			return;
-//		}
-//
-//		awardScript.CheckLocation ();
+	void OnMouseUp(){
+		//0 onDupe, 1 offDupe
 
-		localTurn.FlipSignToConfirm ();
+		if (inFrame == false) {
+			return;
+		}
+
+		int onDupe;
+
+		if (pos.x <= 0 && pos.y >= 0) {
+
+			if (postDupe == true && dupeNum == 1) {
+				onDupe = 0;
+			} else {
+				onDupe = 1;
+			}
+
+		} else if (pos.x >= 0 && pos.y >= 0) {
+
+			if (postDupe == true && dupeNum == 2) {
+				onDupe = 0;
+			} else {
+				onDupe = 1;
+			}
+
+		} else if (pos.x >= 0 && pos.y <= 0) {
+
+			if (postDupe == true && dupeNum == 3) {
+				onDupe = 0;
+			} else {
+				onDupe = 1;
+			}
+
+		} else if (pos.x <= 0 && pos.y <= 0) {
+
+			if (postDupe == true && dupeNum == 4) {
+				onDupe = 0;
+			} else {
+				onDupe = 1;
+			}
+
+		} else {
+			onDupe = 1;
+		}
+
+
+		localTurn.FlipSignToConfirm (onDupe);
 	
 	}
-
-//	public void StopMoving(){
-//	
-//		stuck = true;
-//
-//	}
-
-//	void Stuck(){
-//	
-//		stuck = true;
-//
-//	}
-
+		
 	public void CheckColor(){
 
 		pos = transform.position;
 
-		if (pos.x < -.003f && pos.y > .003f) {
-			outerLayer.color = red;
-		} else if (pos.x > .003f && pos.y > .003f) {
-			outerLayer.color = blue;
-		} else if (pos.x > .003f && pos.y < -.003f) {
-			outerLayer.color = green;
-		} else if (pos.x < -.003f && pos.y < -.003f) {
-			outerLayer.color = orange;
-		} else {
-			outerLayer.color = offWhite;
-		}
+			if (pos.x <= 0 && pos.y >= 0) {
+
+			if (postDupe == true && dupeNum == 1) {
+				outerLayer.sprite = xOut;
+			} else {
+				outerLayer.sprite = outline;
+				outerLayer.color = red;
+			}
+
+			} else if (pos.x >= 0 && pos.y >= 0) {
+			
+			if (postDupe == true && dupeNum == 2) {
+				outerLayer.sprite = xOut;
+			} else {
+				outerLayer.sprite = outline;
+				outerLayer.color = blue;
+			}
+
+			} else if (pos.x >= 0 && pos.y <= 0) {
+			
+			if (postDupe == true && dupeNum == 3) {
+				outerLayer.sprite = xOut;
+			} else {
+				outerLayer.sprite = outline;
+				outerLayer.color = green;
+			}
+
+			} else if (pos.x <= 0 && pos.y <= 0) {
+			
+			if (postDupe == true && dupeNum == 4) {
+				outerLayer.sprite = xOut;
+			} else {
+				outerLayer.sprite = outline;
+				outerLayer.color = orange;
+			}
+
+			} else {
+			
+				outerLayer.color = offWhite;
+			}
+
 
 	}
-		
-//	public void SetSprite (int spriteNum){
-	
-//		if (spriteNum == 1) {
-//		
-//			awardPic.sprite = dupeSprite;
-//		
-//		} else if (spriteNum == 2) {
-//
-//			awardPic.sprite = deadGiveawaySprite;
-//
-//		} else if (spriteNum == 3) {
-//
-//			awardPic.sprite = simplyDivineSprite;
-//
-//		} else if (spriteNum == 4) {
-//
-//			awardPic.sprite = monkeyArtistSprite;
-//
-//		}
-	
-//	}
-
-//	public void SetupVote(int fromColor){
-//	
-//		//stuck = true;
-//		CheckColor ();
-//		//awardPic.sprite = dupeSprite;
-//
-//		if (fromColor == 1) {
-//			GetComponent<SpriteRenderer> ().sprite = redDupe;
-//		} else if (fromColor == 2) {
-//			GetComponent<SpriteRenderer> ().sprite = blueDupe;
-//		} else if (fromColor == 3) {
-//			GetComponent<SpriteRenderer> ().sprite = greenDupe;
-//		} else if (fromColor == 4) {
-//			GetComponent<SpriteRenderer> ().sprite = orangeDupe;
-//		}
-//
-//	}
 
 	public void SetupDupeVote(int fromColor){
 
@@ -215,7 +252,10 @@ public class VoteFabScript : MonoBehaviour {
 
 	}
 
-	public void SetupSecondVote(int fromColor, int awardNum){
+	public void SetupSecondVote(int fromColor, int awardNum, int dupe){
+
+		postDupe = true;
+		dupeNum = dupe;
 
 		if (awardNum > 0) {
 			if (fromColor == 1) {
@@ -230,8 +270,10 @@ public class VoteFabScript : MonoBehaviour {
 		}
 	}
 
-	public void SetupThirdVote(int fromColor, string dupeCaught){
+	public void SetupThirdVote(int fromColor, string dupeCaught, int dupe){
 
+		postDupe = true;
+		dupeNum = dupe;
 
 		if (dupeCaught == "x") {
 			if (fromColor == 1) {

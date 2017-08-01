@@ -232,7 +232,7 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 		StartCoroutine (storeRoomId(LoggedIn_Username, roomId));
 
-		RoomManager.instance.CreateRoom (roomType, returnText, 0);
+		RoomManager.instance.CreateRoom (roomType, returnText, -2);
 
 	}
 

@@ -43,6 +43,17 @@ public class LocalTurnVoting : MonoBehaviour {
 	public Sprite captainObviousWords;
 	public Sprite dupeVotedElsewhere;
 	public Sprite dupeVotedSelf;
+	public Sprite wrongDupeGuess;
+	public Sprite rightDupeGuess;
+
+	public GameObject buttonObj;
+	public GameObject cantVoteObj;
+
+	bool dupeCaught = false;
+
+	public GameObject dupeTrophy;
+	public GameObject dupeColor;
+
 
 	public GameObject redLine;
 	public GameObject blueLine;
@@ -53,6 +64,8 @@ public class LocalTurnVoting : MonoBehaviour {
 	public GameObject blueDot;
 	public GameObject greenDot;
 	public GameObject orangeDot;
+
+	public Material[] lineMats;
 
 	private static string MYCOLOR_SYM = "[MYCOLOR]";
 
@@ -67,7 +80,13 @@ public class LocalTurnVoting : MonoBehaviour {
 		signScreenPos = sign.transform.position.y;
 		signOffPos = signScreenPos - 3.0f;
 
+		foreach (Material lineMat in lineMats) {
 
+			Color lineColor = lineMat.color;
+			Color fullColor = new Color (lineColor.r, lineColor.g, lineColor.b, 1.0f);
+			lineMat.color = fullColor;
+			
+		}
 	
 		roomMan = GameObject.FindGameObjectWithTag ("Room Manager");
 
@@ -104,8 +123,7 @@ public class LocalTurnVoting : MonoBehaviour {
 
 		voteScript.SetupDupeVote (myRoom.myColor);
 
-		Invoke ("OpenCurtains", 1.5f);
-
+		Invoke ("OpenCurtains", 1.0f);
 		Invoke ("MoveUpPedestal" , 3.0f);
 
 	}
@@ -117,9 +135,15 @@ public class LocalTurnVoting : MonoBehaviour {
 
 		if (Input.GetKeyDown (KeyCode.D)) {
 			
-			LaunchDupeGuess();
+//			GameObject dupeVote = Instantiate (voteFab);
+//			dupeVote.transform.SetParent (spawnPos, false);
+//			VoteFabScript voteScript = dupeVote.GetComponent<VoteFabScript> ();
+//			voteScript.localTurn = this;
+//			currentVote = 1;
+//			Invoke ("MoveUpPedestal" , 1.0f);
 
 		}
+
 
 	}
 
@@ -147,13 +171,6 @@ public class LocalTurnVoting : MonoBehaviour {
 			colorNum = drawings[0].Substring (MYCOLOR_SYM.Length);
 			drawingString = drawings [1];
 			dotsString = drawings [2];
-
-
-//			if (drawings.Length > 2) {
-//				dotsString = drawings [2];
-//			} else {
-//				dotsString = "";
-//			}
 
 			DrawLine (colorNum, drawingString, dotsString);
 
@@ -263,10 +280,18 @@ public class LocalTurnVoting : MonoBehaviour {
 	
 	}
 
-	public void FlipSignToConfirm(){
+	public void FlipSignToConfirm(int onDupe){
 
 		Vector3 oneEighty = new Vector3 (0, 180, 0);
 		sign.transform.DORotate (oneEighty, 1.0f);
+
+		if (onDupe == 0) {
+			cantVoteObj.SetActive (true);
+			buttonObj.SetActive (false);
+		} else {
+			cantVoteObj.SetActive (false);
+			buttonObj.SetActive (true);
+		}
 
 	}
 
@@ -310,18 +335,19 @@ public class LocalTurnVoting : MonoBehaviour {
 				
 				if (myRoom.dupeNum == artistNum) {
 					dupeStatus = "o";
-					//myRoom.dupeCaught = "o";
 				} else {
 					dupeStatus = "x";
-					//myRoom.dupeCaught = "x";
 				}
 					
 				if (myRoom.dupeCaught != "o" || myRoom.dupeCaught != "x") {
 					string stringRoomId = "|[ID]" + myRoom.roomID.ToString ();
 					StartCoroutine (checkVoteStatus (stringRoomId, dupeStatus));
 				}
-					
-				Invoke ("LaunchVote2", 1.5f);
+
+				DupeGuessResult (artistNum);
+
+				//Invoke ("LaunchVote2", 1.5f);
+
 			} else {
 
 				if (myRoom.dupeNum == artistNum) {
@@ -353,6 +379,57 @@ public class LocalTurnVoting : MonoBehaviour {
 
 		Destroy (vote);
 
+	}
+
+	void DupeGuessResult (int artistNum){
+	
+		if (myRoom.dupeNum == artistNum) {
+			dupeCaught = true;
+			signWords.sprite = rightDupeGuess;
+
+			FlipSignToWords ();
+
+			Invoke ("MoveUpPedAndSign", 1.5f);
+
+		} else {
+			dupeCaught = false;
+			signWords.sprite = wrongDupeGuess;
+			dupeColor.SetActive (true);
+			string dupeColorString = "purple";
+
+			if (myRoom.dupeNum == 1) {
+				dupeColorString = "red";
+			} else if (myRoom.dupeNum == 2) {
+				dupeColorString = "blue";
+			} else if (myRoom.dupeNum == 3) {
+				dupeColorString = "green";
+			} else if (myRoom.dupeNum == 4) {
+				dupeColorString = "orange";
+			} 
+
+			dupeColor.GetComponent<Text> ().text = dupeColorString;
+			FlipSignToWords ();
+
+			Invoke ("MoveUpPedAndSign", 2.5f);
+		}
+
+	}
+
+	void MoveUpPedAndSign (){
+		if (dupeCaught == true) {
+			dupeTrophy.SetActive (true);
+			MoveUpPedestal ();
+		}
+		MoveUpSign ();
+		Invoke ("MoveDownPedAndSign", 2.5f);
+	}
+
+	void MoveDownPedAndSign () {
+		if (dupeCaught == true) {
+			MoveDownPedestal ();
+		}
+		MoveDownSign ();
+		Invoke ("LaunchVote2", 2.0f);
 	}
 
 	IEnumerator checkVoteStatus (string roomId, string caughtVar){
@@ -393,12 +470,35 @@ public class LocalTurnVoting : MonoBehaviour {
 
 	void LaunchVote2(){
 
-		FlipSignToWords ();
+		if (myRoom.dupeNum == 1) {
+			Color redMat = lineMats[0].color;
+			Color newColor = new Color (redMat.r, redMat.g, redMat.b, .2f);
+			lineMats[0].color = newColor;
+		} else if (myRoom.dupeNum == 2) {
+			Color blueMat = lineMats[1].color;
+			Color newColor = new Color (blueMat.r, blueMat.g, blueMat.b, .2f);
+			lineMats[1].color = newColor;
+		} else if (myRoom.dupeNum == 3) {
+			Color greenMat = lineMats[2].color;
+			Color newColor = new Color (greenMat.r, greenMat.g, greenMat.b, .2f);
+			lineMats[2].color = newColor;
+		} else if (myRoom.dupeNum == 4) {
+			Color orangeMat = lineMats[3].color;
+			Color newColor = new Color (orangeMat.r, orangeMat.g, orangeMat.b, .2f);
+			lineMats[3].color = newColor;
+		} 
+			
+		if (dupeCaught == true) {
+			dupeTrophy.SetActive (false);
+		} else {
+			dupeColor.SetActive (false);
+		}
 
 		if (myRoom.awardNum > 0) {
 		
 			signWords.sprite = monkeyArtistWords;
 			MoveUpSign ();
+
 		}
 
 		GameObject secondVote = Instantiate (voteFab);
@@ -407,7 +507,7 @@ public class LocalTurnVoting : MonoBehaviour {
 		voteScript.localTurn = this;
 		currentVote = 2;
 
-		voteScript.SetupSecondVote (myRoom.myColor,myRoom.awardNum);
+		voteScript.SetupSecondVote (myRoom.myColor,myRoom.awardNum,myRoom.dupeNum);
 		MoveUpPedestal ();
 
 	}
@@ -430,7 +530,7 @@ public class LocalTurnVoting : MonoBehaviour {
 		voteScript.localTurn = this;
 		currentVote = 3;
 
-		voteScript.SetupThirdVote (myRoom.myColor, myRoom.dupeCaught);
+		voteScript.SetupThirdVote (myRoom.myColor, myRoom.dupeCaught,myRoom.dupeNum);
 		MoveUpPedestal ();
 
 	}
@@ -558,6 +658,14 @@ public class LocalTurnVoting : MonoBehaviour {
 		myRoom.activeVoteRoom = false;
 		myRoom.status = "waiting...";
 		myRoom.statusNum = 3;
+
+		foreach (Material lineMat in lineMats) {
+
+			Color lineColor = lineMat.color;
+			Color fullColor = new Color (lineColor.r, lineColor.g, lineColor.b, 1.0f);
+			lineMat.color = fullColor;
+
+		}
 
 		RoomManager.instance.cameFromTurnBased=true;
 		SceneManager.LoadScene ("Lobby Menu");

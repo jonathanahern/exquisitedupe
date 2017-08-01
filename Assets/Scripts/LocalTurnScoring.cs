@@ -120,7 +120,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		if (Input.GetKeyDown (KeyCode.T)) {
 			
-			BeginDupeReveal();
+			questionObj.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce);
 
 		}
 
@@ -260,10 +260,10 @@ public class LocalTurnScoring : MonoBehaviour {
 		//int[] numbers = new int[5] {1, 2, 3, 4, 5};
 		int[] voteCounts = new int[4] {WhoYouVoted(redPos [awardNum]), WhoYouVoted(bluePos [awardNum]), WhoYouVoted(greenPos [awardNum]), WhoYouVoted(orangePos [awardNum])};
 
-		Debug.Log (voteCounts[0]);
-		Debug.Log (voteCounts[1]);
-		Debug.Log (voteCounts[2]);
-		Debug.Log (voteCounts[3]);
+//		Debug.Log (voteCounts[0]);
+//		Debug.Log (voteCounts[1]);
+//		Debug.Log (voteCounts[2]);
+//		Debug.Log (voteCounts[3]);
 
 		foreach (int vote in voteCounts) {
 			if (vote == 1) {
@@ -322,6 +322,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			}
 
 		} else {
+			dupeTie = true;
 			return 0;
 		}
 	
@@ -496,7 +497,6 @@ public class LocalTurnScoring : MonoBehaviour {
 		//Vector3 neg90 = new Vector3 (0, 0, -90);
 		nameObj.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce);
 
-
 	}
 
 //	void WhoVotedCorrect (){
@@ -588,8 +588,7 @@ public class LocalTurnScoring : MonoBehaviour {
 		DestroyVotes ();
 
 		award2Winner = AwardWinner (FindWinner (1));
-
-		Debug.Log (myRoom.players [award2Winner - 1]);
+		//Debug.Log (myRoom.players [award2Winner - 1]);
 
 		if (myRoom.awardNum > 0) {
 
@@ -615,25 +614,25 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		if (dupeNum != 1) {
 			GameObject awardVoteRed = Instantiate (voteFab, redPos [1], Quaternion.identity);
-			awardVoteRed.GetComponent<VoteFabScript> ().SetupSecondVote (1, awardNum);
+			awardVoteRed.GetComponent<VoteFabScript> ().SetupSecondVote (1, awardNum,0);
 			awardVoteRed.GetComponent<VoteFabScript> ().CheckColor ();
 		}
 
 		if (dupeNum != 2) {
 			GameObject awardVoteBlue = Instantiate (voteFab, bluePos [1], Quaternion.identity);
-			awardVoteBlue.GetComponent<VoteFabScript> ().SetupSecondVote (2, awardNum);
+			awardVoteBlue.GetComponent<VoteFabScript> ().SetupSecondVote (2, awardNum,0);
 			awardVoteBlue.GetComponent<VoteFabScript> ().CheckColor ();
 		}
 
 		if (dupeNum != 3) {
 			GameObject awardVoteGreen = Instantiate (voteFab, greenPos [1], Quaternion.identity);
-			awardVoteGreen.GetComponent<VoteFabScript> ().SetupSecondVote (3, awardNum);
+			awardVoteGreen.GetComponent<VoteFabScript> ().SetupSecondVote (3, awardNum,0);
 			awardVoteGreen.GetComponent<VoteFabScript> ().CheckColor ();
 		}
 
 		if (dupeNum != 4) {
 			GameObject awardVoteOrange = Instantiate (voteFab, orangePos [1], Quaternion.identity);
-			awardVoteOrange.GetComponent<VoteFabScript> ().SetupSecondVote (4, awardNum);
+			awardVoteOrange.GetComponent<VoteFabScript> ().SetupSecondVote (4, awardNum,0);
 			awardVoteOrange.GetComponent<VoteFabScript> ().CheckColor ();
 		}
 
@@ -649,8 +648,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			GivePoints (award2Winner, -2, 1);
 		}
 
-
-		Invoke ("StartThirdAward", 1.5f);
+		Invoke ("StartThirdAward", 2.5f);
 
 	}
 
@@ -686,25 +684,25 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		if (dupeNum != 1) {
 			GameObject awardVoteRed = Instantiate (voteFab, redPos [2], Quaternion.identity);
-			awardVoteRed.GetComponent<VoteFabScript> ().SetupThirdVote (1, awardNum);
+			awardVoteRed.GetComponent<VoteFabScript> ().SetupThirdVote (1, awardNum,0);
 			awardVoteRed.GetComponent<VoteFabScript> ().CheckColor ();
 		}
 
 		if (dupeNum != 2) {
 			GameObject awardVoteBlue = Instantiate (voteFab, bluePos [2], Quaternion.identity);
-			awardVoteBlue.GetComponent<VoteFabScript> ().SetupThirdVote (2, awardNum);
+			awardVoteBlue.GetComponent<VoteFabScript> ().SetupThirdVote (2, awardNum,0);
 			awardVoteBlue.GetComponent<VoteFabScript> ().CheckColor ();
 		}
 
 		if (dupeNum != 3) {
 			GameObject awardVoteGreen = Instantiate (voteFab, greenPos [2], Quaternion.identity);
-			awardVoteGreen.GetComponent<VoteFabScript> ().SetupThirdVote (3, awardNum);
+			awardVoteGreen.GetComponent<VoteFabScript> ().SetupThirdVote (3, awardNum,0);
 			awardVoteGreen.GetComponent<VoteFabScript> ().CheckColor ();
 		}
 
 		if (dupeNum != 4) {
 			GameObject awardVoteOrange = Instantiate (voteFab, orangePos [2], Quaternion.identity);
-			awardVoteOrange.GetComponent<VoteFabScript> ().SetupThirdVote (4, awardNum);
+			awardVoteOrange.GetComponent<VoteFabScript> ().SetupThirdVote (4, awardNum,0);
 			awardVoteOrange.GetComponent<VoteFabScript> ().CheckColor ();
 		}
 
@@ -783,6 +781,7 @@ public class LocalTurnScoring : MonoBehaviour {
 		Destroy(myRoom.gameObject);
 
 		roomMan.GetComponent<RoomManager> ().CurtainsIn ();
+		roomMan.GetComponent<RoomManager> ().cameFromScoring = true;
 		Invoke ("ReallyEndRound", 2.0f);
 
 	}
@@ -803,7 +802,22 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		string roomIDstring = "|[ID]" + myRoomID.ToString ();
 
-		roomMan.GetComponent<RoomManager>().SendTheScore (myScore, myColor, roomIDstring);
+		UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
+
+		string roomsString = userAccount.activeRooms;
+		string currentRoom = myRoom.roomID + "/";
+
+		roomsString = roomsString.Replace (currentRoom, string.Empty);
+
+		if (roomsString.Length < 5) {
+		
+			roomsString = string.Empty;
+
+		}
+
+		userAccount.activeRooms = roomsString;
+
+		roomMan.GetComponent<RoomManager>().SendTheScore (myScore, myColor, roomIDstring, roomsString);
 		RoomManager.instance.cameFromTurnBased=true;
 		SceneManager.LoadScene ("Lobby Menu");
 	

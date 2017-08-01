@@ -23,7 +23,7 @@ public class CameraScript : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
-		moveRate = .0025f;
+		moveRate = .019f;
 
 	}
 	
@@ -45,10 +45,10 @@ public class CameraScript : MonoBehaviour {
 
 //			Debug.Log (screenPoint.x);
 
-			if (diff > .0015f) {
+			if (diff > .0025f) {
 				moveCamera = true;
 				direction = 1.0f;
-			} else if (diff < -.0015f) {
+			} else if (diff < -.0025f) {
 				moveCamera = true;
 				direction = -1.0f;
 			} else {
@@ -81,22 +81,22 @@ public class CameraScript : MonoBehaviour {
 
 		if (playerNum == 1) {
 			goalX = 1;
-			seekerCam.transform.position = new Vector3 (-1.2f, 2, -10);
+			seekerCam.transform.position = new Vector3 (-1.35f, 2, -10);
 			moveCamera = true;
 
 		} else if (playerNum == 2) {
 			goalX = 0;
-			seekerCam.transform.position = new Vector3 (1.2f, 2, -10);
+			seekerCam.transform.position = new Vector3 (1.35f, 2, -10);
 			moveCamera = true;
 
 		} else if(playerNum == 3) {
 			goalX = 0;
-			seekerCam.transform.position = new Vector3 (1.2f, -2, -10);
+			seekerCam.transform.position = new Vector3 (1.35f, -2, -10);
 			moveCamera = true;
 
 		} else if (playerNum == 4) {
 			goalX = 1;
-			seekerCam.transform.position = new Vector3 (-1.2f, -2, -10);
+			seekerCam.transform.position = new Vector3 (-1.35f, -2, -10);
 			moveCamera = true;
 
 		}

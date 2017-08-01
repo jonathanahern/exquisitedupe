@@ -35,6 +35,11 @@ public class LocalRoomManager : MonoBehaviour {
 	public Material blackMat;
 
 	GameObject roomMan;
+	public GameObject frameMessage;
+	Vector2 offScreen;
+
+	bool readyToAdvance = false;
+	bool okayToClick = false;
 
 	// Use this for initialization
 	void Start () {
@@ -101,7 +106,18 @@ public class LocalRoomManager : MonoBehaviour {
 
 		roomMan.GetComponent<RoomManager> ().CurtainsOut();
 
-		Invoke ("MoveToSection", 3.0f);
+		UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
+
+		string roomsString = userAccount.activeRooms;
+
+		if (roomsString.Contains("[ID]") == false) {
+			roomsString = "[ID]" + roomsString;
+		}
+
+		roomsString = roomsString + myRoom.roomID.ToString() + "/";
+		userAccount.activeRooms = roomsString;
+
+		Invoke ("MoveToSection", 4.0f);
 
 	}
 
@@ -170,6 +186,7 @@ public class LocalRoomManager : MonoBehaviour {
 	void LoadBrushes (){
 	
 		int myColor = myRoom.myColor;
+		Invoke ("OkayToClick", 1.5f);
 
 		for (int i = 0; i < myRoom.brushes.Length; i++) {
 
@@ -203,7 +220,94 @@ public class LocalRoomManager : MonoBehaviour {
 		}
 	}
 
-	public void CollectYourLineData () {
+	void OkayToClick (){
+		okayToClick = true;
+	}
+
+	public void CheckBrushes () {
+	
+		if (okayToClick == false) {
+			return;
+		}
+
+		okayToClick = false; 
+		Invoke ("OkayToClick", 2.5f);
+
+		readyToAdvance = true;
+		int brushCount = brushHolder.transform.childCount;
+		int myColor = myRoom.myColor;
+
+		float xMax;
+		float xMin;
+		float yMax;
+		float yMin;
+
+		if (myColor == 1) {
+			xMax = 0;
+			xMin = -10;
+			yMax = 10;
+			yMin = 0;
+		} else if (myColor == 2) {
+			xMax = 10;
+			xMin = 0;
+			yMax = 10;
+			yMin = 0;
+		} else if (myColor == 3) {
+			xMax = 10;
+			xMin = 0;
+			yMax = 0;
+			yMin = -10;
+		} else if (myColor == 4) {
+			xMax = 0;
+			xMin = -10;
+			yMax = 0;
+			yMin = -10;
+		} else {
+			xMax = 0;
+			xMin = -10;
+			yMax = 10;
+			yMin = 0;
+		}
+
+		for (int i = 0; i < brushCount; i++) {
+
+			Vector3 brushPos = brushHolder.transform.GetChild (i).transform.position;
+			if (brushPos.y == 0 && brushPos.x > xMin && brushPos.x < xMax) {
+				readyToAdvance = false;
+			} else if (brushPos.x == 0 && brushPos.y > yMin && brushPos.y < yMax){
+				readyToAdvance = false;
+			}
+		}
+
+		if (readyToAdvance == true) {
+			CollectYourLineData ();
+		} else {
+			StillHaveBrushes ();
+		}
+	
+	}
+
+	void StillHaveBrushes(){
+	
+		offScreen = frameMessage.transform.position;
+
+		frameMessage.transform.DOLocalMoveY(0,1.0f).SetEase (Ease.OutBounce);
+		Invoke ("MoveOff", 2.5f);
+	}
+
+	void MoveOff() {
+	
+		frameMessage.transform.DOLocalMoveY(offScreen.y * -1, 1.0f).OnComplete (MoveBack);
+
+	}
+
+	void MoveBack(){
+
+		frameMessage.transform.DOLocalMoveY(offScreen.y, 0.0f);
+		okayToClick = true;
+	}
+
+	void CollectYourLineData () {
 
 		roomMan.GetComponent<RoomManager> ().CurtainsIn ();
 
@@ -300,5 +404,6 @@ public class LocalRoomManager : MonoBehaviour {
 		SceneManager.LoadScene ("Lobby Menu");
 
 	}
+
 
 }
