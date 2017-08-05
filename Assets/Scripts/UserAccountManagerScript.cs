@@ -41,6 +41,8 @@ public class UserAccountManagerScript : MonoBehaviour {
 	public GameObject messageBoard;
 	LobbyMenu lobbyMenu;
 
+	GameObject tempGameobject;
+
 	public void LogOut(){
 	
 		LoggedIn_Username = "";
@@ -184,8 +186,10 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 	}
 
-	public void TurnRoomSearch(string roomType, string fate){
-		
+	public void TurnRoomSearch(string roomType, string fate, GameObject buttonClicked){
+
+		tempGameobject = buttonClicked;
+
 		StartCoroutine (turnRoom(roomType, LoggedIn_Username, fate));
 
 	}
@@ -206,8 +210,10 @@ public class UserAccountManagerScript : MonoBehaviour {
 				lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
 			}
 
+			RoomManager.instance.CurtainsOut();
 			lobbyMenu.LoadingScreenAbort ();
 			BackToLobbyError ();
+
 			yield break;
 
 		}
@@ -230,10 +236,14 @@ public class UserAccountManagerScript : MonoBehaviour {
 		Debug.Log ("UserName: " + LoggedIn_Username);
 		Debug.Log ("roomId: " + roomId);
 
-		StartCoroutine (storeRoomId(LoggedIn_Username, roomId));
-
 		RoomManager.instance.CreateRoom (roomType, returnText, -2);
 
+	}
+
+	public void StoreRoom (string roomId){
+	
+		StartCoroutine (storeRoomId(LoggedIn_Username, roomId));
+	
 	}
 
 	IEnumerator storeRoomId (string username, string roomId){
@@ -263,6 +273,12 @@ public class UserAccountManagerScript : MonoBehaviour {
 	void TakeOffScreen(){
 	
 		messageBoard.transform.DOLocalMoveY (-1300, 1.0f).SetEase (Ease.InQuad);
+	}
+
+	public void RedoRoomSearch (){
+	
+		tempGameobject.GetComponent<TurnRoomButton> ().TurnRoomClicked ();
+	
 	}
 
 }

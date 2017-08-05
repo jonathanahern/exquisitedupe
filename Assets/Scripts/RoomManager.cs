@@ -26,6 +26,7 @@ public class RoomManager : MonoBehaviour {
 	}
 
 	public LobbyMenu lobbyMenu;
+	UserAccountManagerScript userAccount;
 
 	string[]roomIds = new string[5];
 
@@ -70,12 +71,20 @@ public class RoomManager : MonoBehaviour {
 	string tempID;
 	string tempPoints;
 
-	int roomCount;
+	public List<GameObject> categoryButtons;
+
+	GameObject tempRoom;
 
 	void Start (){
-
+		
+		categoryButtons = new List<GameObject>();
 		GetRooms ();
-		//StartCoroutine (getRoomData(room));
+
+		if (lobbyMenu == null) {
+			lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
+		}
+
+		lobbyMenu.GetAllCategories ();
 
 	}
 
@@ -92,8 +101,6 @@ public class RoomManager : MonoBehaviour {
 	}
 
 	public void GetRooms (){
-	
-		roomCount = 0;
 
 		if (statusHolder == null) {
 			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
@@ -109,7 +116,7 @@ public class RoomManager : MonoBehaviour {
 		}
 
 		//roomIds = new string [] { "0", "0", "0", "0", "0"};
-		UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
+		userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
 
 		string roomsString = userAccount.activeRooms;
 		username = userAccount.loggedInUsername;
@@ -162,16 +169,23 @@ public class RoomManager : MonoBehaviour {
 
 		Debug.Log ("All Data:" + returnText);
 
+		if (returnText.Length < 4) {
+			Debug.Log ("loading error");
+			GetRooms ();
+			yield break;
+		}
+
+
 		string[] pieces = returnText.Split ('^');
 
 
 		for (int i = 0; i < pieces.Length; i++) {
 
-			int goNum = -1;
+			int goNum = 0;
 
-			if (pieces.Length - 1 == i){
-				goNum = 1;
-			}
+//			if (pieces.Length - 1 == i){
+//				goNum = 1;
+//			}
 
 			CreateRoom ("junk", pieces[i], goNum);
 
@@ -181,9 +195,11 @@ public class RoomManager : MonoBehaviour {
 
 	public void CreateRoom(string roomType, string roomId, int startRoom){
 
+
 		GameObject newRoom = (GameObject)Instantiate(roomPrefab, Vector3.zero, Quaternion.identity);
 		newRoom.transform.SetParent (roomHolder, false);
 		TurnRoomScript roomScript = newRoom.GetComponent<TurnRoomScript> ();
+		tempRoom = newRoom;
 
 		string[] pieces = roomId.Split('|');
 
@@ -204,7 +220,12 @@ public class RoomManager : MonoBehaviour {
 				
 				string wordsWhole = piece.Substring (WORDS_SYM.Length);
 
+
+				Debug.Log (wordsWhole);
+
 				words = wordsWhole.Split('/');
+
+
 
 				for (int i = 0; i < words.Length; i++) {
 
@@ -366,19 +387,79 @@ public class RoomManager : MonoBehaviour {
 
 
 		if (startRoom == -2) {
+
+			int serverSlot = roomScript.myColor + 4;
+			string roomIDstring = "|[ID]" + roomScript.roomID.ToString();
+
+			if (username == null) {
+				UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
+				username = userAccount.loggedInUsername;
+			}
+
+			StartCoroutine (doubleCheckRoom(roomIDstring, serverSlot.ToString(), username, roomType));
 			roomScript.activeRoom = true;
 			roomScript.roomType = roomType;
 			CurtainsIn ();
-			SceneManager.LoadScene ("Turn Based Room");
+			//SceneManager.LoadScene ("Turn Based Room");
+
 		} else {
+			
 			UpdateTurnRoomsFromLogin (roomScript.roomID);
 			lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
 			lobbyMenu.TurnBasedClicked ();
 
 		}
-
+			
 	}
+
+	IEnumerator doubleCheckRoom (string roomIDstring, string myColor, string usernameToSend, string roomTypeCheck ){
+	
+		//Debug.Log ("Submitted room: " + roomTypeCheck);
+
+		IEnumerator e = DCP.RunCS ("turnRooms", "DoubleCheckRoom", new string[4] {roomIDstring, myColor, usernameToSend, roomTypeCheck});
+
+		while (e.MoveNext ()) {
+			yield return e.Current;
+		}
+
+		string returnText = e.Current as string;
+
+		Debug.Log ("UpdatedRoom:" + returnText);
+
+		if (returnText == "Good") {
+
+			string roomIDslash = roomIDstring.Substring (ID_SYM.Length + 1) + "/";
+
+			userAccount.StoreRoom(roomIDslash);
+			SceneManager.LoadScene ("Turn Based Room");
 		
+		} else if (returnText == "New Room") {
+
+			Destroy (tempRoom);
+			userAccount.RedoRoomSearch ();
+
+		} else {
+
+			Destroy (tempRoom);
+
+			string roomId;
+			string[] fates = returnText.Split ('|');
+			foreach (string data in fates) {
+
+				if (data.StartsWith ("[ID]")){
+
+					roomId = data.Substring ("[ID]".Length);
+					roomId = roomId + "/";
+
+				}
+
+			}
+
+			CreateRoom (roomTypeCheck, returnText, -2);
+
+		}
+			
+	}
 
 	public void UpdateTurnRoomsFromLogin(int statusRoomId){
 
@@ -386,7 +467,8 @@ public class RoomManager : MonoBehaviour {
 		if (statusHolder == null) {
 			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
 		}
-		rooms = new int[5];
+
+		//rooms = new int[5];
 
 		int children = roomHolder.childCount;
 		Debug.Log ("kid count: " + children);
@@ -401,7 +483,7 @@ public class RoomManager : MonoBehaviour {
 
 				GameObject roomStatus = Instantiate (statusPrefab);
 				roomStatus.transform.SetParent (statusHolder.transform, false);
-			//	Debug.Log (turnRoom.votePoses);
+				Debug.Log ("Found: " + statusRoomId);
 				TurnGameStatus status = roomStatus.GetComponent<TurnGameStatus> ();
 				status.roomId = turnRoom.roomID;
 				status.categoryName.text = turnRoom.roomType;
@@ -668,9 +750,10 @@ public class RoomManager : MonoBehaviour {
 //		}
 
 		if (username == null) {
-			UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
+			userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
 			username = userAccount.loggedInUsername;
 		}
+
 
 		StartCoroutine (updateHighScore(points, username, currentRooms));
 		StartCoroutine (statusUpdateScoring(roomIDstring, playerColor.ToString()));

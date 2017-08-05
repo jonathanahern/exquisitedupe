@@ -7,6 +7,7 @@ using DatabaseControl;
 public class TurnRoomButton : MonoBehaviour {
 
 	public Text roomType;
+	public string roomTypeString;
 	public string words;
 	public string brushes;
 	public string grounding;
@@ -44,9 +45,22 @@ public class TurnRoomButton : MonoBehaviour {
 
 		int awardNum = Random.Range (1, 4);
 
-		fate = "|[WORDS]" + words + "|[BRUSHES]" + brushes + "|" + grounding + "|[FATE]" + dupeNum + "/" + rightWord + "/" + wrongWord + "/" + awardNum;
+		string[] wordsSplit = words.Split ('/');
+		string newWords = "";
 
-		UserAccountManagerScript.instance.TurnRoomSearch(roomType.text, fate);
+		for (int i = 0; i < 10; i++) {
+
+			newWords = newWords + wordsSplit [i] + "/";
+
+		}
+
+		newWords = newWords.TrimEnd ('/');
+
+		fate = "|[WORDS]" + newWords + "|[BRUSHES]" + brushes + "|" + grounding + "|[FATE]" + dupeNum + "/" + rightWord + "/" + wrongWord + "/" + awardNum;
+
+		Debug.Log (words + "From butt");
+
+		UserAccountManagerScript.instance.TurnRoomSearch(roomType.text, fate, gameObject);
 
 		LobbyMenu.instance.LoadingScreenFromNewCats ();
 

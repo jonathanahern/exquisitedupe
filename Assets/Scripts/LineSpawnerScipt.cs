@@ -28,6 +28,7 @@ public class LineSpawnerScipt : MonoBehaviour {
 	private float yMax;
 
 	public bool drawingScene;
+	public bool dontDraw;
 
 	// Use this for initialization
 	void Start () {
@@ -88,6 +89,10 @@ public class LineSpawnerScipt : MonoBehaviour {
 	void Update () {
 
 		if (linePrefab == null) {
+			return;
+		}
+
+		if (dontDraw == true) {
 			return;
 		}
 

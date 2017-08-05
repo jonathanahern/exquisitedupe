@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 using UnityEngine.UI;
+using DatabaseControl;
 
 public class LobbyMenu : MonoBehaviour {
 
@@ -31,6 +32,16 @@ public class LobbyMenu : MonoBehaviour {
 
 	RoomManager roomMan;
 	public GameObject frameText;
+
+	public GameObject turnButtonObj;
+	public Transform turnHolder;
+	Transform catHolder;
+	public GameObject loadingText;
+
+	private static string ROOMTYPE_SYM = "[ROOMTYPE]";
+	private static string WORDS_SYM = "[WORDS]";
+	private static string BRUSHES_SYM = "[BRUSHES]";
+	private static string GROUNDING_SYM = "[GROUNDING]";
 
 	// Use this for initialization
 	void Awake () {
@@ -212,6 +223,77 @@ public class LobbyMenu : MonoBehaviour {
 	
 		okToClick = true;
 	
+	}
+
+	public void GetAllCategories (){
+
+		StartCoroutine (getAllCategories());
+
+	}
+
+	IEnumerator getAllCategories (){
+
+		IEnumerator e = DCP.RunCS ("categories", "GetCategories");
+
+		while (e.MoveNext ()) {
+			yield return e.Current;
+		}
+
+		string returnText = e.Current as string;
+
+		CreateCatButtons (returnText);
+
+	}
+
+	void CreateCatButtons (string totalCats) {
+
+		totalCats = totalCats.TrimEnd ('$');
+		string[] totalCat = totalCats.Split ('$');
+
+		foreach (string cat in totalCat) {
+
+			Vector3 offScreen = new Vector3 (2000,2000, 0);
+			GameObject buttonObj = Instantiate (turnButtonObj,offScreen,Quaternion.identity);
+			roomMan.categoryButtons.Add (buttonObj);
+			TurnRoomButton turnButt = buttonObj.GetComponent<TurnRoomButton> ();
+			string[] item = cat.Split ('|');
+			Debug.Log (item[0]);
+			for (int i = 0; i < item.Length; i++) {
+
+				if (item [i].StartsWith (ROOMTYPE_SYM)) {
+
+					turnButt.roomTypeString = item [i].Substring (ROOMTYPE_SYM.Length);
+
+				} else if (item [i].StartsWith (WORDS_SYM)) {
+
+					turnButt.words = item [i].Substring (WORDS_SYM.Length);
+
+				} else if (item [i].StartsWith (BRUSHES_SYM)) {
+
+					turnButt.brushes = item [i].Substring (BRUSHES_SYM.Length);
+
+				} else if (item [i].StartsWith (GROUNDING_SYM)) {
+
+					turnButt.grounding = item [i];
+
+				}
+
+			}
+
+			turnButt.roomType.text = turnButt.roomTypeString;
+			turnButt.transform.SetParent (turnHolder,false);
+		
+
+		}
+			
+		PlaceOptimalButtons ();
+
+	}
+		
+	public void PlaceOptimalButtons(){
+
+		loadingText.SetActive (false);
+
 	}
 
 }

@@ -20,6 +20,8 @@ public class LocalTurnVoting : MonoBehaviour {
 	int thirdVote;
 
 	public GameObject guessObject;
+	//CaptureAndSave snapShot;
+	//public Camera paintingCam;
 
 	public GameObject pedestal;
 	public Transform spawnPos;
@@ -54,6 +56,8 @@ public class LocalTurnVoting : MonoBehaviour {
 	public GameObject dupeTrophy;
 	public GameObject dupeColor;
 
+	public Color[] dupeColors;
+	public Color[] regColors;
 
 	public GameObject redLine;
 	public GameObject blueLine;
@@ -72,6 +76,8 @@ public class LocalTurnVoting : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
+		//snapShot = GameObject.FindObjectOfType<CaptureAndSave> ();
+
 		pedScreenPos = pedestal.transform.position.y;
 		pedOffPos = pedScreenPos - 3.0f;
 		Vector3 offScreen = new Vector3 (pedestal.transform.position.x, pedOffPos, pedestal.transform.position.z);
@@ -80,13 +86,13 @@ public class LocalTurnVoting : MonoBehaviour {
 		signScreenPos = sign.transform.position.y;
 		signOffPos = signScreenPos - 3.0f;
 
-		foreach (Material lineMat in lineMats) {
-
-			Color lineColor = lineMat.color;
-			Color fullColor = new Color (lineColor.r, lineColor.g, lineColor.b, 1.0f);
-			lineMat.color = fullColor;
-			
-		}
+//		foreach (Material lineMat in lineMats) {
+//
+//			Color lineColor = lineMat.color;
+//			Color fullColor = new Color (lineColor.r, lineColor.g, lineColor.b, 1.0f);
+//			lineMat.color = fullColor;
+//			
+//		}
 	
 		roomMan = GameObject.FindGameObjectWithTag ("Room Manager");
 
@@ -125,11 +131,10 @@ public class LocalTurnVoting : MonoBehaviour {
 
 		Invoke ("OpenCurtains", 1.0f);
 		Invoke ("MoveUpPedestal" , 3.0f);
+		Invoke ("TakePicture" , 3.0f);
 
 	}
 
-
-	
 	// Update is called once per frame
 	void Update () {
 
@@ -144,6 +149,14 @@ public class LocalTurnVoting : MonoBehaviour {
 
 		}
 
+	}
+
+	void TakePicture (){
+
+		//snapShot.CaptureAndSaveToAlbum(0, 0, 500, 1000, ImageType.JPG);
+
+//		snapShot.CaptureAndSaveToAlbum(Screen.width * 1, Screen.height * 1, paintingCam, ImageType.JPG);
+//		paintingCam.gameObject.SetActive (false);
 
 	}
 
@@ -248,6 +261,7 @@ public class LocalTurnVoting : MonoBehaviour {
 
 			}
 		}
+
 	}
 
 	void MoveUpPedestal(){
@@ -471,21 +485,13 @@ public class LocalTurnVoting : MonoBehaviour {
 	void LaunchVote2(){
 
 		if (myRoom.dupeNum == 1) {
-			Color redMat = lineMats[0].color;
-			Color newColor = new Color (redMat.r, redMat.g, redMat.b, .2f);
-			lineMats[0].color = newColor;
+			lineMats[0].color = dupeColors[0];
 		} else if (myRoom.dupeNum == 2) {
-			Color blueMat = lineMats[1].color;
-			Color newColor = new Color (blueMat.r, blueMat.g, blueMat.b, .2f);
-			lineMats[1].color = newColor;
+			lineMats[1].color = dupeColors[1];
 		} else if (myRoom.dupeNum == 3) {
-			Color greenMat = lineMats[2].color;
-			Color newColor = new Color (greenMat.r, greenMat.g, greenMat.b, .2f);
-			lineMats[2].color = newColor;
+			lineMats[2].color = dupeColors[2];
 		} else if (myRoom.dupeNum == 4) {
-			Color orangeMat = lineMats[3].color;
-			Color newColor = new Color (orangeMat.r, orangeMat.g, orangeMat.b, .2f);
-			lineMats[3].color = newColor;
+			lineMats[3].color = dupeColors[3];
 		} 
 			
 		if (dupeCaught == true) {
@@ -540,8 +546,8 @@ public class LocalTurnVoting : MonoBehaviour {
 		pedestal.SetActive (false);
 		sign.SetActive (false);
 
-		Camera.main.transform.DOLocalMoveY (-3.35f, 1.5f).OnComplete(MoveInGuesser);
-		DOTween.To(()=> Camera.main.orthographicSize, x=> Camera.main.orthographicSize = x, 7.5f, 1.5f);
+		Camera.main.transform.DOLocalMoveY (-2.6f, 1.5f).OnComplete(MoveInGuesser);
+		DOTween.To(()=> Camera.main.orthographicSize, x=> Camera.main.orthographicSize = x, 6.7f, 1.5f);
 	
 	}
 
@@ -659,13 +665,16 @@ public class LocalTurnVoting : MonoBehaviour {
 		myRoom.status = "waiting...";
 		myRoom.statusNum = 3;
 
-		foreach (Material lineMat in lineMats) {
 
-			Color lineColor = lineMat.color;
-			Color fullColor = new Color (lineColor.r, lineColor.g, lineColor.b, 1.0f);
-			lineMat.color = fullColor;
-
-		}
+		if (myRoom.dupeNum == 1) {
+			lineMats[0].color = regColors[0];
+		} else if (myRoom.dupeNum == 2) {
+			lineMats[1].color = regColors[1];
+		} else if (myRoom.dupeNum == 3) {
+			lineMats[2].color = regColors[2];
+		} else if (myRoom.dupeNum == 4) {
+			lineMats[3].color = regColors[3];
+		} 
 
 		RoomManager.instance.cameFromTurnBased=true;
 		SceneManager.LoadScene ("Lobby Menu");
@@ -673,3 +682,5 @@ public class LocalTurnVoting : MonoBehaviour {
 	}
 
 }
+
+//lion skunk rhino gerbil cow bear pig dog camel horse

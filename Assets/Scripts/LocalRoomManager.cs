@@ -396,6 +396,14 @@ public class LocalRoomManager : MonoBehaviour {
 		string returnText = e.Current as string;
 
 		Debug.Log ("Returned:" + returnText);
+
+		if (returnText.Contains(myRoom.myColor.ToString()) == false){
+
+			CollectYourLineData();
+			yield break;
+
+		}
+
 		myRoom.activeRoom = false;
 		myRoom.status = "waiting...";
 		myRoom.statusNum = 2;

@@ -20,15 +20,15 @@ public class GroundingMaker : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		if (Input.GetKeyDown (KeyCode.U)) {
-
-			ConvertLinesToString ();
-		}
-
-		if (Input.GetKeyDown (KeyCode.I)) {
-
-			ConvertStringToLines ();
-		}
+//		if (Input.GetKeyDown (KeyCode.U)) {
+//
+//			ConvertLinesToString ();
+//		}
+//
+//		if (Input.GetKeyDown (KeyCode.I)) {
+//
+//			ConvertStringToLines ();
+//		}
 
 	}
 
