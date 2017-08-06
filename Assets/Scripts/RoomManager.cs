@@ -28,8 +28,6 @@ public class RoomManager : MonoBehaviour {
 	public LobbyMenu lobbyMenu;
 	UserAccountManagerScript userAccount;
 
-	string[]roomIds = new string[5];
-
 	public string username;
 	public GameObject roomPrefab;
 	public GameObject statusPrefab;
@@ -47,6 +45,10 @@ public class RoomManager : MonoBehaviour {
 	private static string PLAYERS_SYM = "[PLAYERS]";
 	private static string VOTEPOS_SYM = "[VOTEPOS]";
 	private static string DUPEGUESS_SYM = "[DUPEGUESS]";
+	private static string CATEGORIES_SYM = "[CATEGORIES]";
+
+	public string[] catsWanted;
+	public string[] catsPlaying;
 
 	private string[] words = new string[12];
 	private string[] brushes = new string[10];
@@ -67,17 +69,27 @@ public class RoomManager : MonoBehaviour {
 	public GameObject rightCurtain;
 	public GameObject centerCurtain;
 	public Transform roomHolder;
+	public Transform buttonHolder;
 	int tempColor;
 	string tempID;
-	string tempPoints;
 
 	public List<GameObject> categoryButtons;
+	public List<string> acceptableStrings;
+	public List<string> bestStrings;
+
+	int roomTotal;
+	public bool buttonsReady = false;
+	public bool roomsReady = false;
 
 	GameObject tempRoom;
 
 	void Start (){
 		
 		categoryButtons = new List<GameObject>();
+		acceptableStrings = new List<string>();
+		bestStrings = new List<string>();
+
+
 		GetRooms ();
 
 		if (lobbyMenu == null) {
@@ -121,11 +133,13 @@ public class RoomManager : MonoBehaviour {
 		string roomsString = userAccount.activeRooms;
 		username = userAccount.loggedInUsername;
 
-		Debug.Log ("roomsString " + roomsString);
+
+
+		//Debug.Log ("roomsString " + roomsString);
 
 		if (roomsString == string.Empty) {
 
-			Debug.Log ("roomsString2 " + roomsString);
+			//Debug.Log ("roomsString2 " + roomsString);
 
 			if (frameText == null) {
 			
@@ -134,11 +148,16 @@ public class RoomManager : MonoBehaviour {
 			}
 
 			frameText.GetComponent<Text>().text = "Nothin happenin";
+			roomTotal = 0;
+			roomsReady = true;
+			FindEmptyRooms ();
 			return;
 		}
 
 		roomsString = roomsString.Substring (ID_SYM.Length);
 		roomsString = roomsString.TrimEnd ('/');
+
+		roomTotal = roomsString.Split ('/').Length;
 
 		Debug.Log (roomsString);
 
@@ -147,7 +166,7 @@ public class RoomManager : MonoBehaviour {
 		for (int i = 0; i < rooms.Length; i++) {
 
 			string roomId = "|[ID]" + rooms[i];
-			Debug.Log ("ROOOOOM: " + roomId);
+			//Debug.Log ("ROOOOOM: " + roomId);
 			StartCoroutine (getRoomData(roomId));
 
 		}
@@ -407,6 +426,13 @@ public class RoomManager : MonoBehaviour {
 			UpdateTurnRoomsFromLogin (roomScript.roomID);
 			lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
 			lobbyMenu.TurnBasedClicked ();
+
+			Debug.Log ("room holder: " + roomHolder.childCount.ToString() + " roomTotal: " + roomTotal.ToString());
+
+			if (roomHolder.childCount > roomTotal - 1) {
+				roomsReady = true;
+				FindEmptyRooms ();
+			}
 
 		}
 			
@@ -740,7 +766,7 @@ public class RoomManager : MonoBehaviour {
 		int children = roomHolder.childCount;
 		tempColor = playerColor;
 		tempID = roomIDstring;
-		tempPoints = pointsToAdd.ToString ();
+		//tempPoints = pointsToAdd.ToString ();
 
 //		for (int i = 0; i < children; ++i){
 //
@@ -803,6 +829,183 @@ public class RoomManager : MonoBehaviour {
 		string returnText = e.Current as string;
 
 		Debug.Log ("UpdatedScoring:" + returnText);
+
+	}
+
+	public void FindEmptyRooms(){
+
+		if (roomsReady == true && buttonsReady == true) {
+			StartCoroutine (findEmptyRooms ());
+		}
+		
+	}
+
+	IEnumerator findEmptyRooms (){
+
+		//	Debug.Log ("STUFF: " + roomIDstring + myColor);
+
+		IEnumerator e = DCP.RunCS ("turnRooms", "FindEmptyRooms");
+
+		while (e.MoveNext ()) {
+			yield return e.Current;
+		}
+
+		string returnText = e.Current as string;
+
+		Debug.Log ("Rooms needing:" + returnText);
+
+		catsWanted = new string[0];
+
+		returnText = returnText.TrimEnd ('|');
+		returnText = returnText.Substring (CATEGORIES_SYM.Length);
+		catsWanted = returnText.Split('|');
+
+		LoadUpTurnButtons ();
+
+	}
+
+	void LoadUpTurnButtons(){
+
+		acceptableStrings = new List<string>();
+		bestStrings = new List<string>();
+
+		for (int i = 0; i < categoryButtons.Count; i++) {
+
+			string catName = categoryButtons [i].GetComponent<TurnRoomButton> ().roomTypeString;
+			acceptableStrings.Add (catName);
+
+		}
+
+		int childCount = roomHolder.childCount;
+
+		catsPlaying = new string[childCount];
+
+		for (int i = 0; i < childCount; i++) {
+
+			string catName = roomHolder.GetChild (i).GetComponent<TurnRoomScript> ().roomType;
+			catsPlaying[i] = catName;
+
+		}
+
+		for (int i = 0; i < acceptableStrings.Count; i++) {
+
+			for (int t = 0; t < catsPlaying.Length; t++) {
+
+				if (acceptableStrings [i] == catsPlaying [t]) {
+
+					Debug.Log (catsPlaying [t]);
+
+					acceptableStrings.Remove (catsPlaying [t]);
+
+				}
+
+			}
+				
+		}
+
+		int listCount = acceptableStrings.Count;
+
+		for (int i = 0; i < listCount; i++) {
+
+			for (int t = 0; t < catsWanted.Length; t++) {
+
+				if (acceptableStrings [i] == catsWanted [t]) {
+				
+					bestStrings.Add (catsWanted [t]);
+
+				}
+
+			}
+				
+		}
+
+		bestStrings.Sort ();
+		int bestTotal = bestStrings.Count - 1;
+
+		if (bestTotal > 0) {
+
+			for (int i = 0; i < bestTotal; i++) {
+
+				int num = bestTotal - i;
+
+				if (bestStrings [num] == bestStrings [num - 1]) {
+			
+					bestStrings.RemoveAt (num);
+
+				}
+			}
+		}
+
+
+		for (int i = 0; i < bestStrings.Count; i++) {
+
+			acceptableStrings.Remove (bestStrings[i]);
+
+		}
+
+		int bestCount = bestStrings.Count;
+		int stringsNeeded = 3 - bestCount;
+		if (stringsNeeded < 1) {
+			stringsNeeded = 0;
+		}
+
+		for (int i = 0; i < acceptableStrings.Count; i++) {
+			string temp = acceptableStrings[i];
+			int randomIndex = Random.Range(i, acceptableStrings.Count);
+			acceptableStrings[i] = acceptableStrings[randomIndex];
+			acceptableStrings[randomIndex] = temp;
+		}
+
+		for (int i = 0; i < stringsNeeded; i++) {
+
+			bestStrings.Add (acceptableStrings [i]);
+
+		}
+
+		GameObject[] buttons;
+		buttons = new GameObject[3];
+		int buttCount = 0;
+
+		for (int i = 0; i < categoryButtons.Count; i++) {
+
+			GameObject turnButton = categoryButtons [i];
+			string buttonName = turnButton.GetComponent<TurnRoomButton> ().roomTypeString;
+			if (buttonName == bestStrings [0] || buttonName == bestStrings [1] || buttonName == bestStrings [2]) {
+				buttons [buttCount] = categoryButtons[i];
+				buttCount++;
+			}
+				
+		}
+
+		if (lobbyMenu == null) {
+			lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
+		}
+
+		lobbyMenu.PlaceOptimalButtons (buttons);
+	
+	}
+
+	public void TakeButtonsWith(){
+	
+		int childCount = categoryButtons.Count;
+
+		for (int i = 0; i < childCount; i++) {
+
+			categoryButtons [i].transform.SetParent (buttonHolder, false);
+
+		}
+	
+	}
+
+	public void DropOffButtons(){
+
+		int childCount = categoryButtons.Count;
+
+		for (int i = 0; i < childCount; i++) {
+
+			categoryButtons [i].transform.SetParent(null,false);
+
+		}
 
 	}
 

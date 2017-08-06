@@ -56,9 +56,12 @@ public class LobbyMenu : MonoBehaviour {
 		zeroCounter = new Vector3 (0, 0, 360.0f);
 		startPos = newCats.position.x;
 		roomMan = GameObject.FindGameObjectWithTag ("Room Manager").GetComponent<RoomManager> ();
+		roomMan.roomsReady = false;
 		if (roomMan.cameFromTurnBased == true) {
 			TurnBasedClicked ();
 			roomMan.UpdateTurnRooms();
+			//roomMan.FindEmptyRooms ();
+			roomMan.DropOffButtons ();
 		}
 
 		if (roomMan.cameFromScoring == false) {
@@ -215,6 +218,7 @@ public class LobbyMenu : MonoBehaviour {
 		Invoke ("OkToClickAgain", 6.0f);
 
 		statusLoad.SetActive (true);
+		roomMan.roomsReady = false;
 		roomMan.GetRooms ();
 	
 	}
@@ -247,8 +251,10 @@ public class LobbyMenu : MonoBehaviour {
 
 	void CreateCatButtons (string totalCats) {
 
-		totalCats = totalCats.TrimEnd ('$');
-		string[] totalCat = totalCats.Split ('$');
+		totalCats = totalCats.TrimEnd ('^');
+		Debug.Log (totalCats);
+		string[] totalCat = totalCats.Split ('^');
+
 
 		foreach (string cat in totalCat) {
 
@@ -257,7 +263,7 @@ public class LobbyMenu : MonoBehaviour {
 			roomMan.categoryButtons.Add (buttonObj);
 			TurnRoomButton turnButt = buttonObj.GetComponent<TurnRoomButton> ();
 			string[] item = cat.Split ('|');
-			Debug.Log (item[0]);
+			//Debug.Log (item[0]);
 			for (int i = 0; i < item.Length; i++) {
 
 				if (item [i].StartsWith (ROOMTYPE_SYM)) {
@@ -281,19 +287,43 @@ public class LobbyMenu : MonoBehaviour {
 			}
 
 			turnButt.roomType.text = turnButt.roomTypeString;
-			turnButt.transform.SetParent (turnHolder,false);
 		
-
 		}
-			
-		PlaceOptimalButtons ();
+		if (roomMan == null) {
+			roomMan = GameObject.FindGameObjectWithTag ("Room Manager").GetComponent<RoomManager> ();
+		}
+		roomMan.buttonsReady = true;
+		roomMan.FindEmptyRooms ();
 
 	}
 		
-	public void PlaceOptimalButtons(){
+	public void PlaceOptimalButtons(GameObject[] turnButtons){
+
+		for (int i = 0; i < turnButtons.Length; i++) {
+
+			turnButtons [i].transform.SetParent (turnHolder, false);
+
+		}
+
+
 
 		loadingText.SetActive (false);
 
+	}
+
+	public void DetachButtons(){
+
+		loadingText.SetActive (true);
+
+		int childCount = turnHolder.childCount;
+
+		for (int i = 0; i < childCount; i++) {
+
+			turnHolder.GetChild (0).transform.SetParent(null,false);
+
+		}
+
+		roomMan.TakeButtonsWith ();
 	}
 
 }

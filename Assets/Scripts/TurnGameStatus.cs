@@ -27,6 +27,7 @@ public class TurnGameStatus : MonoBehaviour {
 
 	GameObject roomMan;
 	RoomManager roomManScript;
+	LobbyMenu lobby;
 
 	Transform roomHolder;
 
@@ -37,6 +38,8 @@ public class TurnGameStatus : MonoBehaviour {
 		roomManScript = roomMan.GetComponent<RoomManager> ();
 
 		roomHolder = GameObject.FindGameObjectWithTag ("Room Holder").transform;
+
+		lobby = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
 
 	}
 
@@ -106,13 +109,21 @@ public class TurnGameStatus : MonoBehaviour {
 		if (phaseTwoReady == true) {
 			roomManScript.CurtainsIn ();
 			Invoke ("StartAfterDelay", 1.5f);
+			lobby.DetachButtons ();
+			roomManScript.TakeButtonsWith ();
 		} else if (phaseOneReady == true) {
 			roomManScript.CurtainsIn ();
 			Invoke ("StartAfterDelay", 1.5f);
+			lobby.DetachButtons ();
+			roomManScript.TakeButtonsWith ();
 		} else if (phaseThreeReady == true) {
 			roomManScript.CurtainsIn ();
 			Invoke ("StartAfterDelay", 1.5f);
+			lobby.DetachButtons ();
+			roomManScript.TakeButtonsWith ();
 		}
+
+
 
 
 	}
