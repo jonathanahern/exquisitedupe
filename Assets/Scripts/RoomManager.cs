@@ -239,7 +239,6 @@ public class RoomManager : MonoBehaviour {
 				
 				string wordsWhole = piece.Substring (WORDS_SYM.Length);
 
-
 				Debug.Log (wordsWhole);
 
 				words = wordsWhole.Split('/');
@@ -866,6 +865,11 @@ public class RoomManager : MonoBehaviour {
 
 	void LoadUpTurnButtons(){
 
+		Scene scene = SceneManager.GetActiveScene ();
+		if (scene.name != "Lobby Menu") {
+			return;
+		}
+
 		acceptableStrings = new List<string>();
 		bestStrings = new List<string>();
 
@@ -981,8 +985,9 @@ public class RoomManager : MonoBehaviour {
 			lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
 		}
 
-		lobbyMenu.PlaceOptimalButtons (buttons);
-	
+		if (lobbyMenu != null) {
+			lobbyMenu.PlaceOptimalButtons (buttons);
+		}
 	}
 
 	public void TakeButtonsWith(){

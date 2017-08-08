@@ -96,6 +96,12 @@ public class LineSpawnerScipt : MonoBehaviour {
 			return;
 		}
 
+		if (Input.GetKeyDown(KeyCode.Q) && drawingScene == true){
+
+			UndoLine ();
+
+		}
+
 		if (Input.GetMouseButtonDown (0)) {
 		
 			Vector2 mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);

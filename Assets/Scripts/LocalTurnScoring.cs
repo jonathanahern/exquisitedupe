@@ -69,6 +69,10 @@ public class LocalTurnScoring : MonoBehaviour {
 	public GameObject greenDot;
 	public GameObject orangeDot;
 
+	public Text[] guesserNames;
+	public Text[] nonDupeGuesses;
+	public GameObject[] guessObjs;
+
 	public List<int> votes;
 	public List<int> winnersCircle;
 
@@ -113,6 +117,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		myColor = myRoom.myColor;
 		myRoomID = myRoom.roomID;
+
 	}
 	
 	// Update is called once per frame
@@ -133,9 +138,12 @@ public class LocalTurnScoring : MonoBehaviour {
 	
 		string[] voteDataWhole = myRoom.votePoses.Split ('@');
 
+		int guessCount = 0;
+
 		foreach (string voteData in voteDataWhole) {
 
 			string[] oneData = voteData.Split ('$');
+			oneData [4] = CheckIfPass (oneData[4]);
 
 			if (oneData [0] == "1") {
 			
@@ -153,6 +161,11 @@ public class LocalTurnScoring : MonoBehaviour {
 
 				}
 
+				nonDupeGuesses [guessCount].text = "\"" + oneData [4] + "\"";
+				guesserNames [guessCount].text = myRoom.players [0];
+				guessCount++;
+
+
 			} else if (oneData [0] == "2") {
 
 				for (int i = 1; i < 4; i++) {
@@ -168,6 +181,9 @@ public class LocalTurnScoring : MonoBehaviour {
 					bluePos[i-1] = tempVect;
 
 				}
+				nonDupeGuesses [guessCount].text = "\"" + oneData [4] + "\"";
+				guesserNames [guessCount].text = myRoom.players [1];
+				guessCount++;
 
 			} else if (oneData [0] == "3") {
 
@@ -184,6 +200,9 @@ public class LocalTurnScoring : MonoBehaviour {
 					greenPos[i-1] = tempVect;
 
 				}
+				nonDupeGuesses [guessCount].text = "\"" + oneData [4] + "\"";
+				guesserNames [guessCount].text = myRoom.players [2];
+				guessCount++;
 
 			} else if (oneData [0] == "4") {
 
@@ -200,6 +219,10 @@ public class LocalTurnScoring : MonoBehaviour {
 					orangePos[i-1] = tempVect;
 
 				}
+
+				nonDupeGuesses [guessCount].text = "\"" + oneData [4] + "\"";
+				guesserNames [guessCount].text = myRoom.players [3];
+				guessCount++;
 
 			}
 
@@ -242,6 +265,16 @@ public class LocalTurnScoring : MonoBehaviour {
 		Invoke ("OpenCurtains", 1.5f);
 		Invoke ("BeginDupeReveal", 4);
 
+	}
+
+	string CheckIfPass(string guessed){
+	
+		if (guessed == "Pass") {
+			return "heckifiknow";
+		} else {
+			return guessed;
+		}
+	
 	}
 
 	void OpenCurtains (){

@@ -301,11 +301,11 @@ public class LobbyMenu : MonoBehaviour {
 
 		for (int i = 0; i < turnButtons.Length; i++) {
 
-			turnButtons [i].transform.SetParent (turnHolder, false);
-
+			if (turnHolder.childCount < 3){
+				turnButtons [i].transform.SetParent (turnHolder, false);
 		}
 
-
+	}
 
 		loadingText.SetActive (false);
 

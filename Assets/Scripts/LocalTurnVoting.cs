@@ -47,6 +47,7 @@ public class LocalTurnVoting : MonoBehaviour {
 	public Sprite dupeVotedSelf;
 	public Sprite wrongDupeGuess;
 	public Sprite rightDupeGuess;
+	public Sprite nonDupeGuess;
 
 	public GameObject buttonObj;
 	public GameObject cantVoteObj;
@@ -71,17 +72,43 @@ public class LocalTurnVoting : MonoBehaviour {
 
 	public Material[] lineMats;
 
+	float guessScreenPos;
+	float guessOffScreenPos;
+	public GameObject guessNonDupe;
+
+	Vector3 camPos1;
+	Vector3 camPos2;
+	Vector3 camPos3;
+	Vector3 camPos4;
+
+	Vector3 dupePos;
+
+	string myDupeSubjectGuess;
+
+	public Text dupeGuessTitle;
+
 	private static string MYCOLOR_SYM = "[MYCOLOR]";
 
 	// Use this for initialization
 	void Start () {
 
-		//snapShot = GameObject.FindObjectOfType<CaptureAndSave> ();
+		for (int i = 0; i < lineMats.Length; i++) {
 
+			lineMats[i].color = regColors[i];
+
+		}
+
+		//snapShot = GameObject.FindObjectOfType<CaptureAndSave> ();
+	
 		pedScreenPos = pedestal.transform.position.y;
 		pedOffPos = pedScreenPos - 3.0f;
 		Vector3 offScreen = new Vector3 (pedestal.transform.position.x, pedOffPos, pedestal.transform.position.z);
 		pedestal.transform.position = offScreen;
+
+		guessScreenPos = guessNonDupe.transform.position.y;
+		guessOffScreenPos = guessScreenPos - 3.0f;
+		Vector3 offScreen2 = new Vector3 (guessNonDupe.transform.position.x, guessOffScreenPos, guessNonDupe.transform.position.z);
+		guessNonDupe.transform.position = offScreen2;
 
 		signScreenPos = sign.transform.position.y;
 		signOffPos = signScreenPos - 3.0f;
@@ -126,6 +153,27 @@ public class LocalTurnVoting : MonoBehaviour {
 		VoteFabScript voteScript = dupeVote.GetComponent<VoteFabScript> ();
 		voteScript.localTurn = this;
 		currentVote = 1;
+
+		camPos1 = new Vector3 (-1.28f, .7f, -10);
+		camPos2 = new Vector3 (1.28f, .7f, -10);
+		camPos3 = new Vector3 (1.28f, -3.15f, -10);
+		camPos4 = new Vector3 (-1.28f, -3.15f, -10);
+
+		if (myRoom.dupeNum == 1) {
+			dupePos = camPos1;
+		} else if (myRoom.dupeNum == 2) {
+			dupePos = camPos2;
+		} else if (myRoom.dupeNum == 3) {
+			dupePos = camPos3;
+		} else if (myRoom.dupeNum == 4) {
+			dupePos = camPos4;
+		}
+
+		if (myRoom.dupeNum == myRoom.myColor) {
+			dupeGuessTitle.text = "What is the correct subject";
+		} else {
+			dupeGuessTitle.text = "What was the dupe drawing?";
+		}
 
 		voteScript.SetupDupeVote (myRoom.myColor);
 
@@ -294,6 +342,26 @@ public class LocalTurnVoting : MonoBehaviour {
 	
 	}
 
+	void MoveOutGuesser(){
+
+		guessObject.transform.DOLocalMoveX (-1600, 1.0f).SetEase (Ease.OutBounce);
+
+	}
+
+	void MoveUpNonDupeGuess(){
+	
+		signWords.sprite = nonDupeGuess;
+		MoveUpSign ();
+		guessNonDupe.transform.DOLocalMoveY (guessScreenPos, 1.0f).SetEase (Ease.OutBounce);
+	
+	}
+
+	void MoveDownNonDupeGuess(){
+
+		guessNonDupe.transform.DOLocalMoveY (guessOffScreenPos, 1.0f).SetEase (Ease.OutBounce);
+
+	}
+
 	public void FlipSignToConfirm(int onDupe){
 
 		Vector3 oneEighty = new Vector3 (0, 180, 0);
@@ -443,9 +511,16 @@ public class LocalTurnVoting : MonoBehaviour {
 			MoveDownPedestal ();
 		}
 		MoveDownSign ();
-		Invoke ("LaunchVote2", 2.0f);
-	}
 
+		if (dupeCaught == true) {
+			dupeTrophy.SetActive (false);
+		} else {
+			dupeColor.SetActive (false);
+		}
+
+		Invoke ("MoveUpNonDupeGuess", 2.0f);
+	}
+		
 	IEnumerator checkVoteStatus (string roomId, string caughtVar){
 
 		IEnumerator e = DCP.RunCS ("turnRooms", "CheckVoteStatus", new string[2] {roomId, caughtVar});
@@ -482,23 +557,51 @@ public class LocalTurnVoting : MonoBehaviour {
 
 	}
 
+	public void GuessButton (){
+
+		MoveDownSign ();
+		MoveDownNonDupeGuess ();
+		Invoke ("LaunchNonDupeGuess", 2.0f);
+
+
+	}
+
+	public void PassButton (){
+
+		MoveDownSign ();
+		myDupeSubjectGuess = "Pass";
+		MoveDownNonDupeGuess ();
+		Invoke ("LaunchVote2", 2.0f);
+
+	}
+
 	void LaunchVote2(){
+
+		pedestal.SetActive (true);
+		sign.SetActive (true);
 
 		if (myRoom.dupeNum == 1) {
 			lineMats[0].color = dupeColors[0];
+			lineMats[1].color = regColors[1];
+			lineMats[2].color = regColors[2];
+			lineMats[3].color = regColors[3];
 		} else if (myRoom.dupeNum == 2) {
 			lineMats[1].color = dupeColors[1];
+			lineMats[0].color = regColors[0];
+			lineMats[2].color = regColors[2];
+			lineMats[3].color = regColors[3];
 		} else if (myRoom.dupeNum == 3) {
 			lineMats[2].color = dupeColors[2];
+			lineMats[1].color = regColors[1];
+			lineMats[0].color = regColors[0];
+			lineMats[3].color = regColors[3];
 		} else if (myRoom.dupeNum == 4) {
 			lineMats[3].color = dupeColors[3];
+			lineMats[0].color = regColors[0];
+			lineMats[2].color = regColors[2];
+			lineMats[1].color = regColors[1];
 		} 
-			
-		if (dupeCaught == true) {
-			dupeTrophy.SetActive (false);
-		} else {
-			dupeColor.SetActive (false);
-		}
+
 
 		if (myRoom.awardNum > 0) {
 		
@@ -545,44 +648,84 @@ public class LocalTurnVoting : MonoBehaviour {
 
 		pedestal.SetActive (false);
 		sign.SetActive (false);
+		guessNonDupe.SetActive (false);
 
 		Camera.main.transform.DOLocalMoveY (-2.6f, 1.5f).OnComplete(MoveInGuesser);
 		DOTween.To(()=> Camera.main.orthographicSize, x=> Camera.main.orthographicSize = x, 6.7f, 1.5f);
 	
 	}
 
+	void LaunchNonDupeGuess (){
+
+		pedestal.SetActive (false);
+		sign.SetActive (false);
+		guessNonDupe.SetActive (false);
+
+		if (myRoom.dupeNum == 1) {
+			lineMats[1].color = dupeColors[1];
+			lineMats[2].color = dupeColors[2];
+			lineMats[3].color = dupeColors[3];
+		} else if (myRoom.dupeNum == 2) {
+			lineMats[2].color = dupeColors[2];
+			lineMats[0].color = dupeColors[0];
+			lineMats[3].color = dupeColors[3];
+		} else if (myRoom.dupeNum == 3) {
+			lineMats[1].color = dupeColors[1];
+			lineMats[3].color = dupeColors[3];
+			lineMats[0].color = dupeColors[0];
+		} else if (myRoom.dupeNum == 4) {
+			lineMats[1].color = dupeColors[1];
+			lineMats[2].color = dupeColors[2];
+			lineMats[0].color = dupeColors[0];
+		} 
+
+		Camera.main.transform.DOMove (dupePos, 1.5f).OnComplete(MoveInGuesser);
+		DOTween.To(()=> Camera.main.orthographicSize, x=> Camera.main.orthographicSize = x, 3.3f, 1.5f);
+
+	}
+
 	public void GuessSubmitted (string subject) {
 	
-		string roomId = "|[ID]" + myRoom.roomID.ToString();
+		if (myRoom.myColor == myRoom.dupeNum) {
 
-		string[] charsToRemove = new string[] { "(", ")" };
-		string voteOne = dupeVotePos.ToString ("F3");
-		foreach (string character in charsToRemove)
+			string roomId = "|[ID]" + myRoom.roomID.ToString ();
 
-		{
-			voteOne = voteOne.Replace(character, string.Empty);
-		}
+			string[] charsToRemove = new string[] { "(", ")" };
+			string voteOne = dupeVotePos.ToString ("F3");
+			foreach (string character in charsToRemove) {
+				voteOne = voteOne.Replace (character, string.Empty);
+			}
 
-		string dupeString = "|[DUPEGUESS]" + subject + "$" + voteOne;
+			string dupeString = "|[DUPEGUESS]" + subject + "$" + voteOne;
 
-		string myColor;
+			string myColor;
 
-		if (myRoom.myColor == 1) {
-			myColor = "a";
-		} else if (myRoom.myColor == 2) {
-			myColor = "b";
-		} else if (myRoom.myColor == 3) {
-			myColor = "c";
-		} else if (myRoom.myColor == 4) {
-			myColor = "d";
+			if (myRoom.myColor == 1) {
+				myColor = "a";
+			} else if (myRoom.myColor == 2) {
+				myColor = "b";
+			} else if (myRoom.myColor == 3) {
+				myColor = "c";
+			} else if (myRoom.myColor == 4) {
+				myColor = "d";
+			} else {
+				myColor = "poop";
+			}
+
+			roomMan.GetComponent<RoomManager> ().CurtainsIn ();
+
+			StartCoroutine (addDupeGuess (roomId, dupeString, myColor));
 		} else {
-			myColor = "poop";
+		
+			myDupeSubjectGuess = subject;
+			MoveOutGuesser ();
+
+			Vector3 cameraStartPos = new Vector3 (0, -1.25f, -10);
+			Camera.main.transform.DOMove (cameraStartPos, 1.5f);
+			DOTween.To(()=> Camera.main.orthographicSize, x=> Camera.main.orthographicSize = x, 5.5f, 1.5f);
+			Invoke ("LaunchVote2", 2.5f);
+
 		}
-
-		roomMan.GetComponent<RoomManager> ().CurtainsIn ();
-
-		StartCoroutine (addDupeGuess (roomId, dupeString, myColor));
-
 
 	}
 
@@ -626,7 +769,7 @@ public class LocalTurnVoting : MonoBehaviour {
 		}
 
 		string colorString = myRoom.myColor.ToString();
-		string votingPositions = colorString + "$" + voteOne + "$" + voteTwo + "$" + voteThree + "@";
+		string votingPositions = colorString + "$" + voteOne + "$" + voteTwo + "$" + voteThree + "$" + myDupeSubjectGuess + "@";
 
 		string roomId = "|[ID]" + myRoom.roomID.ToString();
 
