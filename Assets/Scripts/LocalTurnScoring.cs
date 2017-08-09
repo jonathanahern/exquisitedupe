@@ -72,6 +72,12 @@ public class LocalTurnScoring : MonoBehaviour {
 	public Text[] guesserNames;
 	public Text[] nonDupeGuesses;
 	public GameObject[] guessObjs;
+	Vector2[] guessOnScreen;
+	Vector2[] guessOffScreen;
+	public Text dupesWord;
+	public GameObject dupeDrew;
+
+	Vector2 dupeDrewScreenPos;
 
 	public List<int> votes;
 	public List<int> winnersCircle;
@@ -92,7 +98,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		if (roomMan == null) {
 			Debug.Log ("not logged in");
-			return;
+			//return;
 		}
 
 		TurnRoomScript[] rooms = roomHolder.GetComponentsInChildren<TurnRoomScript> ();
@@ -118,6 +124,26 @@ public class LocalTurnScoring : MonoBehaviour {
 		myColor = myRoom.myColor;
 		myRoomID = myRoom.roomID;
 
+		guessOnScreen = new Vector2[guessObjs.Length];
+		guessOffScreen = new Vector2[guessObjs.Length];
+
+		for (int i = 0; i < guessObjs.Length; i++) {
+			guessOnScreen[i] = guessObjs [i].GetComponent<RectTransform>().anchoredPosition;
+		}
+
+		guessOffScreen [0] = new Vector2 (guessOnScreen [0].x, guessOnScreen [0].y + 350);
+		guessOffScreen [1] = new Vector2 (guessOnScreen [1].x-500, guessOnScreen [1].y);
+		guessOffScreen [2] = new Vector2 (guessOnScreen [2].x+500, guessOnScreen [2].y);
+
+		for (int i = 0; i < guessObjs.Length; i++) {
+			guessObjs [i].GetComponent<RectTransform> ().anchoredPosition = guessOffScreen [i];
+		}
+
+		dupesWord.text = myRoom.wrongword;
+		dupeDrewScreenPos = dupeDrew.GetComponent<RectTransform> ().anchoredPosition;
+		Vector2 offScreenDupe = new Vector2 (dupeDrewScreenPos.x - 1500,dupeDrewScreenPos.y);
+		dupeDrew.GetComponent<RectTransform> ().anchoredPosition = offScreenDupe;
+
 	}
 	
 	// Update is called once per frame
@@ -125,7 +151,9 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		if (Input.GetKeyDown (KeyCode.T)) {
 			
-			questionObj.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce);
+			for (int i = 0; i < guessObjs.Length; i++) {
+				guessObjs [i].GetComponent<RectTransform> ().DOAnchorPos(guessOnScreen[i], 1.0f);
+			}
 
 		}
 
@@ -607,9 +635,9 @@ public class LocalTurnScoring : MonoBehaviour {
 		if (dupeTie == true) {
 			GivePoints (myRoom.dupeNum, 3, 1);
 		} else if (dupeGuessed == myRoom.dupeNum) {
-			GivePointsEveryoneBut (myRoom.dupeNum, 2);
+			GivePointsEveryoneBut (myRoom.dupeNum, 1);
 		} else  {
-			GivePointsEveryoneBut (myRoom.dupeNum, 2);
+			GivePointsEveryoneBut (myRoom.dupeNum, 1);
 		}
 
 		Invoke ("StartSecondAward", 1.5f);
@@ -751,20 +779,106 @@ public class LocalTurnScoring : MonoBehaviour {
 			GivePoints (award3Winner, -2, 1);
 		}
 
-		Invoke ("StartDupeGuessReveal", 1.5f);
+		Invoke ("StartNonDupeGuessReveal", 1.5f);
 
 	}
 
-	void StartDupeGuessReveal(){
+	void StartNonDupeGuessReveal(){
 
 		DestroyVotes ();
+
+		finale.GetComponent<Text> ().text = "WHAT DID Y'ALL THINK THE DUPE DREW?";
+
+		finale.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce);
+		award3Q.transform.DOLocalMoveX (-1000, 1.0f);
+		nameObj.transform.DOLocalMoveX (-1000, 1.0f);
+		Invoke ("MoveFinaleOver", 3.5f);
+
+	}
+
+	void MoveFinaleOver(){
+
+		finale.transform.DOLocalMoveX (1000, 1.0f).SetEase (Ease.OutBounce).OnComplete(MoveInGuesses);
+
+	}
+
+	void MoveInGuesses(){
+	
+		for (int i = 0; i < guessObjs.Length; i++) {
+			guessObjs [i].GetComponent<RectTransform> ().DOAnchorPos(guessOnScreen[i], .5f).SetEase(Ease.OutBounce);
+		}
+
+		Invoke ("MoveInDupeWord", 2.5f);
+	
+	}
+
+	void MoveInDupeWord(){
+
+		dupeDrew.GetComponent<RectTransform>().DOAnchorPos (dupeDrewScreenPos, 1.0f).SetEase (Ease.OutBounce);
+
+		Invoke ("ScoreGuesses", 2.5f);
+
+	}
+
+	void ScoreGuesses (){
+
+
+		for (int i = 0; i < guesserNames.Length; i++) {
+
+			int playerNum = 0;
+
+			for (int t = 0; t < players.Length; t++) {
+
+				if (players [t].text == guesserNames [i].text) {
+				
+					playerNum = t +1;
+				
+				}
+
+			}
+
+			int points = 0;
+			int animationNum;
+			string editedGuess;
+
+			editedGuess = nonDupeGuesses [i].text.TrimStart('"');
+			editedGuess = editedGuess.TrimEnd('"');
+
+			if (editedGuess == myRoom.wrongword) {
+				points = 2;
+				animationNum = 1;
+			} else if (editedGuess == "heckifiknow") {
+				points = 0;
+				animationNum = 0;
+			} else {
+				points = -1;
+				animationNum = 1;
+			}
+
+			GivePoints (playerNum, points, animationNum);
+
+		}
+
+		Invoke ("MoveOutGuesses", 3.5f);
+			
+	}
+
+	void MoveOutGuesses(){
+	
+		for (int i = 0; i < guessObjs.Length; i++) {
+			guessObjs [i].GetComponent<RectTransform> ().DOAnchorPos(guessOffScreen[i], 1.0f);
+		}
+	
+		dupeDrew.transform.DOLocalMoveX (-1000, 1.0f).SetEase (Ease.OutBounce);
+		Invoke ("StartDupeGuessReveal", 1.0f);
+	}
+
+	void StartDupeGuessReveal(){
 
 		finale.GetComponent<Text> ().text = "AND FINALLY... WHAT'D THE DUPE GUESS???";
 		guess.GetComponent<Text> ().text = dupeGuess;
 
 		finale.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce);
-		award3Q.transform.DOLocalMoveX (-1000, 1.0f);
-		nameObj.transform.DOLocalMoveX (-1000, 1.0f);
 		Invoke ("RevealDupeSubjectGuess", 3.5f);
 
 	}
