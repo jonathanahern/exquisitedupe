@@ -99,7 +99,7 @@ public class LocalTurnVoting : MonoBehaviour {
 		}
 
 		//snapShot = GameObject.FindObjectOfType<CaptureAndSave> ();
-	
+
 		pedScreenPos = pedestal.transform.position.y;
 		pedOffPos = pedScreenPos - 3.0f;
 		Vector3 offScreen = new Vector3 (pedestal.transform.position.x, pedOffPos, pedestal.transform.position.z);
@@ -113,14 +113,14 @@ public class LocalTurnVoting : MonoBehaviour {
 		signScreenPos = sign.transform.position.y;
 		signOffPos = signScreenPos - 3.0f;
 
-//		foreach (Material lineMat in lineMats) {
-//
-//			Color lineColor = lineMat.color;
-//			Color fullColor = new Color (lineColor.r, lineColor.g, lineColor.b, 1.0f);
-//			lineMat.color = fullColor;
-//			
-//		}
-	
+		//		foreach (Material lineMat in lineMats) {
+		//
+		//			Color lineColor = lineMat.color;
+		//			Color fullColor = new Color (lineColor.r, lineColor.g, lineColor.b, 1.0f);
+		//			lineMat.color = fullColor;
+		//			
+		//		}
+
 		roomMan = GameObject.FindGameObjectWithTag ("Room Manager");
 
 		if (roomMan == null) {
@@ -147,7 +147,7 @@ public class LocalTurnVoting : MonoBehaviour {
 		for (int i = 0; i < childCount; i++) {
 			buttonTexts [i].GetComponent<Text> ().text = myRoom.words [i];
 		}
-			
+
 		GameObject dupeVote = Instantiate (voteFab);
 		dupeVote.transform.SetParent (spawnPos, false);
 		VoteFabScript voteScript = dupeVote.GetComponent<VoteFabScript> ();
@@ -187,13 +187,13 @@ public class LocalTurnVoting : MonoBehaviour {
 	void Update () {
 
 		if (Input.GetKeyDown (KeyCode.D)) {
-			
-//			GameObject dupeVote = Instantiate (voteFab);
-//			dupeVote.transform.SetParent (spawnPos, false);
-//			VoteFabScript voteScript = dupeVote.GetComponent<VoteFabScript> ();
-//			voteScript.localTurn = this;
-//			currentVote = 1;
-//			Invoke ("MoveUpPedestal" , 1.0f);
+
+			//			GameObject dupeVote = Instantiate (voteFab);
+			//			dupeVote.transform.SetParent (spawnPos, false);
+			//			VoteFabScript voteScript = dupeVote.GetComponent<VoteFabScript> ();
+			//			voteScript.localTurn = this;
+			//			currentVote = 1;
+			//			Invoke ("MoveUpPedestal" , 1.0f);
 
 		}
 
@@ -203,8 +203,8 @@ public class LocalTurnVoting : MonoBehaviour {
 
 		//snapShot.CaptureAndSaveToAlbum(0, 0, 500, 1000, ImageType.JPG);
 
-//		snapShot.CaptureAndSaveToAlbum(Screen.width * 1, Screen.height * 1, paintingCam, ImageType.JPG);
-//		paintingCam.gameObject.SetActive (false);
+		//		snapShot.CaptureAndSaveToAlbum(Screen.width * 1, Screen.height * 1, paintingCam, ImageType.JPG);
+		//		paintingCam.gameObject.SetActive (false);
 
 	}
 
@@ -236,11 +236,11 @@ public class LocalTurnVoting : MonoBehaviour {
 			DrawLine (colorNum, drawingString, dotsString);
 
 		}
-	
+
 	}
 
 	void DrawLine (string colorNum, string drawing, string dotsString) {
-	
+
 		GameObject lineFab = new GameObject();
 		GameObject dotFab = new GameObject();
 
@@ -261,7 +261,7 @@ public class LocalTurnVoting : MonoBehaviour {
 		string[] lines = drawing.Split ('+');
 
 		foreach (string line in lines) {
-			
+
 			GameObject lineGo = Instantiate (lineFab);
 			LineRenderer lineRend = lineGo.GetComponent <LineRenderer> ();
 
@@ -274,9 +274,9 @@ public class LocalTurnVoting : MonoBehaviour {
 				string[] vectArray = points [i].Split (',');
 
 				Vector3 tempVect = new Vector3 (
-					                  float.Parse (vectArray [0]),
-					                  float.Parse (vectArray [1]),
-					                  0);
+					float.Parse (vectArray [0]),
+					float.Parse (vectArray [1]),
+					0);
 				lineRend.SetPosition (i, tempVect);
 
 			}
@@ -337,9 +337,9 @@ public class LocalTurnVoting : MonoBehaviour {
 	}
 
 	void MoveInGuesser(){
-	
+
 		guessObject.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce);
-	
+
 	}
 
 	void MoveOutGuesser(){
@@ -349,11 +349,11 @@ public class LocalTurnVoting : MonoBehaviour {
 	}
 
 	void MoveUpNonDupeGuess(){
-	
+
 		signWords.sprite = nonDupeGuess;
 		MoveUpSign ();
 		guessNonDupe.transform.DOLocalMoveY (guessScreenPos, 1.0f).SetEase (Ease.OutBounce);
-	
+
 	}
 
 	void MoveDownNonDupeGuess(){
@@ -378,7 +378,7 @@ public class LocalTurnVoting : MonoBehaviour {
 	}
 
 	public void FlipSignToWords () {
-		
+
 		sign.transform.DORotate (Vector3.zero, 1.0f);
 
 	}
@@ -414,13 +414,13 @@ public class LocalTurnVoting : MonoBehaviour {
 			string dupeStatus;
 
 			if (myRoom.myColor != myRoom.dupeNum) {
-				
+
 				if (myRoom.dupeNum == artistNum) {
 					dupeStatus = "o";
 				} else {
 					dupeStatus = "x";
 				}
-					
+
 				if (myRoom.dupeCaught != "o" || myRoom.dupeCaught != "x") {
 					string stringRoomId = "|[ID]" + myRoom.roomID.ToString ();
 					StartCoroutine (checkVoteStatus (stringRoomId, dupeStatus));
@@ -464,7 +464,7 @@ public class LocalTurnVoting : MonoBehaviour {
 	}
 
 	void DupeGuessResult (int artistNum){
-	
+
 		if (myRoom.dupeNum == artistNum) {
 			dupeCaught = true;
 			signWords.sprite = rightDupeGuess;
@@ -520,7 +520,7 @@ public class LocalTurnVoting : MonoBehaviour {
 
 		Invoke ("MoveUpNonDupeGuess", 2.0f);
 	}
-		
+
 	IEnumerator checkVoteStatus (string roomId, string caughtVar){
 
 		IEnumerator e = DCP.RunCS ("turnRooms", "CheckVoteStatus", new string[2] {roomId, caughtVar});
@@ -536,10 +536,10 @@ public class LocalTurnVoting : MonoBehaviour {
 		Debug.Log ("Returned Status:" + returnText);
 
 		if (returnText == "Error") {
-		
+
 			Debug.Log ("caught dupe error");
 			myRoom.dupeCaught = "o";
-		
+
 		} else if (returnText.Contains ("x")) {
 
 			myRoom.dupeCaught = "x";
@@ -604,7 +604,7 @@ public class LocalTurnVoting : MonoBehaviour {
 
 
 		if (myRoom.awardNum > 0) {
-		
+
 			signWords.sprite = monkeyArtistWords;
 			MoveUpSign ();
 
@@ -652,7 +652,7 @@ public class LocalTurnVoting : MonoBehaviour {
 
 		Camera.main.transform.DOLocalMoveY (-2.6f, 1.5f).OnComplete(MoveInGuesser);
 		DOTween.To(()=> Camera.main.orthographicSize, x=> Camera.main.orthographicSize = x, 6.7f, 1.5f);
-	
+
 	}
 
 	void LaunchNonDupeGuess (){
@@ -685,7 +685,7 @@ public class LocalTurnVoting : MonoBehaviour {
 	}
 
 	public void GuessSubmitted (string subject) {
-	
+
 		if (myRoom.myColor == myRoom.dupeNum) {
 
 			string roomId = "|[ID]" + myRoom.roomID.ToString ();
@@ -716,7 +716,7 @@ public class LocalTurnVoting : MonoBehaviour {
 
 			StartCoroutine (addDupeGuess (roomId, dupeString, myColor));
 		} else {
-		
+
 			myDupeSubjectGuess = subject;
 			MoveOutGuesser ();
 
@@ -730,7 +730,7 @@ public class LocalTurnVoting : MonoBehaviour {
 	}
 
 	IEnumerator addDupeGuess (string roomId, string dupeString, string playerId){
-		
+
 		IEnumerator e = DCP.RunCS ("turnRooms", "AddDupeGuess", new string[3] {roomId, dupeString, playerId});
 
 		while (e.MoveNext ()) {
@@ -751,7 +751,7 @@ public class LocalTurnVoting : MonoBehaviour {
 	}
 
 	void EndPhase2 () {
-	
+
 		roomMan.GetComponent<RoomManager> ().CurtainsIn ();
 
 		string[] charsToRemove = new string[] { "(", ")" };
@@ -789,6 +789,14 @@ public class LocalTurnVoting : MonoBehaviour {
 
 	}
 
+	void TrySendingAgain (string roomId, string votingPositions, string myColor){
+
+		Debug.Log ("Didn't go thru. Trying again.");
+
+		StartCoroutine (addVotingPos (roomId, votingPositions, myColor));
+
+	}
+
 	IEnumerator addVotingPos (string roomId, string votingPositions, string myColor){
 
 		IEnumerator e = DCP.RunCS ("turnRooms", "AddVotingPos", new string[3] {roomId, votingPositions, myColor});
@@ -803,6 +811,13 @@ public class LocalTurnVoting : MonoBehaviour {
 		returnText = returnText.TrimEnd ('@');
 
 		Debug.Log ("Returned Positions:" + returnText);
+
+		if (returnText == string.Empty) {
+
+			TrySendingAgain (roomId, votingPositions, myColor);
+			yield break;
+
+		}
 
 		myRoom.activeVoteRoom = false;
 		myRoom.status = "waiting...";

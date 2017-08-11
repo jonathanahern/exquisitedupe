@@ -54,6 +54,11 @@ public class LocalTurnScoring : MonoBehaviour {
 	public GameObject orangeFlash;
 
 	public Text[] players;
+	bool gotOne = false;
+	bool gotTwo = false;
+	bool gotThree = false;
+	bool gotFour = false;
+
 
 	public int awardThree;
 
@@ -173,8 +178,10 @@ public class LocalTurnScoring : MonoBehaviour {
 			string[] oneData = voteData.Split ('$');
 			oneData [4] = CheckIfPass (oneData[4]);
 
-			if (oneData [0] == "1") {
+			if (oneData [0] == "1" && gotOne==false) {
 			
+				gotOne = true;
+
 				for (int i = 1; i < 4; i++) {
 
 					string point = oneData[i];
@@ -194,7 +201,9 @@ public class LocalTurnScoring : MonoBehaviour {
 				guessCount++;
 
 
-			} else if (oneData [0] == "2") {
+			} else if (oneData [0] == "2" && gotTwo==false) {
+
+				gotTwo = true;
 
 				for (int i = 1; i < 4; i++) {
 					
@@ -213,7 +222,9 @@ public class LocalTurnScoring : MonoBehaviour {
 				guesserNames [guessCount].text = myRoom.players [1];
 				guessCount++;
 
-			} else if (oneData [0] == "3") {
+			} else if (oneData [0] == "3" && gotThree==false) {
+
+				gotThree = true;
 
 				for (int i = 1; i < 4; i++) {
 
@@ -232,7 +243,9 @@ public class LocalTurnScoring : MonoBehaviour {
 				guesserNames [guessCount].text = myRoom.players [2];
 				guessCount++;
 
-			} else if (oneData [0] == "4") {
+			} else if (oneData [0] == "4" && gotFour==false) {
+
+				gotFour = true;
 
 				for (int i = 1; i < 4; i++) {
 

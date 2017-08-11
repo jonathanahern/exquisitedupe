@@ -76,6 +76,9 @@ public class RoomManager : MonoBehaviour {
 	public List<GameObject> categoryButtons;
 	public List<string> acceptableStrings;
 	public List<string> bestStrings;
+	public List<string> removeStrings;
+
+	public List<int> currentRooms;
 
 	int roomTotal;
 	public bool buttonsReady = false;
@@ -119,11 +122,17 @@ public class RoomManager : MonoBehaviour {
 		}
 
 		int childCount = roomHolder.transform.childCount;
+		int statusCount = statusHolder.transform.childCount;
 
 		if (childCount > 0) {
 			for (int i = 0; i < childCount; i++) {
-				Destroy(statusHolder.transform.GetChild(i).gameObject);
 				Destroy(roomHolder.transform.GetChild(i).gameObject);
+			}
+		}
+
+		if (statusCount > 0) {
+			for (int i = 0; i < childCount; i++) {
+				Destroy(statusHolder.transform.GetChild(i).gameObject);
 			}
 		}
 
@@ -159,17 +168,24 @@ public class RoomManager : MonoBehaviour {
 
 		roomTotal = roomsString.Split ('/').Length;
 
-		Debug.Log (roomsString);
+		//Debug.Log (roomsString);
 
 		string[] rooms = roomsString.Split ('/');
 
 		for (int i = 0; i < rooms.Length; i++) {
 
+			currentRooms.Add (int.Parse (rooms [i]));
 			string roomId = "|[ID]" + rooms[i];
 			//Debug.Log ("ROOOOOM: " + roomId);
 			StartCoroutine (getRoomData(roomId));
 
 		}
+
+	}
+
+	void RetryRoomGrab (string roomID){
+
+		StartCoroutine (roomID);
 
 	}
 
@@ -194,6 +210,27 @@ public class RoomManager : MonoBehaviour {
 			yield break;
 		}
 
+		string[] roomSplits = returnText.Split ('|');
+		bool matches = false;
+		foreach (string roomerSplit in roomSplits) {
+
+			if (roomerSplit.StartsWith (ID_SYM)) {
+
+				string retrievedID = roomerSplit.Substring (ID_SYM.Length);
+				retrievedID = "|[ID]" + retrievedID;
+				if (retrievedID == roomID) {
+					matches = true;
+				}
+
+			}
+
+		}
+
+		if (matches == false) {
+		
+			RetryRoomGrab (roomID);
+			yield break;
+		}
 
 		string[] pieces = returnText.Split ('^');
 
@@ -201,10 +238,6 @@ public class RoomManager : MonoBehaviour {
 		for (int i = 0; i < pieces.Length; i++) {
 
 			int goNum = 0;
-
-//			if (pieces.Length - 1 == i){
-//				goNum = 1;
-//			}
 
 			CreateRoom ("junk", pieces[i], goNum);
 
@@ -239,11 +272,9 @@ public class RoomManager : MonoBehaviour {
 				
 				string wordsWhole = piece.Substring (WORDS_SYM.Length);
 
-				Debug.Log (wordsWhole);
+				//Debug.Log (wordsWhole);
 
 				words = wordsWhole.Split('/');
-
-
 
 				for (int i = 0; i < words.Length; i++) {
 
@@ -376,7 +407,7 @@ public class RoomManager : MonoBehaviour {
 			else if (piece.StartsWith (DRAWING_SYM)) {
 
 				string drawingString = piece.Substring (DRAWING_SYM.Length);
-				Debug.Log ("Drawing: " + drawingString);
+				//Debug.Log ("Drawing: " + drawingString);
 
 				roomScript.drawings = drawingString;
 
@@ -386,7 +417,7 @@ public class RoomManager : MonoBehaviour {
 
 				string votePoses = piece.Substring (VOTEPOS_SYM.Length);
 
-				Debug.Log ("Vote Poses: " + votePoses);
+				//Debug.Log ("Vote Poses: " + votePoses);
 
 				votePoses = votePoses.TrimEnd ('@');
 				roomScript.votePoses = votePoses;
@@ -395,7 +426,7 @@ public class RoomManager : MonoBehaviour {
 
 				string dupeGuess = piece.Substring (DUPEGUESS_SYM.Length);
 
-				Debug.Log ("Dupe Guess: " + dupeGuess);
+				//Debug.Log ("Dupe Guess: " + dupeGuess);
 
 				roomScript.dupeGuess = dupeGuess;
 
@@ -496,7 +527,7 @@ public class RoomManager : MonoBehaviour {
 		//rooms = new int[5];
 
 		int children = roomHolder.childCount;
-		Debug.Log ("kid count: " + children);
+		//Debug.Log ("kid count: " + children);
 
 
 		for (int i = 0; i < children; ++i){
@@ -508,7 +539,7 @@ public class RoomManager : MonoBehaviour {
 
 				GameObject roomStatus = Instantiate (statusPrefab);
 				roomStatus.transform.SetParent (statusHolder.transform, false);
-				Debug.Log ("Found: " + statusRoomId);
+				//Debug.Log ("Found: " + statusRoomId);
 				TurnGameStatus status = roomStatus.GetComponent<TurnGameStatus> ();
 				status.roomId = turnRoom.roomID;
 				status.categoryName.text = turnRoom.roomType;
@@ -853,6 +884,13 @@ public class RoomManager : MonoBehaviour {
 
 		Debug.Log ("Rooms needing:" + returnText);
 
+		if (returnText == "") {
+		
+			FindEmptyRooms ();
+			yield break;
+		
+		}
+
 		catsWanted = new string[0];
 
 		returnText = returnText.TrimEnd ('|');
@@ -884,27 +922,39 @@ public class RoomManager : MonoBehaviour {
 
 		catsPlaying = new string[childCount];
 
+
 		for (int i = 0; i < childCount; i++) {
 
 			string catName = roomHolder.GetChild (i).GetComponent<TurnRoomScript> ().roomType;
 			catsPlaying[i] = catName;
+			//Debug.Log ("Cat Playing: " + catName);
 
 		}
 
-		for (int i = 0; i < acceptableStrings.Count; i++) {
+		int acceptCount = acceptableStrings.Count;
+		removeStrings = new List<string>();
+
+		for (int i = 0; i < acceptCount; i++) {
 
 			for (int t = 0; t < catsPlaying.Length; t++) {
 
 				if (acceptableStrings [i] == catsPlaying [t]) {
 
-					Debug.Log (catsPlaying [t]);
-
-					acceptableStrings.Remove (catsPlaying [t]);
+					//Debug.Log (catsPlaying [t]);
+					removeStrings.Add (catsPlaying [t]);
 
 				}
 
 			}
 				
+		}
+
+		int removeCount = removeStrings.Count;
+
+		for (int i = 0; i < removeCount; i++) {
+			
+			acceptableStrings.Remove (removeStrings [i]);
+
 		}
 
 		int listCount = acceptableStrings.Count;
@@ -991,7 +1041,9 @@ public class RoomManager : MonoBehaviour {
 	}
 
 	public void TakeButtonsWith(){
-	
+
+		roomsReady = false;
+
 		int childCount = categoryButtons.Count;
 
 		for (int i = 0; i < childCount; i++) {

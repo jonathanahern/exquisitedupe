@@ -43,6 +43,9 @@ public class LobbyMenu : MonoBehaviour {
 	private static string BRUSHES_SYM = "[BRUSHES]";
 	private static string GROUNDING_SYM = "[GROUNDING]";
 
+	public GameObject refreshingScreen;
+	public Text loadScreenWords;
+
 	// Use this for initialization
 	void Awake () {
 
@@ -86,6 +89,8 @@ public class LobbyMenu : MonoBehaviour {
 
 		}
 
+		InvokeRepeating ("AutoUpdateRooms", 20.0f, 25.0f);
+
 	}
 	
 	// Update is called once per frame
@@ -97,6 +102,13 @@ public class LobbyMenu : MonoBehaviour {
 		
 		}
 		
+	}
+
+	void AutoUpdateRooms (){
+		refreshingScreen.SetActive (true);
+		loadScreenWords.text = "Resfreshing...";
+		roomMan.GetRooms ();
+
 	}
 
 	public void TurnBasedClicked(){
@@ -129,8 +141,6 @@ public class LobbyMenu : MonoBehaviour {
 		newCats.DOLocalMoveX (0, 2.0f).SetEase(Ease.OutBounce);
 		centerTurnButts.DOLocalMoveX (startPos * -1.0f, 2.0f).SetEase(Ease.OutBounce);
 
-
-	
 	}
 
 	public void NewCatsOffScreen(){
@@ -252,7 +262,7 @@ public class LobbyMenu : MonoBehaviour {
 	void CreateCatButtons (string totalCats) {
 
 		totalCats = totalCats.TrimEnd ('^');
-		Debug.Log (totalCats);
+		//Debug.Log (totalCats);
 		string[] totalCat = totalCats.Split ('^');
 
 

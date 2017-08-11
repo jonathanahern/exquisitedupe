@@ -194,6 +194,12 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 	}
 
+	void RetryTurnRoom(string tempRoomType, string tempPlayerName, string tempFate){
+
+		StartCoroutine (turnRoom(tempRoomType, tempPlayerName, tempFate));
+
+	}
+
 	IEnumerator turnRoom (string roomType, string playerName, string fate){
 
 		IEnumerator e = DCP.RunCS ("turnRooms", "JoinCreateRoom", new string[3] { roomType, playerName, fate});
@@ -206,13 +212,16 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 		if (returnText == "") {
 
-			if (lobbyMenu == null) {
-				lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
-			}
+//			if (lobbyMenu == null) {
+//				lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
+//			}
 
-			RoomManager.instance.CurtainsOut();
-			lobbyMenu.LoadingScreenAbort ();
-			BackToLobbyError ();
+			Debug.Log ("Retrying new room");
+			RetryTurnRoom (roomType, playerName, fate);
+
+//			RoomManager.instance.CurtainsOut();
+//			lobbyMenu.LoadingScreenAbort ();
+//			BackToLobbyError ();
 
 			yield break;
 
