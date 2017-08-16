@@ -170,7 +170,7 @@ public class LocalTurnVoting : MonoBehaviour {
 		}
 
 		if (myRoom.dupeNum == myRoom.myColor) {
-			dupeGuessTitle.text = "What is the correct subject";
+			dupeGuessTitle.text = "What was everyone else drawing?";
 		} else {
 			dupeGuessTitle.text = "What was the dupe drawing?";
 		}

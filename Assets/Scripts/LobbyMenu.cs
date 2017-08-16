@@ -62,9 +62,11 @@ public class LobbyMenu : MonoBehaviour {
 		roomMan.roomsReady = false;
 		if (roomMan.cameFromTurnBased == true) {
 			TurnBasedClicked ();
-			roomMan.UpdateTurnRooms();
+			roomMan.CurtainsOut();
 			//roomMan.FindEmptyRooms ();
-			roomMan.DropOffButtons ();
+			roomMan.startingNew = false;
+			roomMan.GetRooms ();
+			//roomMan.DropOffButtons ();
 		}
 
 		if (roomMan.cameFromScoring == false) {
@@ -89,7 +91,7 @@ public class LobbyMenu : MonoBehaviour {
 
 		}
 
-		InvokeRepeating ("AutoUpdateRooms", 20.0f, 25.0f);
+		InvokeRepeating ("AutoUpdateRooms", 25.0f, 20.0f);
 
 	}
 	
@@ -106,7 +108,7 @@ public class LobbyMenu : MonoBehaviour {
 
 	void AutoUpdateRooms (){
 		refreshingScreen.SetActive (true);
-		loadScreenWords.text = "Resfreshing...";
+		loadScreenWords.text = "Refreshing...";
 		roomMan.GetRooms ();
 
 	}
@@ -269,7 +271,7 @@ public class LobbyMenu : MonoBehaviour {
 		foreach (string cat in totalCat) {
 
 			Vector3 offScreen = new Vector3 (2000,2000, 0);
-			GameObject buttonObj = Instantiate (turnButtonObj,offScreen,Quaternion.identity);
+			GameObject buttonObj = Instantiate (turnButtonObj,offScreen,Quaternion.identity, roomMan.buttonHolder);
 			roomMan.categoryButtons.Add (buttonObj);
 			TurnRoomButton turnButt = buttonObj.GetComponent<TurnRoomButton> ();
 			string[] item = cat.Split ('|');
@@ -312,7 +314,9 @@ public class LobbyMenu : MonoBehaviour {
 		for (int i = 0; i < turnButtons.Length; i++) {
 
 			if (turnHolder.childCount < 3){
-				turnButtons [i].transform.SetParent (turnHolder, false);
+
+				Instantiate(turnButtons[i], turnHolder);
+
 		}
 
 	}
@@ -321,19 +325,19 @@ public class LobbyMenu : MonoBehaviour {
 
 	}
 
-	public void DetachButtons(){
-
-		loadingText.SetActive (true);
-
-		int childCount = turnHolder.childCount;
-
-		for (int i = 0; i < childCount; i++) {
-
-			turnHolder.GetChild (0).transform.SetParent(null,false);
-
-		}
-
-		roomMan.TakeButtonsWith ();
-	}
+//	public void DetachButtons(){
+//
+//		loadingText.SetActive (true);
+//
+//		int childCount = turnHolder.childCount;
+//
+//		for (int i = 0; i < childCount; i++) {
+//
+//			turnHolder.GetChild (0).transform.SetParent(null,false);
+//
+//		}
+//
+//		roomMan.TakeButtonsWith ();
+//	}
 
 }

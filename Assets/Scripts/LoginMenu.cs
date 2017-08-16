@@ -29,6 +29,9 @@ public class LoginMenu : MonoBehaviour {
 	public UnityEngine.UI.Text login_error;
 	public UnityEngine.UI.Text register_error;
 
+	string userNameLocation = "userNameLocation";
+	string passwordLocation = "passwordLocation";
+
 	string databaseName = "";
 	//bool canRunSequences = false;
 
@@ -42,6 +45,16 @@ public class LoginMenu : MonoBehaviour {
 	bool isDatabaseSetup = false;
 
 	void Start () {
+
+		string storedUsername = PlayerPrefs.GetString (userNameLocation);
+
+		if (storedUsername != string.Empty) {
+		
+			input_login_username.text = storedUsername;
+			input_login_password.text = PlayerPrefs.GetString (passwordLocation);
+		
+		}
+
 
 		//Gets the databaseName as it was setup through the editor
 		GameObject linkObj = GameObject.Find("Link");
@@ -195,6 +208,9 @@ public class LoginMenu : MonoBehaviour {
 				//blank username field
 				input_login_username.text = ""; //password field is blanked at the end of this function, even when error is returned
 		
+				PlayerPrefs.SetString (userNameLocation, username);
+				PlayerPrefs.SetString (passwordLocation, password);
+
 				UserAccountManagerScript.instance.LogIn (username, password, returnBroken[1]);
 
 			} else {

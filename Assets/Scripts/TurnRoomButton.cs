@@ -32,7 +32,29 @@ public class TurnRoomButton : MonoBehaviour {
 	public void TurnRoomClicked(){
 
 		GameObject roomMan = GameObject.FindGameObjectWithTag ("Room Manager");
-		roomMan.GetComponent<RoomManager> ().CurtainsIn();
+		RoomManager roomManScript = roomMan.GetComponent<RoomManager> ();
+		roomManScript.CurtainsIn();
+		roomManScript.StartingNewRoom ();
+
+		if (roomManScript.refreshing == true) {
+			Invoke ("TurnRoomClicked", 1.0f);
+		} else {
+			StartThePainting ();
+		}
+		
+
+	}
+
+	public void PopulateButton(string roomTypeString, string wordsString, string brushesString, string groundingString){
+	
+		roomType.text = roomTypeString;
+		words = wordsString;
+		brushes = brushesString;
+		grounding = groundingString;
+	
+	}
+
+	void StartThePainting (){
 
 		int dupeNum = Random.Range (1, 5);
 		int rightWord = Random.Range (1, 11);
@@ -58,22 +80,11 @@ public class TurnRoomButton : MonoBehaviour {
 
 		fate = "|[WORDS]" + newWords + "|[BRUSHES]" + brushes + "|" + grounding + "|[FATE]" + dupeNum + "/" + rightWord + "/" + wrongWord + "/" + awardNum;
 
-		Debug.Log (words + "From butt");
+		//Debug.Log (words + "From butt");
 
 		UserAccountManagerScript.instance.TurnRoomSearch(roomType.text, fate, gameObject);
 
 		LobbyMenu.instance.LoadingScreenFromNewCats ();
-		LobbyMenu.instance.DetachButtons ();
-
-
-	}
-
-	public void PopulateButton(string roomTypeString, string wordsString, string brushesString, string groundingString){
-	
-		roomType.text = roomTypeString;
-		words = wordsString;
-		brushes = brushesString;
-		grounding = groundingString;
 	
 	}
 

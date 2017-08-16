@@ -109,18 +109,18 @@ public class TurnGameStatus : MonoBehaviour {
 		if (phaseTwoReady == true) {
 			roomManScript.CurtainsIn ();
 			Invoke ("StartAfterDelay", 1.5f);
-			lobby.DetachButtons ();
-			roomManScript.TakeButtonsWith ();
+			//lobby.DetachButtons ();
+			//roomManScript.TakeButtonsWith ();
 		} else if (phaseOneReady == true) {
 			roomManScript.CurtainsIn ();
 			Invoke ("StartAfterDelay", 1.5f);
-			lobby.DetachButtons ();
-			roomManScript.TakeButtonsWith ();
+			//lobby.DetachButtons ();
+			//roomManScript.TakeButtonsWith ();
 		} else if (phaseThreeReady == true) {
 			roomManScript.CurtainsIn ();
 			Invoke ("StartAfterDelay", 1.5f);
-			lobby.DetachButtons ();
-			roomManScript.TakeButtonsWith ();
+			//lobby.DetachButtons ();
+			//roomManScript.TakeButtonsWith ();
 		}
 
 

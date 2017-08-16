@@ -15,6 +15,10 @@ public class CategoryCreatorScript : MonoBehaviour {
 	public Text[] words;
 	public Text roomType;
 
+	public Text[] wordsAlter;
+	public Text roomTypeAlter;
+	public GameObject wordsPanelAlter;
+
 	public GameObject wordsPanel;
 
 	private static string ROOMTYPE_SYM = "[ROOMTYPE]";
@@ -29,6 +33,18 @@ public class CategoryCreatorScript : MonoBehaviour {
 		CollectRoomType ();
 		CollectBrushes ();
 		StartCoroutine (sendAllDataToServer());
+
+	}
+
+	public void AlterCategory(){
+
+		myRoomType = string.Empty;
+		myWordsString = string.Empty;
+
+		CollectWordsAlter ();
+		CollectRoomTypeAlter ();
+
+		StartCoroutine (sendAlteredDataToServer());
 
 	}
 
@@ -86,11 +102,31 @@ public class CategoryCreatorScript : MonoBehaviour {
 
 	}
 
+	void CollectWordsAlter(){
+
+		for (int i = 0; i < wordsAlter.Length; i++) {
+
+			myWordsString = myWordsString + wordsAlter [i].text + "/";
+
+		}
+
+		myWordsString = myWordsString.TrimEnd ('/');
+		myWordsString = "|" + WORDS_SYM + myWordsString;
+
+	}
+
 	void CollectRoomType (){
 	
 		myRoomType = roomType.text;
 		myRoomType = ROOMTYPE_SYM + myRoomType;
 	
+	}
+
+	void CollectRoomTypeAlter (){
+
+		myRoomType = roomTypeAlter.text;
+		myRoomType = ROOMTYPE_SYM + myRoomType;
+
 	}
 
 	void CollectBrushes (){
@@ -129,6 +165,22 @@ public class CategoryCreatorScript : MonoBehaviour {
 
 	}
 
+	IEnumerator sendAlteredDataToServer(){
+
+		IEnumerator e = DCP.RunCS ("categories", "AlterCategory", new string[2] {myRoomType, myWordsString});
+
+		Debug.Log (myRoomType + "&&&" +  myWordsString);
+
+		while (e.MoveNext ()) {
+			yield return e.Current;
+		}
+
+		string returnText = e.Current as string;
+
+		Debug.Log ("Cat Altered:" + returnText);
+
+	}
+
 	public void MoveAddWordsPanel(){
 
 		RectTransform rectTran = wordsPanel.GetComponent<RectTransform>();
@@ -146,6 +198,25 @@ public class CategoryCreatorScript : MonoBehaviour {
 			rectTran.DOAnchorPosX (1500, 1.0f);
 		}
 	
+	}
+
+	public void MoveAddWordsPanelAlter(){
+
+		RectTransform rectTran = wordsPanelAlter.GetComponent<RectTransform>();
+		float pos = rectTran.anchoredPosition.x;
+
+		LineSpawnerScipt lineSpawn = GameObject.FindGameObjectWithTag ("Line Spawner").GetComponent<LineSpawnerScipt> ();
+
+		Debug.Log (pos);
+
+		if (pos > 1000) {
+			lineSpawn.dontDraw = true;
+			rectTran.DOAnchorPosX (0, 1.0f);
+		} else {
+			lineSpawn.dontDraw = false;
+			rectTran.DOAnchorPosX (1500, 1.0f);
+		}
+
 	}
 
 }

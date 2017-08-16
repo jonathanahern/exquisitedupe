@@ -719,7 +719,7 @@ public class LocalTurnScoring : MonoBehaviour {
 	void GiveOutAward2Points (){
 
 		if (award2Winner != 0) {
-			GivePoints (award2Winner, -2, 1);
+			GivePointsEveryoneButAndDupe (award2Winner, 1);
 		}
 
 		Invoke ("StartThirdAward", 2.5f);
@@ -789,7 +789,7 @@ public class LocalTurnScoring : MonoBehaviour {
 	void GiveOutAward3Points (){
 
 		if (award3Winner != 0) {
-			GivePoints (award3Winner, -2, 1);
+			GivePointsEveryoneButAndDupe (award3Winner, 1);
 		}
 
 		Invoke ("StartNonDupeGuessReveal", 1.5f);
@@ -1072,6 +1072,92 @@ public class LocalTurnScoring : MonoBehaviour {
 			greenScoreText.text = greenScore.ToString ();
 			greenFlash.SetActive (true);
 			Invoke ("TurnOffGreen", 1.5f);
+
+		}
+
+	}
+
+	void GivePointsEveryoneButAndDupe (int playerNum, int points) {
+
+		int dupeNum = myRoom.dupeNum;
+
+		if (playerNum == 1) {
+
+			if (dupeNum != 2) {
+				blueScore = blueScore + points;
+				blueScoreText.text = blueScore.ToString ();
+				blueFlash.SetActive (true);
+				Invoke ("TurnOffBlue", 1.5f);
+			}
+			if (dupeNum != 3) {
+				greenScore = greenScore + points;
+				greenScoreText.text = greenScore.ToString ();
+				greenFlash.SetActive (true);
+				Invoke ("TurnOffGreen", 1.5f);
+			}
+			if (dupeNum != 4) {
+				orangeScore = orangeScore + points;
+				orangeScoreText.text = orangeScore.ToString ();
+				orangeFlash.SetActive (true);
+				Invoke ("TurnOffOrange", 1.5f);
+			}
+		} else if (playerNum == 2) {
+			if (dupeNum != 1) {
+				redScore = redScore + points;
+				redScoreText.text = redScore.ToString ();
+				redFlash.SetActive (true);
+				Invoke ("TurnOffRed", 1.5f);
+			}
+			if (dupeNum != 3) {
+				greenScore = greenScore + points;
+				greenScoreText.text = greenScore.ToString ();
+				greenFlash.SetActive (true);
+				Invoke ("TurnOffGreen", 1.5f);
+			}
+			if (dupeNum != 4) {
+				orangeScore = orangeScore + points;
+				orangeScoreText.text = orangeScore.ToString ();
+				orangeFlash.SetActive (true);
+				Invoke ("TurnOffOrange", 1.5f);
+			}
+		} else if (playerNum == 3) {
+			if (dupeNum != 1) {
+				redScore = redScore + points;
+				redScoreText.text = redScore.ToString ();
+				redFlash.SetActive (true);
+				Invoke ("TurnOffRed", 1.5f);
+			}
+			if (dupeNum != 2) {
+				blueScore = blueScore + points;
+				blueScoreText.text = blueScore.ToString ();
+				blueFlash.SetActive (true);
+				Invoke ("TurnOffBlue", 1.5f);
+			}
+			if (dupeNum != 4) {
+				orangeScore = orangeScore + points;
+				orangeScoreText.text = orangeScore.ToString ();
+				orangeFlash.SetActive (true);
+				Invoke ("TurnOffOrange", 1.5f);
+			}
+		} else if (playerNum == 4) {
+			if (dupeNum != 1) {
+				redScore = redScore + points;
+				redScoreText.text = redScore.ToString ();
+				redFlash.SetActive (true);
+				Invoke ("TurnOffRed", 1.5f);
+			}
+			if (dupeNum != 2) {
+				blueScore = blueScore + points;
+				blueScoreText.text = blueScore.ToString ();
+				blueFlash.SetActive (true);
+				Invoke ("TurnOffBlue", 1.5f);
+			}
+			if (dupeNum != 3) {
+				greenScore = greenScore + points;
+				greenScoreText.text = greenScore.ToString ();
+				greenFlash.SetActive (true);
+				Invoke ("TurnOffGreen", 1.5f);
+			}
 
 		}
 

@@ -55,6 +55,7 @@ public class RoomManager : MonoBehaviour {
 
 	public bool cameFromTurnBased;
 	public bool cameFromScoring = false;
+	public bool startingNew = false;
 
 	public string[] roomNum = new string[5];
 	public string[] playersReady = new string[5];
@@ -85,6 +86,8 @@ public class RoomManager : MonoBehaviour {
 	public bool roomsReady = false;
 
 	GameObject tempRoom;
+
+	public bool refreshing = false;
 
 	void Start (){
 		
@@ -117,6 +120,12 @@ public class RoomManager : MonoBehaviour {
 
 	public void GetRooms (){
 
+		if (startingNew == true) {
+			return;
+		}
+
+		refreshing = true;
+
 		if (statusHolder == null) {
 			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
 		}
@@ -131,7 +140,7 @@ public class RoomManager : MonoBehaviour {
 		}
 
 		if (statusCount > 0) {
-			for (int i = 0; i < childCount; i++) {
+			for (int i = 0; i < statusCount; i++) {
 				Destroy(statusHolder.transform.GetChild(i).gameObject);
 			}
 		}
@@ -461,7 +470,12 @@ public class RoomManager : MonoBehaviour {
 
 			if (roomHolder.childCount > roomTotal - 1) {
 				roomsReady = true;
-				FindEmptyRooms ();
+				refreshing = false;
+				if (lobbyMenu.turnHolder.childCount < 2) {
+					FindEmptyRooms ();
+				}
+
+
 			}
 
 		}
@@ -568,24 +582,209 @@ public class RoomManager : MonoBehaviour {
 	}
 
 	//Instantiate status objs, match their status to rooms, create array of room Id #s
-	public void UpdateTurnRooms(){
-		cameFromTurnBased = false;
-		CurtainsOut ();
-		if (statusHolder == null) {
-			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
-		}
+//	public void UpdateTurnRooms(){
+//		cameFromTurnBased = false;
+//		CurtainsOut ();
+//		if (statusHolder == null) {
+//			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
+//		}
+//
+//		int children = roomHolder.childCount;
+//
+//		for (int i = 0; i < children; ++i) {
+////			GameObject roomStatus = Instantiate (statusPrefab);
+////			roomStatus.transform.SetParent (statusHolder.transform, false);
+//			TurnRoomScript turnRoom = roomHolder.GetChild (i).GetComponent<TurnRoomScript> ();
+////			TurnGameStatus status = roomStatus.GetComponent<TurnGameStatus> ();
+////			status.roomId = turnRoom.roomID;
+////			status.categoryName.text = turnRoom.roomType;
+////			status.gameStatus.text = turnRoom.status;
+////		
+////			if (turnRoom.statusNum == 0) {
+////				status.PhaseOneReady ();
+////			} else if (turnRoom.statusNum == 1) {
+////				status.PhaseOneDone ();
+////			} else if (turnRoom.statusNum == 2) {
+////				status.PhaseTwoReady ();
+////			} else if (turnRoom.statusNum == 3) {
+////				status.PhaseTwoDone ();
+////			} else if (turnRoom.statusNum == 4) {
+////				status.PhaseThreeReady ();
+////			} 
+//
+//			//rooms [i] = turnRoom.roomID;
+//
+//			string stringId = "|[ID]" + turnRoom.roomID.ToString ();
+//
+//			StartCoroutine (getRoomData (stringId));
+//
+//		}
+//
+//		Debug.Log ("This happened");
+//
+//		for (int i = 0; i < children; i++) {
+//
+//			Destroy(roomHolder.GetChild (i).gameObject);
+//
+//		}
+//
+//		//Invoke ("StatusUpdate", 1.0f);
+//
+//	}
 
-		int children = roomHolder.childCount;
+	//send room IDs to server
+//	public void StatusUpdate(){
+//
+//		string roomID1;
+//		string roomID2;
+//		string roomID3;
+//		string roomID4;
+//		string roomID5;
+//
+//		roomID1 = "|[ID]" + rooms [0].ToString();
+//		roomID2 = "|[ID]" + rooms [1].ToString();
+//		roomID3 = "|[ID]" + rooms [2].ToString();
+//		roomID4 = "|[ID]" + rooms [3].ToString();
+//		roomID5 = "|[ID]" + rooms [4].ToString();
+//
+//		Debug.Log ("ROOM 1: " + roomID1);
+//
+//		StartCoroutine (statusUpdateCheck(roomID1,roomID2, roomID3, roomID4, roomID5));
+//	
+//	}
 
-		for (int i = 0; i < children; ++i) {
+	//returns ids with players checked in and drawings.
+//	IEnumerator statusUpdateCheck (string roomID1, string roomID2, string roomID3, string roomID4, string roomID5){
+//
+//		IEnumerator e = DCP.RunCS ("turnRooms", "UpdateStatus", new string[5] {roomID1,roomID2,roomID3,roomID4,roomID5});
+//
+//		while (e.MoveNext ()) {
+//			yield return e.Current;
+//		}
+//
+//		string returnText = e.Current as string;
+//
+//		returnText = returnText.TrimStart ('|');
+//
+//		Debug.Log ("Returned Status:" + returnText);
+//
+//		if (returnText != "Error") {
+//		
+//			BreakDownStatus (returnText);
+//
+//		} 
+//
+//	}
+
+	//checks status
+//	void BreakDownStatus (string returned){
+//	
+//		string[] roomsData = returned.Split ('|');
+//
+//		foreach (string roomData in roomsData) {
+//
+//			string[] roomPiece = roomData.Split('/');
+//
+//			string idString = roomPiece[0].Substring (ID_SYM.Length);
+//			string playersReadyString = roomPiece[1].Substring (PLAYERSREADY_SYM.Length);
+//			string drawingString = roomPiece [2];
+//			drawingString = drawingString.TrimEnd('$');
+//
+//			UpdateRoom (idString, playersReadyString, drawingString);
+//
+//		}
+//
+//		Invoke ("UpdateStatusObjects", 1.0f);
+//
+//	}
+
+//	void UpdateRoom (string roomId, string status, string drawing){
+//	
+//		int roomInt = int.Parse(roomId);
+//		int children = roomHolder.childCount;
+//		string myColorNumNow;
+//
+//
+//		for (int i = 0; i < children; ++i){
+//			
+//			TurnRoomScript turnRoom = roomHolder.GetChild (i).GetComponent<TurnRoomScript>();
+//
+//			if (turnRoom.roomID == roomInt) {
+//				turnRoom.drawings = drawing;
+//				myColorNumNow = turnRoom.myColor.ToString ();
+//
+//				string stringIdLetter;
+//
+//				if (turnRoom.myColor == 1) {
+//					stringIdLetter = "a";
+//				} else if (turnRoom.myColor == 2) {
+//					stringIdLetter = "b";
+//				} else if (turnRoom.myColor == 3) {
+//					stringIdLetter = "c";
+//				} else if (turnRoom.myColor == 4) {
+//					stringIdLetter = "d";
+//				} else {
+//					stringIdLetter = "z";
+//				}
+//
+//				Debug.Log ("myID: " + stringIdLetter + " myColor: " + myColorNumNow + " status: " + status + " RoomId: " + roomInt);
+//
+//
+//				if (status.Contains ("a") && status.Contains ("b") && status.Contains ("c") && status.Contains ("d")) {
+//
+//					turnRoom.statusNum = 4;
+//
+//				} else if (status.Contains(stringIdLetter)){
+//
+//					Debug.Log ("MAKE IT 3");
+//					turnRoom.statusNum = 3;
+//
+//				} else if (status.Contains ("1") && status.Contains ("2") && status.Contains ("3") && status.Contains ("4")) {
+//					
+//					Debug.Log ("MAKE IT 2");
+//					turnRoom.statusNum = 2;
+//
+//				} else if (status.Contains(myColorNumNow)){
+//
+//					turnRoom.statusNum = 1;
+//
+//				}
+//
+//			}
+//
+//		}
+//
+//		UpdateStatusObjects ();
+//	
+//	}
+//
+//	//Updates status objects to their room's status
+//	void UpdateStatusObjects (){
+//
+//		Debug.Log ("it was done");
+//
+//		if (statusHolder == null) {
+//			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
+//		}
+//
+//		for (int i = 0; i < statusHolder.transform.childCount; ++i){
+//
+//			Destroy (statusHolder.transform.GetChild (i).gameObject);
+//
+//		}
+//			
+//		int children = roomHolder.childCount;
+//
+//		for (int i = 0; i < children; ++i){
+//			
+//			TurnRoomScript turnRoom = roomHolder.GetChild (i).GetComponent<TurnRoomScript>();
 //			GameObject roomStatus = Instantiate (statusPrefab);
 //			roomStatus.transform.SetParent (statusHolder.transform, false);
-			TurnRoomScript turnRoom = roomHolder.GetChild (i).GetComponent<TurnRoomScript> ();
 //			TurnGameStatus status = roomStatus.GetComponent<TurnGameStatus> ();
 //			status.roomId = turnRoom.roomID;
 //			status.categoryName.text = turnRoom.roomType;
 //			status.gameStatus.text = turnRoom.status;
-//		
+//
 //			if (turnRoom.statusNum == 0) {
 //				status.PhaseOneReady ();
 //			} else if (turnRoom.statusNum == 1) {
@@ -597,197 +796,16 @@ public class RoomManager : MonoBehaviour {
 //			} else if (turnRoom.statusNum == 4) {
 //				status.PhaseThreeReady ();
 //			} 
-
-			//rooms [i] = turnRoom.roomID;
-
-			string stringId = "|[ID]" + turnRoom.roomID.ToString ();
-
-			StartCoroutine (getRoomData (stringId));
-
-		}
-
-		for (int i = 0; i < children; i++) {
-
-			Destroy(roomHolder.GetChild (i).gameObject);
-
-		}
-
-		//Invoke ("StatusUpdate", 1.0f);
-
-	}
-
-	//send room IDs to server
-	public void StatusUpdate(){
-
-		string roomID1;
-		string roomID2;
-		string roomID3;
-		string roomID4;
-		string roomID5;
-
-		roomID1 = "|[ID]" + rooms [0].ToString();
-		roomID2 = "|[ID]" + rooms [1].ToString();
-		roomID3 = "|[ID]" + rooms [2].ToString();
-		roomID4 = "|[ID]" + rooms [3].ToString();
-		roomID5 = "|[ID]" + rooms [4].ToString();
-
-		Debug.Log ("ROOM 1: " + roomID1);
-
-		StartCoroutine (statusUpdateCheck(roomID1,roomID2, roomID3, roomID4, roomID5));
-	
-	}
-
-	//returns ids with players checked in and drawings.
-	IEnumerator statusUpdateCheck (string roomID1, string roomID2, string roomID3, string roomID4, string roomID5){
-
-		IEnumerator e = DCP.RunCS ("turnRooms", "UpdateStatus", new string[5] {roomID1,roomID2,roomID3,roomID4,roomID5});
-
-		while (e.MoveNext ()) {
-			yield return e.Current;
-		}
-
-		string returnText = e.Current as string;
-
-		returnText = returnText.TrimStart ('|');
-
-		Debug.Log ("Returned Status:" + returnText);
-
-		if (returnText != "Error") {
-		
-			BreakDownStatus (returnText);
-
-		} 
-
-	}
-
-	//checks status
-	void BreakDownStatus (string returned){
-	
-		string[] roomsData = returned.Split ('|');
-
-		foreach (string roomData in roomsData) {
-
-			string[] roomPiece = roomData.Split('/');
-
-			string idString = roomPiece[0].Substring (ID_SYM.Length);
-			string playersReadyString = roomPiece[1].Substring (PLAYERSREADY_SYM.Length);
-			string drawingString = roomPiece [2];
-			drawingString = drawingString.TrimEnd('$');
-
-			UpdateRoom (idString, playersReadyString, drawingString);
-
-		}
-
-		Invoke ("UpdateStatusObjects", 1.0f);
-
-	}
-
-	void UpdateRoom (string roomId, string status, string drawing){
-	
-		int roomInt = int.Parse(roomId);
-		int children = roomHolder.childCount;
-		string myColorNumNow;
-
-
-		for (int i = 0; i < children; ++i){
-			
-			TurnRoomScript turnRoom = roomHolder.GetChild (i).GetComponent<TurnRoomScript>();
-
-			if (turnRoom.roomID == roomInt) {
-				turnRoom.drawings = drawing;
-				myColorNumNow = turnRoom.myColor.ToString ();
-
-				string stringIdLetter;
-
-				if (turnRoom.myColor == 1) {
-					stringIdLetter = "a";
-				} else if (turnRoom.myColor == 2) {
-					stringIdLetter = "b";
-				} else if (turnRoom.myColor == 3) {
-					stringIdLetter = "c";
-				} else if (turnRoom.myColor == 4) {
-					stringIdLetter = "d";
-				} else {
-					stringIdLetter = "z";
-				}
-
-				Debug.Log ("myID: " + stringIdLetter + " myColor: " + myColorNumNow + " status: " + status + " RoomId: " + roomInt);
-
-
-				if (status.Contains ("a") && status.Contains ("b") && status.Contains ("c") && status.Contains ("d")) {
-
-					turnRoom.statusNum = 4;
-
-				} else if (status.Contains(stringIdLetter)){
-
-					Debug.Log ("MAKE IT 3");
-					turnRoom.statusNum = 3;
-
-				} else if (status.Contains ("1") && status.Contains ("2") && status.Contains ("3") && status.Contains ("4")) {
-					
-					Debug.Log ("MAKE IT 2");
-					turnRoom.statusNum = 2;
-
-				} else if (status.Contains(myColorNumNow)){
-
-					turnRoom.statusNum = 1;
-
-				}
-
-			}
-
-		}
-
-		UpdateStatusObjects ();
-	
-	}
-
-	//Updates status objects to their room's status
-	void UpdateStatusObjects (){
-
-		if (statusHolder == null) {
-			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
-		}
-
-		for (int i = 0; i < statusHolder.transform.childCount; ++i){
-
-			Destroy (statusHolder.transform.GetChild (i).gameObject);
-
-		}
-			
-		int children = roomHolder.childCount;
-
-		for (int i = 0; i < children; ++i){
-			
-			TurnRoomScript turnRoom = roomHolder.GetChild (i).GetComponent<TurnRoomScript>();
-			GameObject roomStatus = Instantiate (statusPrefab);
-			roomStatus.transform.SetParent (statusHolder.transform, false);
-			TurnGameStatus status = roomStatus.GetComponent<TurnGameStatus> ();
-			status.roomId = turnRoom.roomID;
-			status.categoryName.text = turnRoom.roomType;
-			status.gameStatus.text = turnRoom.status;
-
-			if (turnRoom.statusNum == 0) {
-				status.PhaseOneReady ();
-			} else if (turnRoom.statusNum == 1) {
-				status.PhaseOneDone ();
-			} else if (turnRoom.statusNum == 2) {
-				status.PhaseTwoReady ();
-			} else if (turnRoom.statusNum == 3) {
-				status.PhaseTwoDone ();
-			} else if (turnRoom.statusNum == 4) {
-				status.PhaseThreeReady ();
-			} 
-
-		}
-
-		if (statusLoad == null) {
-			statusLoad = GameObject.FindGameObjectWithTag ("Status Load");
-		}
-
-		statusLoad.SetActive (false);
-
-	}
+//
+//		}
+//
+//		if (statusLoad == null) {
+//			statusLoad = GameObject.FindGameObjectWithTag ("Status Load");
+//		}
+//
+//		statusLoad.SetActive (false);
+//
+//	}
 
 	public void SendTheScore (int pointsToAdd, int playerColor, string roomIDstring, string currentRooms){
 	
@@ -857,7 +875,6 @@ public class RoomManager : MonoBehaviour {
 		}
 
 		string returnText = e.Current as string;
-
 		Debug.Log ("UpdatedScoring:" + returnText);
 
 	}
@@ -919,9 +936,9 @@ public class RoomManager : MonoBehaviour {
 		}
 
 		int childCount = roomHolder.childCount;
+		Debug.Log (childCount);
 
 		catsPlaying = new string[childCount];
-
 
 		for (int i = 0; i < childCount; i++) {
 
@@ -1040,30 +1057,36 @@ public class RoomManager : MonoBehaviour {
 		}
 	}
 
-	public void TakeButtonsWith(){
+//	public void TakeButtonsWith(){
+//
+//		roomsReady = false;
+//
+//		int childCount = categoryButtons.Count;
+//
+//		for (int i = 0; i < childCount; i++) {
+//
+//			categoryButtons [i].transform.SetParent (buttonHolder, false);
+//
+//		}
+//	
+//	}
 
-		roomsReady = false;
+//	public void DropOffButtons(){
+//
+//		int childCount = categoryButtons.Count;
+//
+//		for (int i = 0; i < childCount; i++) {
+//
+//			categoryButtons [i].transform.SetParent(null,false);
+//
+//		}
+//
+//	}
 
-		int childCount = categoryButtons.Count;
-
-		for (int i = 0; i < childCount; i++) {
-
-			categoryButtons [i].transform.SetParent (buttonHolder, false);
-
-		}
+	public void StartingNewRoom(){
 	
-	}
-
-	public void DropOffButtons(){
-
-		int childCount = categoryButtons.Count;
-
-		for (int i = 0; i < childCount; i++) {
-
-			categoryButtons [i].transform.SetParent(null,false);
-
-		}
-
+		startingNew = true;
+	
 	}
 
 	public void CurtainsIn(){

@@ -9,6 +9,9 @@ public class ServerManagement : MonoBehaviour {
 
 	public Text roomID;
 
+	public Text roomIDs;
+	public Text username;
+
 	private static string DRAWING_SYM = "[DRAWING]";
 	private static string MYCOLOR_SYM = "[MYCOLOR]";
 
@@ -188,6 +191,15 @@ public class ServerManagement : MonoBehaviour {
 
 	}
 
+	public void ChangeRoomNums (){
+
+		Debug.Log ("Reset");
+
+
+		StartCoroutine (changeRooms());
+
+	}
+
 	IEnumerator resetRooms (){
 
 		IEnumerator e = DCP.RunCS ("accounts", "ResetRooms");
@@ -213,6 +225,23 @@ public class ServerManagement : MonoBehaviour {
 		string returnText = ee.Current as string;
 
 		Debug.Log ("Cleared Everything?:" + returnText);
+
+	}
+
+	IEnumerator changeRooms (){
+
+		string usernameString = username.text;
+		string roomIDstring = roomIDs.text;
+
+		IEnumerator e = DCP.RunCS ("accounts", "ChangeRooms", new string[2] {usernameString, roomIDstring});
+
+		while (e.MoveNext ()) {
+			yield return e.Current;
+		}
+
+		string returnText = e.Current as string;
+
+		Debug.Log ("Changed Rooms?:" + returnText);
 
 	}
 

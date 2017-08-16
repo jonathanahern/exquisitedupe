@@ -41,10 +41,18 @@ public class LocalRoomManager : MonoBehaviour {
 	bool readyToAdvance = false;
 	bool okayToClick = false;
 
+	public RectTransform bottomPanel;
+	Vector3 panelScreen;
+	Vector3 panelScreenOff;
+
 	// Use this for initialization
 	void Start () {
 
 		FindMyRoom ();
+
+		panelScreen = bottomPanel.anchoredPosition;
+		panelScreenOff = new Vector3 (panelScreen.x, panelScreen.y - 500, panelScreen.z);
+		bottomPanel.anchoredPosition = panelScreenOff;
 
 	}
 	
@@ -110,12 +118,36 @@ public class LocalRoomManager : MonoBehaviour {
 
 		string roomsString = userAccount.activeRooms;
 
-		if (roomsString.Contains("[ID]") == false) {
+		string roomSearch = roomsString;
+
+		Debug.Log (roomSearch);
+		if (roomsString.Contains ("[ID]") == false) {
 			roomsString = "[ID]" + roomsString;
+		} else {
+			roomSearch = roomSearch.Substring (4);
+			roomSearch = roomSearch.TrimEnd('/');
+		}
+			
+		string[] roomSplit = roomSearch.Split ('/');
+		string curRoom = myRoom.roomID.ToString ();
+		bool foundRoom = false;
+
+		for (int i = 0; i < roomSplit.Length; i++) {
+
+			//Debug.Log (curRoom.Length + " & " + roomSplit [i].Length);
+
+			if (curRoom == roomSplit [i]) {
+				foundRoom = true;
+			}
+
 		}
 
-		roomsString = roomsString + myRoom.roomID.ToString() + "/";
-		userAccount.activeRooms = roomsString;
+		if (foundRoom == false) {
+			roomsString = roomsString + myRoom.roomID.ToString () + "/";
+			userAccount.activeRooms = roomsString;
+		} else {
+			Debug.Log ("Already logged room");
+		}
 
 		Invoke ("MoveToSection", 4.0f);
 
@@ -145,7 +177,9 @@ public class LocalRoomManager : MonoBehaviour {
 
 	public void StartGame(){
 	
-		LoadBrushes ();
+		bottomPanel.DOAnchorPos (panelScreen, 1.0f);
+
+		Invoke ("LoadBrushes", .7f);
 		lineSpawn.GetColor (myRoom.myColor);
 
 
@@ -376,6 +410,7 @@ public class LocalRoomManager : MonoBehaviour {
 		myLineString = myLineString.TrimEnd('+');
 		myLineString = myLineString + "$";
 
+		Debug.Log (myRoom.roomID);
 		Debug.Log (myLineString);
 
 		StartCoroutine (doneDrawing(myRoom.roomID, myLineString));
