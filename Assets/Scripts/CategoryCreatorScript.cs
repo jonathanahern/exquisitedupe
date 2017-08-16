@@ -26,6 +26,59 @@ public class CategoryCreatorScript : MonoBehaviour {
 	private static string BRUSHES_SYM = "[BRUSHES]";
 	private static string GROUNDING_SYM = "[GROUNDING]";
 
+	void Update () {
+
+		if (Input.GetKeyDown (KeyCode.A)) {
+
+			GameObject[] lines = GameObject.FindGameObjectsWithTag ("Line");
+
+			myLineString = "";
+
+			foreach (GameObject line in lines) {
+
+				LineRenderer lineRend = line.GetComponent<LineRenderer> ();
+				int lineAmount = lineRend.numPositions;
+
+				for (int i = 0; i < lineAmount; i++) {
+
+					Vector2 point = lineRend.GetPosition (i);
+
+
+					myLineString = myLineString + point.ToString ("F2") + "@";
+
+					if (i == lineAmount - 1) {
+
+						string[] charsToRemove = new string[] { "(", ")", " "};
+						foreach (string character in charsToRemove)
+						{
+							myLineString = myLineString.Replace(character, string.Empty);
+						}
+
+
+						myLineString = myLineString.Replace("-0.", "-.");
+						myLineString = myLineString.Replace("0@", "@");
+						myLineString = myLineString.Replace("0.", ".");
+						myLineString = myLineString.Replace("0,", ",");
+						
+
+					}
+
+				}
+
+				myLineString = myLineString.TrimEnd('@');
+				myLineString = myLineString + "$";
+
+			}
+
+			myLineString = myLineString.TrimEnd('$');
+
+			Debug.Log (myLineString);
+
+		}
+
+	}
+
+
 	public void CollectAllData(){
 	
 		CollectYourLineDataForCat ();

@@ -12,7 +12,7 @@ public class ServerManagement : MonoBehaviour {
 	public Text roomIDs;
 	public Text username;
 
-	private static string DRAWING_SYM = "[DRAWING]";
+	//private static string DRAWING_SYM = "[DRAWING]";
 	private static string MYCOLOR_SYM = "[MYCOLOR]";
 
 	public GameObject redLine;
@@ -25,6 +25,9 @@ public class ServerManagement : MonoBehaviour {
 	public GameObject greenDot;
 	public GameObject orangeDot;
 
+	string shrinkString;
+
+
 	// Use this for initialization
 	void Start () {
 		
@@ -32,6 +35,12 @@ public class ServerManagement : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+
+		if (Input.GetKeyDown (KeyCode.A)) {
+		
+			//cube.transform.DOLocalMoveX (1, 2.0f).SetEase (Ease.OutElastic);
+		
+		}
 		
 	}
 
@@ -82,7 +91,10 @@ public class ServerManagement : MonoBehaviour {
 
 		//string drawingString = returnText.Substring (DRAWING_SYM.Length);
 
+		shrinkString = returnText;
+
 		CreateDrawing (returnText);
+
 
 	}
 
@@ -242,6 +254,41 @@ public class ServerManagement : MonoBehaviour {
 		string returnText = e.Current as string;
 
 		Debug.Log ("Changed Rooms?:" + returnText);
+
+	}
+
+	public void ShrinkRoom (){
+
+		Debug.Log ("SHRUNK!");
+
+		string roomIDstring = "|[ID]" + roomID.text;
+
+		string[] charsToRemove = new string[] { "(", ")", " "};
+		foreach (string character in charsToRemove)
+		{
+			shrinkString = shrinkString.Replace(character, string.Empty);
+		}
+
+		shrinkString = shrinkString.Replace("-0.", "-.");
+		shrinkString = shrinkString.Replace("0@", "@");
+		shrinkString = shrinkString.Replace("0.", ".");
+		shrinkString = shrinkString.Replace("0,", ",");
+
+		StartCoroutine (shrinkRoom(roomIDstring));
+
+	}
+
+	IEnumerator shrinkRoom (string roomIDstring){
+
+		IEnumerator e = DCP.RunCS ("turnRooms", "ShrinkRoom", new string[2] {roomIDstring,shrinkString});
+
+		while (e.MoveNext ()) {
+			yield return e.Current;
+		}
+
+		string returnText = e.Current as string;
+
+		Debug.Log ("Shrunk?:" + returnText);
 
 	}
 

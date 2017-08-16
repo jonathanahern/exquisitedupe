@@ -125,6 +125,27 @@ public class LobbyMenu : MonoBehaviour {
 	
 	}
 
+	void OnApplicationFocus(){
+
+		refreshingScreen.SetActive (true);
+		loadScreenWords.text = "Refreshing...";
+		CancelInvoke ();
+
+		if (roomMan.refreshing == true) {
+			InvokeRepeating ("AutoUpdateRooms", 8.0f, 20.0f);
+			Invoke ("SendLate", 5.0f);
+		} else {
+			InvokeRepeating ("AutoUpdateRooms", 2.0f, 20.0f);
+		}
+
+	}
+
+	void SendLate (){
+	
+		roomMan.ComingIntoFocus ();
+	
+	}
+
 	public void NewTurnBased() {
 
 		if (okToClick == false) {
@@ -271,7 +292,8 @@ public class LobbyMenu : MonoBehaviour {
 		foreach (string cat in totalCat) {
 
 			Vector3 offScreen = new Vector3 (2000,2000, 0);
-			GameObject buttonObj = Instantiate (turnButtonObj,offScreen,Quaternion.identity, roomMan.buttonHolder);
+			GameObject buttonObj = Instantiate (turnButtonObj,offScreen,Quaternion.identity);
+			buttonObj.transform.SetParent (roomMan.buttonHolder, false);
 			roomMan.categoryButtons.Add (buttonObj);
 			TurnRoomButton turnButt = buttonObj.GetComponent<TurnRoomButton> ();
 			string[] item = cat.Split ('|');

@@ -37,6 +37,8 @@ public class TurnRoomButton : MonoBehaviour {
 		roomManScript.StartingNewRoom ();
 
 		if (roomManScript.refreshing == true) {
+
+			Debug.Log ("No Start");
 			Invoke ("TurnRoomClicked", 1.0f);
 		} else {
 			StartThePainting ();
@@ -80,7 +82,7 @@ public class TurnRoomButton : MonoBehaviour {
 
 		fate = "|[WORDS]" + newWords + "|[BRUSHES]" + brushes + "|" + grounding + "|[FATE]" + dupeNum + "/" + rightWord + "/" + wrongWord + "/" + awardNum;
 
-		//Debug.Log (words + "From butt");
+		Debug.Log ("From butt: " + words);
 
 		UserAccountManagerScript.instance.TurnRoomSearch(roomType.text, fate, gameObject);
 

@@ -168,6 +168,7 @@ public class RoomManager : MonoBehaviour {
 			frameText.GetComponent<Text>().text = "Nothin happenin";
 			roomTotal = 0;
 			roomsReady = true;
+			refreshing = false;
 			FindEmptyRooms ();
 			return;
 		}
@@ -480,6 +481,30 @@ public class RoomManager : MonoBehaviour {
 
 		}
 			
+	}
+
+	public void ComingIntoFocus(){
+
+		if (statusHolder == null) {
+			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
+		}
+
+		int childCount = roomHolder.transform.childCount;
+		int statusCount = statusHolder.transform.childCount;
+
+		if (childCount > 0) {
+			for (int i = 0; i < childCount; i++) {
+				Destroy(roomHolder.transform.GetChild(i).gameObject);
+			}
+		}
+
+		if (statusCount > 0) {
+			for (int i = 0; i < statusCount; i++) {
+				Destroy(statusHolder.transform.GetChild(i).gameObject);
+			}
+		}
+
+
 	}
 
 	IEnumerator doubleCheckRoom (string roomIDstring, string myColor, string usernameToSend, string roomTypeCheck ){

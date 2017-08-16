@@ -121,6 +121,7 @@ public class LocalRoomManager : MonoBehaviour {
 		string roomSearch = roomsString;
 
 		Debug.Log (roomSearch);
+
 		if (roomsString.Contains ("[ID]") == false) {
 			roomsString = "[ID]" + roomsString;
 		} else {
@@ -363,15 +364,21 @@ public class LocalRoomManager : MonoBehaviour {
 
 				if (i == lineAmount - 1) {
 
-					string[] charsToRemove = new string[] { "(", ")" };
+					string[] charsToRemove = new string[] { "(", ")", " "};
 					foreach (string character in charsToRemove)
 					{
 						myLineString = myLineString.Replace(character, string.Empty);
 					}
 
+					myLineString = myLineString.Replace("-0.", "-.");
+					myLineString = myLineString.Replace("0@", "@");
+					myLineString = myLineString.Replace("0.", ".");
+					myLineString = myLineString.Replace("0,", ",");
+
 				}
 
 			}
+
 			myLineString = myLineString.TrimEnd('@');
 			myLineString = myLineString + "+";
 		}
@@ -393,11 +400,16 @@ public class LocalRoomManager : MonoBehaviour {
 
 				if (i == lineAmount - 1) {
 
-					string[] charsToRemove = new string[] { "(", ")" };
+					string[] charsToRemove = new string[] { "(", ")", " "};
 					foreach (string character in charsToRemove)
 					{
 						myLineString = myLineString.Replace(character, string.Empty);
 					}
+
+					myLineString = myLineString.Replace("-0.", "-.");
+					myLineString = myLineString.Replace("0@", "@");
+					myLineString = myLineString.Replace("0.", ".");
+					myLineString = myLineString.Replace("0,", ",");
 
 				}
 
