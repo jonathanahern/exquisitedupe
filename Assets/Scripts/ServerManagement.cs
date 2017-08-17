@@ -9,6 +9,7 @@ public class ServerManagement : MonoBehaviour {
 
 	public Text roomID;
 
+	public Text roomIDtoDelete;
 	public Text roomIDs;
 	public Text username;
 
@@ -27,7 +28,6 @@ public class ServerManagement : MonoBehaviour {
 
 	string shrinkString;
 
-
 	// Use this for initialization
 	void Start () {
 		
@@ -38,7 +38,15 @@ public class ServerManagement : MonoBehaviour {
 
 		if (Input.GetKeyDown (KeyCode.A)) {
 		
-			//cube.transform.DOLocalMoveX (1, 2.0f).SetEase (Ease.OutElastic);
+			GameObject[] lines = GameObject.FindGameObjectsWithTag ("Line");
+			foreach (GameObject item in lines) {
+				Destroy (item);
+			}
+
+			GameObject[] dots = GameObject.FindGameObjectsWithTag ("Dot");
+			foreach (GameObject item in dots) {
+				Destroy (item);
+			}
 		
 		}
 		
@@ -269,10 +277,33 @@ public class ServerManagement : MonoBehaviour {
 			shrinkString = shrinkString.Replace(character, string.Empty);
 		}
 
+		shrinkString = shrinkString.Replace("0.00", "0");
 		shrinkString = shrinkString.Replace("-0.", "-.");
-		shrinkString = shrinkString.Replace("0@", "@");
 		shrinkString = shrinkString.Replace("0.", ".");
-		shrinkString = shrinkString.Replace("0,", ",");
+
+//		shrinkString = shrinkString.Replace("-0.", "-.");
+//		shrinkString = shrinkString.Replace("0@", "@");
+//		shrinkString = shrinkString.Replace("0.", ".");
+//		shrinkString = shrinkString.Replace("0,", ",");
+//
+//		shrinkString = shrinkString.Replace("1.,", "1,");
+//		shrinkString = shrinkString.Replace("2.,", "2,");
+//		shrinkString = shrinkString.Replace(".,", "0,");
+//		shrinkString = shrinkString.Replace(",.0@", ",0@");
+//		shrinkString = shrinkString.Replace("1.0", "1,");
+//		shrinkString = shrinkString.Replace("2.0", "2,");
+//		shrinkString = shrinkString.Replace(".0,", "0,");
+//		shrinkString = shrinkString.Replace(",.@", ",0@");
+//
+
+//		1., turn into 1,
+//		2., turn into 2,
+//			., turn into 0,
+//			,.0@ turn into ,0@
+//			1.0, turn into 1,
+//			2.0, Turn into 2,
+//			.0, turn into 0,
+//			,.@ turn into ,0@
 
 		StartCoroutine (shrinkRoom(roomIDstring));
 
@@ -289,6 +320,29 @@ public class ServerManagement : MonoBehaviour {
 		string returnText = e.Current as string;
 
 		Debug.Log ("Shrunk?:" + returnText);
+
+	}
+
+	public void DeleteRoom () {
+
+		string roomIDDelete = "|[ID]" + roomIDtoDelete.text;
+		Debug.Log (roomIDDelete);
+
+		StartCoroutine (deleteRoom(roomIDDelete));
+
+	}
+
+	IEnumerator deleteRoom (string roomIDDelete){
+
+		IEnumerator e = DCP.RunCS ("turnRooms", "DeleteRoom", new string[1] {roomIDDelete});
+
+		while (e.MoveNext ()) {
+			yield return e.Current;
+		}
+
+		string returnText = e.Current as string;
+
+		Debug.Log ("Deleted?:" + returnText);
 
 	}
 
