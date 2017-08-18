@@ -43,6 +43,22 @@ public class TurnGameStatus : MonoBehaviour {
 
 	}
 
+	public void NewStatus (int newStatus){
+	
+		if (newStatus == 0) {
+			PhaseOneReady ();
+		} else if (newStatus == 1) {
+			PhaseOneDone ();
+		} else if (newStatus == 2) {
+			PhaseTwoReady ();
+		} else if (newStatus == 3) {
+			PhaseTwoDone ();
+		} else if (newStatus == 4) {
+			PhaseThreeReady ();
+		} 
+
+	}
+
 
 	//0
 	public void PhaseOneReady () {
@@ -126,9 +142,6 @@ public class TurnGameStatus : MonoBehaviour {
 			//roomManScript.TakeButtonsWith ();
 		}
 
-
-
-
 	}
 
 	void StartAfterDelay (){
@@ -160,8 +173,7 @@ public class TurnGameStatus : MonoBehaviour {
 			}
 
 		}
-
-
+			
 		SceneManager.LoadScene ("Turn Based Scoring");
 
 	}

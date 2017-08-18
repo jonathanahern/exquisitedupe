@@ -13,6 +13,9 @@ public class ServerManagement : MonoBehaviour {
 	public Text roomIDs;
 	public Text username;
 
+//	public Text roomList;
+//	public Text usernameAlterList;
+
 	//private static string DRAWING_SYM = "[DRAWING]";
 	private static string MYCOLOR_SYM = "[MYCOLOR]";
 
@@ -71,6 +74,26 @@ public class ServerManagement : MonoBehaviour {
 		Debug.Log ("Back To Zero?:" + returnText);
 
 	}
+
+//	public void AlterRoomList (){
+//
+//		StartCoroutine (alterRoomList());
+//
+//	}
+//
+//	IEnumerator alterRoomList (){
+//
+//		IEnumerator e = DCP.RunCS ("accounts", "AlterRoomList",new string[2] {roomList,usernameAlterList});
+//
+//		while (e.MoveNext ()) {
+//			yield return e.Current;
+//		}
+//
+//		string returnText = e.Current as string;
+//
+//		Debug.Log ("Altered To:" + returnText);
+//
+//	}
 
 	public void GrabDrawing () {
 

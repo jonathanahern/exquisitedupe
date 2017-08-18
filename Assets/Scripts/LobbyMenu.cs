@@ -91,7 +91,7 @@ public class LobbyMenu : MonoBehaviour {
 
 		}
 
-		InvokeRepeating ("AutoUpdateRooms", 25.0f, 20.0f);
+		InvokeRepeating ("AutoUpdateRooms", 10.0f, 20.0f);
 
 	}
 	
@@ -107,9 +107,9 @@ public class LobbyMenu : MonoBehaviour {
 	}
 
 	void AutoUpdateRooms (){
-		refreshingScreen.SetActive (true);
-		loadScreenWords.text = "Refreshing...";
-		roomMan.GetRooms ();
+		//refreshingScreen.SetActive (true);
+		//loadScreenWords.text = "Refreshing...";
+		roomMan.UpdateStatus ();
 
 	}
 
@@ -125,26 +125,26 @@ public class LobbyMenu : MonoBehaviour {
 	
 	}
 
-	void OnApplicationFocus(){
+//	void OnApplicationFocus(){
+//
+//		refreshingScreen.SetActive (true);
+//		loadScreenWords.text = "Refreshing...";
+//		CancelInvoke ();
+//
+//		if (roomMan.refreshing == true) {
+//			InvokeRepeating ("AutoUpdateRooms", 8.0f, 20.0f);
+//			Invoke ("SendLate", 5.0f);
+//		} else {
+//			InvokeRepeating ("AutoUpdateRooms", 2.0f, 20.0f);
+//		}
+//
+//	}
 
-		refreshingScreen.SetActive (true);
-		loadScreenWords.text = "Refreshing...";
-		CancelInvoke ();
-
-		if (roomMan.refreshing == true) {
-			InvokeRepeating ("AutoUpdateRooms", 8.0f, 20.0f);
-			Invoke ("SendLate", 5.0f);
-		} else {
-			InvokeRepeating ("AutoUpdateRooms", 2.0f, 20.0f);
-		}
-
-	}
-
-	void SendLate (){
-	
-		roomMan.ComingIntoFocus ();
-	
-	}
+//	void SendLate (){
+//	
+//		roomMan.ComingIntoFocus ();
+//	
+//	}
 
 	public void NewTurnBased() {
 
@@ -240,21 +240,21 @@ public class LobbyMenu : MonoBehaviour {
 
 	}
 
-	public void RefreshList (){
-
-		if (okToClick == false) {
-			return;
-		}
-
-		okToClick = false;
-
-		Invoke ("OkToClickAgain", 6.0f);
-
-		statusLoad.SetActive (true);
-		roomMan.roomsReady = false;
-		roomMan.GetRooms ();
-	
-	}
+//	public void RefreshList (){
+//
+//		if (okToClick == false) {
+//			return;
+//		}
+//
+//		okToClick = false;
+//
+//		Invoke ("OkToClickAgain", 6.0f);
+//
+//		statusLoad.SetActive (true);
+//		roomMan.roomsReady = false;
+//		roomMan.GetRooms ();
+//	
+//	}
 
 	void OkToClickAgain (){
 	

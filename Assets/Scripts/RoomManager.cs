@@ -38,7 +38,7 @@ public class RoomManager : MonoBehaviour {
 	private static string FATE_SYM = "[FATE]";
 	private static string COLOR_SYM = "[COLOR]";
 	private static string GROUNDING_SYM = "[GROUNDING]";
-	private static string PLAYERSREADY_SYM = "[PLAYERSREADY]";
+	//private static string PLAYERSREADY_SYM = "[PLAYERSREADY]";
 	private static string CATEGORY_SYM = "[CATEGORY]";
 	private static string STATUS_SYM = "[STATUS]";
 	private static string DRAWING_SYM = "[DRAWING]";
@@ -46,6 +46,7 @@ public class RoomManager : MonoBehaviour {
 	private static string VOTEPOS_SYM = "[VOTEPOS]";
 	private static string DUPEGUESS_SYM = "[DUPEGUESS]";
 	private static string CATEGORIES_SYM = "[CATEGORIES]";
+	private static string UPDATE_SYM = "[UPDATE]";
 
 	public string[] catsWanted;
 	public string[] catsPlaying;
@@ -94,7 +95,6 @@ public class RoomManager : MonoBehaviour {
 		categoryButtons = new List<GameObject>();
 		acceptableStrings = new List<string>();
 		bestStrings = new List<string>();
-
 
 		GetRooms ();
 
@@ -151,8 +151,6 @@ public class RoomManager : MonoBehaviour {
 		string roomsString = userAccount.activeRooms;
 		username = userAccount.loggedInUsername;
 
-
-
 		//Debug.Log ("roomsString " + roomsString);
 
 		if (roomsString == string.Empty) {
@@ -187,7 +185,8 @@ public class RoomManager : MonoBehaviour {
 			currentRooms.Add (int.Parse (rooms [i]));
 			string roomId = "|[ID]" + rooms[i];
 			//Debug.Log ("ROOOOOM: " + roomId);
-			StartCoroutine (getRoomData(roomId));
+			string update = UPDATE_SYM + "Nonupdate";
+			StartCoroutine (getRoomData(roomId, update));
 
 		}
 
@@ -199,9 +198,9 @@ public class RoomManager : MonoBehaviour {
 
 	}
 
-	IEnumerator getRoomData (string roomID){
+	IEnumerator getRoomData (string roomID, string update){
 
-		IEnumerator e = DCP.RunCS ("turnRooms", "GetRoomData", new string[1] {roomID});
+		IEnumerator e = DCP.RunCS ("turnRooms", "GetRoomData", new string[2] {roomID, update});
 
 		while (e.MoveNext ()) {
 			yield return e.Current;
@@ -209,10 +208,10 @@ public class RoomManager : MonoBehaviour {
 
 		string returnText = e.Current as string;
 
+		Debug.Log ("All Data:" + returnText);
+
 		returnText = returnText.TrimStart ('|');
 		returnText = returnText.TrimEnd ('^');
-
-		Debug.Log ("All Data:" + returnText);
 
 		if (returnText.Length < 4) {
 			Debug.Log ("loading error");
@@ -222,6 +221,8 @@ public class RoomManager : MonoBehaviour {
 
 		string[] roomSplits = returnText.Split ('|');
 		bool matches = false;
+		bool updateOld = false;
+
 		foreach (string roomerSplit in roomSplits) {
 
 			if (roomerSplit.StartsWith (ID_SYM)) {
@@ -231,6 +232,17 @@ public class RoomManager : MonoBehaviour {
 				if (retrievedID == roomID) {
 					matches = true;
 				}
+
+			} else if (roomerSplit.StartsWith (UPDATE_SYM)){
+
+				string retrievedString = roomerSplit.Substring (UPDATE_SYM.Length);
+
+				Debug.Log (retrievedString);
+
+				if (retrievedString == "Update") {
+					updateOld = true;
+				}
+
 
 			}
 
@@ -242,21 +254,29 @@ public class RoomManager : MonoBehaviour {
 			yield break;
 		}
 
-		string[] pieces = returnText.Split ('^');
 
+		string[] pieces = returnText.Split ('^');
 
 		for (int i = 0; i < pieces.Length; i++) {
 
 			int goNum = 0;
 
-			CreateRoom ("junk", pieces[i], goNum);
-
+			if (updateOld == false) {
+				CreateRoom ("junk", pieces [i], goNum);
+			} else {
+				UpdateOldRoom ( pieces [i]);
+			}
 		}
 
 	}
 
-	public void CreateRoom(string roomType, string roomId, int startRoom){
+	void UpdateOldRoom(string roomInfoWhole){
+	
+		//Need to get room id to find right room first
+	
+	}
 
+	public void CreateRoom(string roomType, string roomId, int startRoom){
 
 		GameObject newRoom = (GameObject)Instantiate(roomPrefab, Vector3.zero, Quaternion.identity);
 		newRoom.transform.SetParent (roomHolder, false);
@@ -1133,4 +1153,127 @@ public class RoomManager : MonoBehaviour {
 		centerCurtain.GetComponent<RectTransform> ().DOAnchorPos (centerPos, 1.0f).SetEase (Ease.InExpo);
 
 	}
+
+	public void UpdateStatus(){
+	
+		int childCount = roomHolder.childCount;
+		
+		for (int i = 0; i < childCount; i++) {
+		
+			int roomID = roomHolder.GetChild (i).gameObject.GetComponent<TurnRoomScript> ().roomID;
+			string roomIdString = "|[ID]" + roomID.ToString();
+			StartCoroutine (getStatusData(roomIdString));
+		}
+	
+	}
+
+	IEnumerator getStatusData (string roomIdString){
+
+		IEnumerator e = DCP.RunCS ("turnRooms", "UpdateStatus", new string[1] { roomIdString });
+
+		while (e.MoveNext ()) {
+			yield return e.Current;
+		}
+
+		string returnText = e.Current as string;
+
+		Debug.Log (returnText);
+
+		if (returnText.Contains("[ID]")) {
+			UpdateStatusObject (returnText);
+		}
+
+	}
+
+	void UpdateStatusObject (string statusInfo){
+	
+		string[] pieces = statusInfo.Split ('|'); 
+
+		string roomIDstring = pieces [1];
+		string status = pieces [0];
+		
+		roomIDstring = roomIDstring.Substring (ID_SYM.Length);
+		int roomID = int.Parse (roomIDstring);
+
+		int myColor = 0;
+
+		int childCount = roomHolder.childCount;
+		int statusNum = 1;
+
+		TurnRoomScript roomScript = roomHolder.GetChild (0).GetComponent<TurnRoomScript> ();
+
+		for (int i = 0; i < childCount; i++) {
+
+			TurnRoomScript tempRoomScript = roomHolder.GetChild (i).GetComponent<TurnRoomScript> ();
+
+			if (tempRoomScript.roomID == roomID) {
+
+				myColor = tempRoomScript.myColor;
+				roomScript = tempRoomScript;
+
+			}
+
+		}
+
+		string stringIdLetter;
+		string stringIdNum = myColor.ToString ();
+
+		if (myColor == 1) {
+			stringIdLetter = "a";
+		} else if (myColor == 2) {
+			stringIdLetter = "b";
+		} else if (myColor == 3) {
+			stringIdLetter = "c";
+		} else if (myColor == 4) {
+			stringIdLetter = "d";
+		} else {
+			stringIdLetter = "z";
+		}
+
+		//Debug.Log ("letter id: " + stringIdLetter);
+
+		if (status.Contains ("a") && status.Contains ("b") && status.Contains ("c") && status.Contains ("d")) {
+			statusNum = 4;
+		} else if (status.Contains (stringIdLetter)) {
+			statusNum = 3;
+		} else if (status.Contains ("1") && status.Contains ("2") && status.Contains ("3") && status.Contains ("4")) {
+			statusNum = 2;
+		} else if (status.Contains (stringIdNum)) {
+			statusNum = 1;
+		} else {
+			statusNum = 0;
+		}
+
+		//Debug.Log (statusNum);
+
+		if (roomScript.statusNum == statusNum) {
+			return;		
+		}
+
+		UpdateOneRoom (roomIDstring);
+
+		childCount = statusHolder.transform.childCount;
+
+		for (int i = 0; i < childCount; i++) {
+
+			TurnGameStatus tempScript = statusHolder.transform.GetChild (i).GetComponent<TurnGameStatus> ();
+
+			if (tempScript.roomId == roomID) {
+		
+				tempScript.NewStatus (statusNum);
+
+			}
+
+		}
+			
+	}
+
+	void UpdateOneRoom (string stringID){
+
+		string roomID = "|[ID]" + stringID;
+		string update = UPDATE_SYM + "Update";
+		StartCoroutine (getRoomData(roomID,update));
+
+	}
+
 }
