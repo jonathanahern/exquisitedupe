@@ -120,7 +120,7 @@ public class HighScoreScript : MonoBehaviour {
 
 		string returnText = e.Current as string;
 
-		Debug.Log ("HighScore List:" + returnText);
+		//Debug.Log ("HighScore List:" + returnText);
 
 		if (returnText.Length < 2) {
 			UpdateTheScore ();

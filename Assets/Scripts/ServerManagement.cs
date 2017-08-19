@@ -16,7 +16,7 @@ public class ServerManagement : MonoBehaviour {
 //	public Text roomList;
 //	public Text usernameAlterList;
 
-	//private static string DRAWING_SYM = "[DRAWING]";
+	private static string DRAWING_SYM = "[DRAWING]";
 	private static string MYCOLOR_SYM = "[MYCOLOR]";
 
 	public GameObject redLine;
@@ -120,7 +120,7 @@ public class ServerManagement : MonoBehaviour {
 			yield break;
 		}
 
-		//string drawingString = returnText.Substring (DRAWING_SYM.Length);
+		string drawingString = returnText.Substring (DRAWING_SYM.Length);
 
 		shrinkString = returnText;
 
@@ -135,6 +135,7 @@ public class ServerManagement : MonoBehaviour {
 		string[] drawingInfos = drawing.Split ('$');
 
 
+
 		foreach (string drawingInfo in drawingInfos) {
 
 			string drawingString;
@@ -144,10 +145,13 @@ public class ServerManagement : MonoBehaviour {
 			string[] drawings = drawingInfo.Split (':');
 
 			colorNum = drawings[0].Substring (MYCOLOR_SYM.Length);
+
 			drawingString = drawings [1];
 			dotsString = drawings [2];
 
 			DrawLine (colorNum, drawingString, dotsString);
+
+
 
 		}
 
@@ -172,8 +176,11 @@ public class ServerManagement : MonoBehaviour {
 			dotFab = orangeDot;
 		}
 
-		string[] lines = drawing.Split ('+');
+//		drawing = drawing.TrimStart ('+');
+//		drawing = drawing.Replace ("++", "+");
 
+		string[] lines = drawing.Split ('+');
+		Debug.Log (drawing);
 		foreach (string line in lines) {
 
 			GameObject lineGo = Instantiate (lineFab);
@@ -184,13 +191,14 @@ public class ServerManagement : MonoBehaviour {
 			lineRend.numPositions = points.Length;
 
 			for (int i = 0; i < points.Length; i++) {
-
+				Debug.Log (points [i]);
 				string[] vectArray = points [i].Split (',');
-
 				Vector3 tempVect = new Vector3 (
 					float.Parse (vectArray [0]),
 					float.Parse (vectArray [1]),
 					0);
+				Debug.Log (tempVect);
+
 				lineRend.SetPosition (i, tempVect);
 
 			}
@@ -294,15 +302,15 @@ public class ServerManagement : MonoBehaviour {
 
 		string roomIDstring = "|[ID]" + roomID.text;
 
-		string[] charsToRemove = new string[] { "(", ")", " "};
-		foreach (string character in charsToRemove)
-		{
-			shrinkString = shrinkString.Replace(character, string.Empty);
-		}
-
-		shrinkString = shrinkString.Replace("0.00", "0");
-		shrinkString = shrinkString.Replace("-0.", "-.");
-		shrinkString = shrinkString.Replace("0.", ".");
+//		string[] charsToRemove = new string[] { "(", ")", " "};
+//		foreach (string character in charsToRemove)
+//		{
+//			shrinkString = shrinkString.Replace(character, string.Empty);
+//		}
+//
+//		shrinkString = shrinkString.Replace("0.00", "0");
+//		shrinkString = shrinkString.Replace("-0.", "-.");
+//		shrinkString = shrinkString.Replace("0.", ".");
 
 //		shrinkString = shrinkString.Replace("-0.", "-.");
 //		shrinkString = shrinkString.Replace("0@", "@");
@@ -327,6 +335,9 @@ public class ServerManagement : MonoBehaviour {
 //			2.0, Turn into 2,
 //			.0, turn into 0,
 //			,.@ turn into ,0@
+
+		shrinkString = shrinkString.Replace("1:+", "1:");
+		shrinkString = shrinkString.Replace("++", "+");
 
 		StartCoroutine (shrinkRoom(roomIDstring));
 

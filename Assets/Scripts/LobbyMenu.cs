@@ -78,20 +78,22 @@ public class LobbyMenu : MonoBehaviour {
 			string roomsString = userAccount.activeRooms;
 
 			if (roomsString.Length < 5) {
-			
+				roomMan.noRooms = true;
 				if (frameText == null) {
 
 					frameText = GameObject.FindGameObjectWithTag ("Frame Text");
 
 				}
 
-				frameText.GetComponent<Text>().text = "Nothin happenin";
+				frameText.GetComponent<Text> ().text = "Nothin happenin";
 
+			} else {
+				
 			}
 
 		}
 
-		InvokeRepeating ("AutoUpdateRooms", 10.0f, 20.0f);
+			InvokeRepeating ("AutoUpdateRooms", 20.0f, 20.0f);
 
 	}
 	
@@ -100,15 +102,24 @@ public class LobbyMenu : MonoBehaviour {
 
 		if (Input.GetKeyDown (KeyCode.C)) {
 		
-			FiveRoomsOnly ();
+			GameObject buttonObj = Instantiate (turnButtonObj,offScreen,Quaternion.identity);
+			buttonObj.transform.SetParent (roomMan.buttonHolder, false);
+			GameObject buttonObj1 = Instantiate (turnButtonObj,offScreen,Quaternion.identity);
+			buttonObj1.transform.SetParent (roomMan.buttonHolder, false);
+			GameObject buttonObj2 = Instantiate (turnButtonObj,offScreen,Quaternion.identity);
+			buttonObj2.transform.SetParent (roomMan.buttonHolder, false);
 		
 		}
 		
 	}
 
 	void AutoUpdateRooms (){
-		//refreshingScreen.SetActive (true);
-		//loadScreenWords.text = "Refreshing...";
+		if (roomMan.noRooms == true) {
+			return;
+		}
+		Debug.Log ("TURN ON");
+		refreshingScreen.SetActive (true);
+		//loadScreenWords.text = "refreshing...";
 		roomMan.UpdateStatus ();
 
 	}
@@ -125,20 +136,21 @@ public class LobbyMenu : MonoBehaviour {
 	
 	}
 
-//	void OnApplicationFocus(){
-//
-//		refreshingScreen.SetActive (true);
-//		loadScreenWords.text = "Refreshing...";
-//		CancelInvoke ();
-//
-//		if (roomMan.refreshing == true) {
-//			InvokeRepeating ("AutoUpdateRooms", 8.0f, 20.0f);
-//			Invoke ("SendLate", 5.0f);
-//		} else {
-//			InvokeRepeating ("AutoUpdateRooms", 2.0f, 20.0f);
-//		}
-//
-//	}
+	void OnApplicationFocus(bool isFocused){
+
+		if (isFocused) {
+			Debug.Log ("asdfasdf");
+			CancelInvoke ();
+
+			if (roomMan.refreshing == true) {
+				InvokeRepeating ("AutoUpdateRooms", 12.0f, 20.0f);
+				//Invoke ("SendLate", 5.0f);
+			} else {
+				InvokeRepeating ("AutoUpdateRooms", 2.0f, 20.0f);
+			}
+		}
+
+	}
 
 //	void SendLate (){
 //	
@@ -292,8 +304,10 @@ public class LobbyMenu : MonoBehaviour {
 		foreach (string cat in totalCat) {
 
 			Vector3 offScreen = new Vector3 (2000,2000, 0);
-			GameObject buttonObj = Instantiate (turnButtonObj,offScreen,Quaternion.identity);
-			buttonObj.transform.SetParent (roomMan.buttonHolder, false);
+			GameObject buttonObj = Instantiate (turnButtonObj,offScreen,Quaternion.identity, roomMan.buttonHolder);
+
+//			buttonObj.GetComponent<RectTransform>().localScale = new Vector3 (1,1,1);
+
 			roomMan.categoryButtons.Add (buttonObj);
 			TurnRoomButton turnButt = buttonObj.GetComponent<TurnRoomButton> ();
 			string[] item = cat.Split ('|');
@@ -321,6 +335,7 @@ public class LobbyMenu : MonoBehaviour {
 			}
 
 			turnButt.roomType.text = turnButt.roomTypeString;
+
 		
 		}
 		if (roomMan == null) {
@@ -337,7 +352,8 @@ public class LobbyMenu : MonoBehaviour {
 
 			if (turnHolder.childCount < 3){
 
-				Instantiate(turnButtons[i], turnHolder);
+				GameObject buutonObj = Instantiate(turnButtons[i], turnHolder);
+				buutonObj.GetComponent<RectTransform>().localScale = new Vector3 (1,1,1);
 
 		}
 

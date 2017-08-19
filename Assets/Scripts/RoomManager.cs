@@ -46,7 +46,6 @@ public class RoomManager : MonoBehaviour {
 	private static string VOTEPOS_SYM = "[VOTEPOS]";
 	private static string DUPEGUESS_SYM = "[DUPEGUESS]";
 	private static string CATEGORIES_SYM = "[CATEGORIES]";
-	private static string UPDATE_SYM = "[UPDATE]";
 
 	public string[] catsWanted;
 	public string[] catsPlaying;
@@ -89,6 +88,7 @@ public class RoomManager : MonoBehaviour {
 	GameObject tempRoom;
 
 	public bool refreshing = false;
+	public bool noRooms = false;
 
 	void Start (){
 		
@@ -162,13 +162,17 @@ public class RoomManager : MonoBehaviour {
 				frameText = GameObject.FindGameObjectWithTag ("Frame Text");
 
 			}
-
-			frameText.GetComponent<Text>().text = "Nothin happenin";
+			noRooms = true;
+			frameText.GetComponent<Text> ().text = "Nothin happenin";
+			GameObject loadAnimation = GameObject.FindGameObjectWithTag ("Load Animation");
+			loadAnimation.SetActive (false);
 			roomTotal = 0;
 			roomsReady = true;
 			refreshing = false;
 			FindEmptyRooms ();
 			return;
+		} else {
+			noRooms = false;
 		}
 
 		roomsString = roomsString.Substring (ID_SYM.Length);
@@ -185,22 +189,24 @@ public class RoomManager : MonoBehaviour {
 			currentRooms.Add (int.Parse (rooms [i]));
 			string roomId = "|[ID]" + rooms[i];
 			//Debug.Log ("ROOOOOM: " + roomId);
-			string update = UPDATE_SYM + "Nonupdate";
-			StartCoroutine (getRoomData(roomId, update));
+			//string update = UPDATE_SYM + "Nonupdate";
+			// 0 for status update, 1 to create room
+			StartCoroutine (getRoomData(roomId, 1));
 
 		}
 
 	}
 
-	void RetryRoomGrab (string roomID){
+	void RetryRoomGrab (string roomID, int updateOrNot){
 
-		StartCoroutine (roomID);
+		StartCoroutine (getRoomData(roomID, updateOrNot));
 
 	}
 
-	IEnumerator getRoomData (string roomID, string update){
+	// 0 for status update, 1 to create room
+	IEnumerator getRoomData (string roomID, int updateOrNot){
 
-		IEnumerator e = DCP.RunCS ("turnRooms", "GetRoomData", new string[2] {roomID, update});
+		IEnumerator e = DCP.RunCS ("turnRooms", "GetRoomData", new string[1] {roomID});
 
 		while (e.MoveNext ()) {
 			yield return e.Current;
@@ -221,36 +227,26 @@ public class RoomManager : MonoBehaviour {
 
 		string[] roomSplits = returnText.Split ('|');
 		bool matches = false;
-		bool updateOld = false;
+		int roomIDSingle = 0;
 
 		foreach (string roomerSplit in roomSplits) {
 
 			if (roomerSplit.StartsWith (ID_SYM)) {
 
 				string retrievedID = roomerSplit.Substring (ID_SYM.Length);
+				roomIDSingle = int.Parse(retrievedID);
 				retrievedID = "|[ID]" + retrievedID;
 				if (retrievedID == roomID) {
 					matches = true;
 				}
 
-			} else if (roomerSplit.StartsWith (UPDATE_SYM)){
-
-				string retrievedString = roomerSplit.Substring (UPDATE_SYM.Length);
-
-				Debug.Log (retrievedString);
-
-				if (retrievedString == "Update") {
-					updateOld = true;
-				}
-
-
-			}
+			} 
 
 		}
 
 		if (matches == false) {
 		
-			RetryRoomGrab (roomID);
+			RetryRoomGrab (roomID, updateOrNot);
 			yield break;
 		}
 
@@ -261,19 +257,100 @@ public class RoomManager : MonoBehaviour {
 
 			int goNum = 0;
 
-			if (updateOld == false) {
+			if (updateOrNot == 1) {
 				CreateRoom ("junk", pieces [i], goNum);
 			} else {
-				UpdateOldRoom ( pieces [i]);
+				UpdateOldRoom (pieces [i], roomIDSingle);
 			}
 		}
 
 	}
 
-	void UpdateOldRoom(string roomInfoWhole){
-	
-		//Need to get room id to find right room first
-	
+	void UpdateOldRoom(string roomInfoWhole, int roomIDSingle){
+		
+		TurnRoomScript myRoom = roomHolder.GetChild (0).GetComponent<TurnRoomScript> ();
+
+		TurnRoomScript[] rooms = roomHolder.GetComponentsInChildren<TurnRoomScript> ();
+		foreach (TurnRoomScript room in rooms) {
+		
+			if (room.roomID == roomIDSingle) {
+				myRoom = room;
+			}
+		
+		}
+
+		string[] pieces = roomInfoWhole.Split('|');
+
+		foreach (string piece in pieces) {
+
+			if (piece.StartsWith (PLAYERS_SYM)) {
+
+				string playersWhole = piece.Substring (PLAYERS_SYM.Length);
+				string[] players = playersWhole.Split('/');
+
+				myRoom.players = new string[players.Length];
+
+				for (int i = 0; i < players.Length; i++) {
+
+					//Debug.Log (username + players [i]);
+					myRoom.players [i] = players [i];
+
+					if (players[i] == username) {
+						myRoom.myColor = i + 1;
+					}
+
+				}
+
+			} else if (piece.StartsWith (STATUS_SYM)) {
+				
+				string status = piece.Substring (STATUS_SYM.Length);
+
+				if (status.Contains ("x")) {
+
+					myRoom.dupeCaught = "x";
+
+				} else if (status.Contains ("o")) {
+
+					myRoom.dupeCaught = "o";
+
+				} else {
+
+					myRoom.dupeCaught = "n";
+
+				}
+
+			}
+
+			else if (piece.StartsWith (DRAWING_SYM)) {
+
+				string drawingString = piece.Substring (DRAWING_SYM.Length);
+				//Debug.Log ("Drawing: " + drawingString);
+
+				myRoom.drawings = drawingString;
+
+			}
+
+			else if (piece.StartsWith (VOTEPOS_SYM)) {
+
+				string votePoses = piece.Substring (VOTEPOS_SYM.Length);
+
+				//Debug.Log ("Vote Poses: " + votePoses);
+
+				votePoses = votePoses.TrimEnd ('@');
+				myRoom.votePoses = votePoses;
+
+			}
+
+			else if (piece.StartsWith (DUPEGUESS_SYM)) {
+
+				string dupeGuess = piece.Substring (DUPEGUESS_SYM.Length);
+
+				//Debug.Log ("Dupe Guess: " + dupeGuess);
+
+				myRoom.dupeGuess = dupeGuess;
+
+			}
+		}
 	}
 
 	public void CreateRoom(string roomType, string roomId, int startRoom){
@@ -390,7 +467,7 @@ public class RoomManager : MonoBehaviour {
 
 				roomScript.statusNum = 0;
 
-				Debug.Log ("Status: " + status + ", StringID: " + stringID);
+				//Debug.Log ("Status: " + status + ", StringID: " + stringID);
 
 				string stringIdLetter;
 
@@ -487,7 +564,7 @@ public class RoomManager : MonoBehaviour {
 			lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
 			lobbyMenu.TurnBasedClicked ();
 
-			Debug.Log ("room holder: " + roomHolder.childCount.ToString() + " roomTotal: " + roomTotal.ToString());
+			//Debug.Log ("room holder: " + roomHolder.childCount.ToString() + " roomTotal: " + roomTotal.ToString());
 
 			if (roomHolder.childCount > roomTotal - 1) {
 				roomsReady = true;
@@ -503,29 +580,29 @@ public class RoomManager : MonoBehaviour {
 			
 	}
 
-	public void ComingIntoFocus(){
-
-		if (statusHolder == null) {
-			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
-		}
-
-		int childCount = roomHolder.transform.childCount;
-		int statusCount = statusHolder.transform.childCount;
-
-		if (childCount > 0) {
-			for (int i = 0; i < childCount; i++) {
-				Destroy(roomHolder.transform.GetChild(i).gameObject);
-			}
-		}
-
-		if (statusCount > 0) {
-			for (int i = 0; i < statusCount; i++) {
-				Destroy(statusHolder.transform.GetChild(i).gameObject);
-			}
-		}
-
-
-	}
+//	public void ComingIntoFocus(){
+//
+//		if (statusHolder == null) {
+//			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
+//		}
+//
+//		int childCount = roomHolder.transform.childCount;
+//		int statusCount = statusHolder.transform.childCount;
+//
+//		if (childCount > 0) {
+//			for (int i = 0; i < childCount; i++) {
+//				Destroy(roomHolder.transform.GetChild(i).gameObject);
+//			}
+//		}
+//
+//		if (statusCount > 0) {
+//			for (int i = 0; i < statusCount; i++) {
+//				Destroy(statusHolder.transform.GetChild(i).gameObject);
+//			}
+//		}
+//
+//
+//	}
 
 	IEnumerator doubleCheckRoom (string roomIDstring, string myColor, string usernameToSend, string roomTypeCheck ){
 	
@@ -981,7 +1058,7 @@ public class RoomManager : MonoBehaviour {
 		}
 
 		int childCount = roomHolder.childCount;
-		Debug.Log (childCount);
+		//Debug.Log (childCount);
 
 		catsPlaying = new string[childCount];
 
@@ -1163,6 +1240,7 @@ public class RoomManager : MonoBehaviour {
 			int roomID = roomHolder.GetChild (i).gameObject.GetComponent<TurnRoomScript> ().roomID;
 			string roomIdString = "|[ID]" + roomID.ToString();
 			StartCoroutine (getStatusData(roomIdString));
+
 		}
 	
 	}
@@ -1177,7 +1255,7 @@ public class RoomManager : MonoBehaviour {
 
 		string returnText = e.Current as string;
 
-		Debug.Log (returnText);
+		//Debug.Log (returnText);
 
 		if (returnText.Contains("[ID]")) {
 			UpdateStatusObject (returnText);
@@ -1186,7 +1264,7 @@ public class RoomManager : MonoBehaviour {
 	}
 
 	void UpdateStatusObject (string statusInfo){
-	
+
 		string[] pieces = statusInfo.Split ('|'); 
 
 		string roomIDstring = pieces [1];
@@ -1246,6 +1324,8 @@ public class RoomManager : MonoBehaviour {
 
 		//Debug.Log (statusNum);
 
+		lobbyMenu.GetComponent<LobbyMenu>().refreshingScreen.SetActive (false);
+
 		if (roomScript.statusNum == statusNum) {
 			return;		
 		}
@@ -1261,18 +1341,17 @@ public class RoomManager : MonoBehaviour {
 			if (tempScript.roomId == roomID) {
 		
 				tempScript.NewStatus (statusNum);
-
 			}
 
 		}
 			
 	}
 
+// 0 for status update, 1 to create room
 	void UpdateOneRoom (string stringID){
-
 		string roomID = "|[ID]" + stringID;
-		string update = UPDATE_SYM + "Update";
-		StartCoroutine (getRoomData(roomID,update));
+//		string update = UPDATE_SYM + "Update";
+		StartCoroutine (getRoomData(roomID,0));
 
 	}
 

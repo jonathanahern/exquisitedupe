@@ -350,6 +350,12 @@ public class LocalTurnVoting : MonoBehaviour {
 
 	void MoveUpNonDupeGuess(){
 
+		if (dupeCaught == true) {
+			dupeTrophy.SetActive (false);
+		} else {
+			dupeColor.SetActive (false);
+		}
+
 		signWords.sprite = nonDupeGuess;
 		MoveUpSign ();
 		guessNonDupe.transform.DOLocalMoveY (guessScreenPos, 1.0f).SetEase (Ease.OutBounce);
@@ -512,11 +518,6 @@ public class LocalTurnVoting : MonoBehaviour {
 		}
 		MoveDownSign ();
 
-		if (dupeCaught == true) {
-			dupeTrophy.SetActive (false);
-		} else {
-			dupeColor.SetActive (false);
-		}
 
 		Invoke ("MoveUpNonDupeGuess", 2.0f);
 	}

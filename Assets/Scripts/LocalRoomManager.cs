@@ -370,9 +370,12 @@ public class LocalRoomManager : MonoBehaviour {
 						myLineString = myLineString.Replace(character, string.Empty);
 					}
 
+
 					myLineString = myLineString.Replace("0.00", "0");
 					myLineString = myLineString.Replace("-0.", "-.");
 					myLineString = myLineString.Replace("0.", ".");
+					myLineString = myLineString.Replace("++", "+");
+					myLineString = myLineString.Replace(":+", ":");
 
 
 				}

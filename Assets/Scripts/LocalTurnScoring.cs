@@ -32,6 +32,7 @@ public class LocalTurnScoring : MonoBehaviour {
 	public GameObject finale;
 	public GameObject guess;
 
+	public GameObject[] scoreObj;
 
 	public Vector3[] redPos;
 	public Vector3[] bluePos;
@@ -91,7 +92,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-
+		
 		redPos = new Vector3[3];
 		bluePos = new Vector3[3];
 		greenPos = new Vector3[3];
@@ -156,9 +157,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		if (Input.GetKeyDown (KeyCode.T)) {
 			
-			for (int i = 0; i < guessObjs.Length; i++) {
-				guessObjs [i].GetComponent<RectTransform> ().DOAnchorPos(guessOnScreen[i], 1.0f);
-			}
+			//GivePointsEveryoneBut (3, -1);
 
 		}
 
@@ -990,29 +989,45 @@ public class LocalTurnScoring : MonoBehaviour {
 			redScore = redScore + points;
 			redScoreText.text = redScore.ToString ();
 			if (animation == 1) {
-				redFlash.SetActive (true);
-				Invoke ("TurnOffRed", 1.5f);
+				if (points > 0) {
+					redFlash.SetActive (true);
+					Invoke ("TurnOffRed", 1.5f);
+				} else if (points < 0) {
+					MinusPointsAnimation (1);
+				}
 			}
 		} else if (playerNum == 2) {
 			blueScore = blueScore + points;
 			blueScoreText.text = blueScore.ToString ();
 			if (animation == 1) {
-				blueFlash.SetActive (true);
-				Invoke ("TurnOffBlue", 1.5f);
+				if (points > 0) {
+					blueFlash.SetActive (true);
+					Invoke ("TurnOffBlue", 1.5f);
+				} else if (points < 0) {
+					MinusPointsAnimation (2);
+				}
 			}
 		} else if (playerNum == 3) {
 			greenScore = greenScore + points;
 			greenScoreText.text = greenScore.ToString ();
 			if (animation == 1) {
-				greenFlash.SetActive (true);
-				Invoke ("TurnOffGreen", 1.5f);
+				if (points > 0) {
+					greenFlash.SetActive (true);
+					Invoke ("TurnOffGreen", 1.5f);
+				} else if (points < 0) {
+					MinusPointsAnimation (3);
+				}
 			}
 		} else if (playerNum == 4) {
 			orangeScore = orangeScore + points;
 			orangeScoreText.text = orangeScore.ToString ();
 			if (animation == 1) {
-				orangeFlash.SetActive (true);
-				Invoke ("TurnOffOrange", 1.5f);
+				if (points > 0) {
+					orangeFlash.SetActive (true);
+					Invoke ("TurnOffOrange", 1.5f);
+				} else if (points < 0) {
+					MinusPointsAnimation (4);
+				}
 			}
 		}
 	
@@ -1023,55 +1038,103 @@ public class LocalTurnScoring : MonoBehaviour {
 		if (playerNum == 1) {
 			blueScore = blueScore + points;
 			blueScoreText.text = blueScore.ToString ();
-			blueFlash.SetActive (true);
-			Invoke ("TurnOffBlue", 1.5f);
+			if (points > 0) {
+				blueFlash.SetActive (true);
+				Invoke ("TurnOffBlue", 1.5f);
+			} else if (points < 0) {
+				MinusPointsAnimation (2);
+			}
 			greenScore = greenScore + points;
 			greenScoreText.text = greenScore.ToString ();
-			greenFlash.SetActive (true);
-			Invoke ("TurnOffGreen", 1.5f);
+			if (points > 0) {
+				greenFlash.SetActive (true);
+				Invoke ("TurnOffGreen", 1.5f);
+			} else if (points < 0) {
+				MinusPointsAnimation (3);
+			}
 			orangeScore = orangeScore + points;
 			orangeScoreText.text = orangeScore.ToString ();
-			orangeFlash.SetActive (true);
-			Invoke ("TurnOffOrange", 1.5f);
+			if (points > 0) {
+				orangeFlash.SetActive (true);
+				Invoke ("TurnOffOrange", 1.5f);
+			} else if (points < 0) {
+				MinusPointsAnimation (4);
+			}
 		} else if (playerNum == 2) {
 			redScore = redScore + points;
 			redScoreText.text = redScore.ToString ();
-			redFlash.SetActive (true);
-			Invoke ("TurnOffRed", 1.5f);
+			if (points > 0) {
+				redFlash.SetActive (true);
+				Invoke ("TurnOffRed", 1.5f);
+			} else if (points < 0) {
+				MinusPointsAnimation (1);
+			}
 			greenScore = greenScore + points;
 			greenScoreText.text = greenScore.ToString ();
-			greenFlash.SetActive (true);
-			Invoke ("TurnOffGreen", 1.5f);
+			if (points > 0) {
+				greenFlash.SetActive (true);
+				Invoke ("TurnOffGreen", 1.5f);
+			} else if (points < 0) {
+				MinusPointsAnimation (3);
+			}
 			orangeScore = orangeScore + points;
 			orangeScoreText.text = orangeScore.ToString ();
-			orangeFlash.SetActive (true);
-			Invoke ("TurnOffOrange", 1.5f);
+			if (points > 0) {
+				orangeFlash.SetActive (true);
+				Invoke ("TurnOffOrange", 1.5f);
+			} else if (points < 0) {
+				MinusPointsAnimation (4);
+			}
 		} else if (playerNum == 3) {
 			redScore = redScore + points;
 			redScoreText.text = redScore.ToString ();
-			redFlash.SetActive (true);
-			Invoke ("TurnOffRed", 1.5f);
+			if (points > 0) {
+				redFlash.SetActive (true);
+				Invoke ("TurnOffRed", 1.5f);
+			} else if (points < 0) {
+				MinusPointsAnimation (1);
+			}
 			blueScore = blueScore + points;
 			blueScoreText.text = blueScore.ToString ();
-			blueFlash.SetActive (true);
-			Invoke ("TurnOffBlue", 1.5f);
+			if (points > 0) {
+				blueFlash.SetActive (true);
+				Invoke ("TurnOffBlue", 1.5f);
+			} else if (points < 0) {
+				MinusPointsAnimation (2);
+			}
 			orangeScore = orangeScore + points;
 			orangeScoreText.text = orangeScore.ToString ();
-			orangeFlash.SetActive (true);
-			Invoke ("TurnOffOrange", 1.5f);
+			if (points > 0) {
+				orangeFlash.SetActive (true);
+				Invoke ("TurnOffOrange", 1.5f);
+			} else if (points < 0) {
+				MinusPointsAnimation (4);
+			}
 		} else if (playerNum == 4) {
 			redScore = redScore + points;
 			redScoreText.text = redScore.ToString ();
-			redFlash.SetActive (true);
-			Invoke ("TurnOffRed", 1.5f);
+			if (points > 0) {
+				redFlash.SetActive (true);
+				Invoke ("TurnOffRed", 1.5f);
+			} else if (points < 0) {
+				MinusPointsAnimation (1);
+			}
 			blueScore = blueScore + points;
 			blueScoreText.text = blueScore.ToString ();
-			blueFlash.SetActive (true);
-			Invoke ("TurnOffBlue", 1.5f);
+			if (points > 0) {
+				blueFlash.SetActive (true);
+				Invoke ("TurnOffBlue", 1.5f);
+			} else if (points < 0) {
+				MinusPointsAnimation (2);
+			}
 			greenScore = greenScore + points;
 			greenScoreText.text = greenScore.ToString ();
-			greenFlash.SetActive (true);
-			Invoke ("TurnOffGreen", 1.5f);
+			if (points > 0) {
+				greenFlash.SetActive (true);
+				Invoke ("TurnOffGreen", 1.5f);
+			} else if (points < 0) {
+				MinusPointsAnimation (3);
+			}
 
 		}
 
@@ -1086,80 +1149,148 @@ public class LocalTurnScoring : MonoBehaviour {
 			if (dupeNum != 2) {
 				blueScore = blueScore + points;
 				blueScoreText.text = blueScore.ToString ();
-				blueFlash.SetActive (true);
-				Invoke ("TurnOffBlue", 1.5f);
+				if (points > 0) {
+					blueFlash.SetActive (true);
+					Invoke ("TurnOffBlue", 1.5f);
+				} else if (points < 0) {
+					MinusPointsAnimation (2);
+				}
 			}
 			if (dupeNum != 3) {
 				greenScore = greenScore + points;
 				greenScoreText.text = greenScore.ToString ();
-				greenFlash.SetActive (true);
-				Invoke ("TurnOffGreen", 1.5f);
+				if (points > 0) {
+					greenFlash.SetActive (true);
+					Invoke ("TurnOffGreen", 1.5f);
+				} else if (points < 0) {
+					MinusPointsAnimation (3);
+				}
 			}
 			if (dupeNum != 4) {
 				orangeScore = orangeScore + points;
 				orangeScoreText.text = orangeScore.ToString ();
-				orangeFlash.SetActive (true);
-				Invoke ("TurnOffOrange", 1.5f);
+				if (points > 0) {
+					orangeFlash.SetActive (true);
+					Invoke ("TurnOffOrange", 1.5f);
+				} else if (points < 0) {
+					MinusPointsAnimation (4);
+				}
 			}
 		} else if (playerNum == 2) {
 			if (dupeNum != 1) {
 				redScore = redScore + points;
 				redScoreText.text = redScore.ToString ();
-				redFlash.SetActive (true);
-				Invoke ("TurnOffRed", 1.5f);
+				if (points > 0) {
+					redFlash.SetActive (true);
+					Invoke ("TurnOffRed", 1.5f);
+				} else if (points < 0) {
+					MinusPointsAnimation (1);
+				}
 			}
 			if (dupeNum != 3) {
 				greenScore = greenScore + points;
 				greenScoreText.text = greenScore.ToString ();
-				greenFlash.SetActive (true);
-				Invoke ("TurnOffGreen", 1.5f);
+				if (points > 0) {
+					greenFlash.SetActive (true);
+					Invoke ("TurnOffGreen", 1.5f);
+				} else if (points < 0) {
+					MinusPointsAnimation (3);
+				}
 			}
 			if (dupeNum != 4) {
 				orangeScore = orangeScore + points;
 				orangeScoreText.text = orangeScore.ToString ();
-				orangeFlash.SetActive (true);
-				Invoke ("TurnOffOrange", 1.5f);
+				if (points > 0) {
+					orangeFlash.SetActive (true);
+					Invoke ("TurnOffOrange", 1.5f);
+				} else if (points < 0) {
+					MinusPointsAnimation (4);
+				}
 			}
 		} else if (playerNum == 3) {
 			if (dupeNum != 1) {
 				redScore = redScore + points;
 				redScoreText.text = redScore.ToString ();
-				redFlash.SetActive (true);
-				Invoke ("TurnOffRed", 1.5f);
+				if (points > 0) {
+					redFlash.SetActive (true);
+					Invoke ("TurnOffRed", 1.5f);
+				} else if (points < 0) {
+					MinusPointsAnimation (1);
+				}
 			}
 			if (dupeNum != 2) {
 				blueScore = blueScore + points;
 				blueScoreText.text = blueScore.ToString ();
-				blueFlash.SetActive (true);
-				Invoke ("TurnOffBlue", 1.5f);
+				if (points > 0) {
+					blueFlash.SetActive (true);
+					Invoke ("TurnOffBlue", 1.5f);
+				} else if (points < 0) {
+					MinusPointsAnimation (2);
+				}
 			}
 			if (dupeNum != 4) {
 				orangeScore = orangeScore + points;
 				orangeScoreText.text = orangeScore.ToString ();
-				orangeFlash.SetActive (true);
-				Invoke ("TurnOffOrange", 1.5f);
+				if (points > 0) {
+					orangeFlash.SetActive (true);
+					Invoke ("TurnOffOrange", 1.5f);
+				} else if (points < 0) {
+					MinusPointsAnimation (4);
+				}
 			}
 		} else if (playerNum == 4) {
 			if (dupeNum != 1) {
 				redScore = redScore + points;
 				redScoreText.text = redScore.ToString ();
-				redFlash.SetActive (true);
-				Invoke ("TurnOffRed", 1.5f);
+				if (points > 0) {
+					redFlash.SetActive (true);
+					Invoke ("TurnOffRed", 1.5f);
+				} else if (points < 0) {
+					MinusPointsAnimation (1);
+				}
 			}
 			if (dupeNum != 2) {
 				blueScore = blueScore + points;
 				blueScoreText.text = blueScore.ToString ();
-				blueFlash.SetActive (true);
-				Invoke ("TurnOffBlue", 1.5f);
+				if (points > 0) {
+					blueFlash.SetActive (true);
+					Invoke ("TurnOffBlue", 1.5f);
+				} else if (points < 0) {
+					MinusPointsAnimation (2);
+				}
 			}
 			if (dupeNum != 3) {
 				greenScore = greenScore + points;
 				greenScoreText.text = greenScore.ToString ();
-				greenFlash.SetActive (true);
-				Invoke ("TurnOffGreen", 1.5f);
+				if (points > 0) {
+					greenFlash.SetActive (true);
+					Invoke ("TurnOffGreen", 1.5f);
+				} else if (points < 0) {
+					MinusPointsAnimation (3);
+				}
 			}
 
 		}
+
+	}
+
+	void MinusPointsAnimation (int playerNum){
+		Vector3 threesixty = new Vector3 (0f, 0f, 1080f);
+		scoreObj [playerNum - 1].transform.DOLocalRotate (threesixty, 1.5f,RotateMode.FastBeyond360).SetEase (Ease.InOutFlash);
+
+//		Sequence mySequence = DOTween.Sequence();
+//		// Add a movement tween at the beginning
+//		mySequence.Append(SpriteRenderer.DOColor (redColor, .75f).SetEase (Ease.InOutBounce);
+//		// Add a rotation tween as soon as the previous one is finished
+//		mySequence.Append(transform.DORotate(new Vector3(0,180,0), 1));
+//		
+//		
+//
+//
+//		Color current = scoreObj [playerNum - 1].GetComponent<SpriteRenderer> ().color;
+//		Color redColor = Color.red;
+//
+//		scoreObj [playerNum - 1].GetComponent<SpriteRenderer> ().DOColor (redColor, .75f).SetEase (Ease.InOutBounce);
 
 	}
 
