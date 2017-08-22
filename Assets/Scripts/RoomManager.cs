@@ -25,7 +25,7 @@ public class RoomManager : MonoBehaviour {
 
 	}
 
-	public LobbyMenu lobbyMenu;
+	public LobbyMenu lobbyMenu; 
 	UserAccountManagerScript userAccount;
 
 	public string username;
@@ -90,7 +90,14 @@ public class RoomManager : MonoBehaviour {
 	public bool refreshing = false;
 	public bool noRooms = false;
 
+	public bool tutorialMode;
+
 	void Start (){
+
+		if (tutorialMode == true) {
+			return;
+		}
+
 		
 		categoryButtons = new List<GameObject>();
 		acceptableStrings = new List<string>();
@@ -236,6 +243,7 @@ public class RoomManager : MonoBehaviour {
 				string retrievedID = roomerSplit.Substring (ID_SYM.Length);
 				roomIDSingle = int.Parse(retrievedID);
 				retrievedID = "|[ID]" + retrievedID;
+
 				if (retrievedID == roomID) {
 					matches = true;
 				}
@@ -351,6 +359,20 @@ public class RoomManager : MonoBehaviour {
 
 			}
 		}
+
+
+
+		for (int i = 0; i < statusHolder.transform.childCount; i++) {
+
+			TurnGameStatus tempScript = statusHolder.transform.GetChild (i).GetComponent<TurnGameStatus> ();
+
+			if (tempScript.roomId == roomIDSingle) {
+
+				tempScript.StatusUpdated ();
+			}
+
+		}
+
 	}
 
 	public void CreateRoom(string roomType, string roomId, int startRoom){
@@ -1324,10 +1346,10 @@ public class RoomManager : MonoBehaviour {
 
 		//Debug.Log (statusNum);
 
-		lobbyMenu.GetComponent<LobbyMenu>().refreshingScreen.SetActive (false);
+		Invoke ("RefreshingTurnOff", 2.0f);
 
 		if (roomScript.statusNum == statusNum) {
-			return;		
+			return;
 		}
 
 		UpdateOneRoom (roomIDstring);
@@ -1345,6 +1367,11 @@ public class RoomManager : MonoBehaviour {
 
 		}
 			
+	}
+
+	void RefreshingTurnOff (){
+	
+		lobbyMenu.GetComponent<LobbyMenu>().refreshingScreen.SetActive (false);
 	}
 
 // 0 for status update, 1 to create room

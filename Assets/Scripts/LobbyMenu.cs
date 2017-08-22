@@ -46,6 +46,8 @@ public class LobbyMenu : MonoBehaviour {
 	public GameObject refreshingScreen;
 	public Text loadScreenWords;
 
+	public bool tutorialMode = false;
+
 	// Use this for initialization
 	void Awake () {
 
@@ -54,11 +56,20 @@ public class LobbyMenu : MonoBehaviour {
 	}
 
 	void Start(){
+
 		statusLoad = GameObject.FindGameObjectWithTag ("Status Load");
 		oneEighty = new Vector3 (0, 0, 180.0f);
 		zeroCounter = new Vector3 (0, 0, 360.0f);
 		startPos = newCats.position.x;
 		roomMan = GameObject.FindGameObjectWithTag ("Room Manager").GetComponent<RoomManager> ();
+
+		if (tutorialMode == true) {
+		
+			return;
+		
+		}
+
+
 		roomMan.roomsReady = false;
 		if (roomMan.cameFromTurnBased == true) {
 			TurnBasedClicked ();
@@ -137,6 +148,10 @@ public class LobbyMenu : MonoBehaviour {
 	}
 
 	void OnApplicationFocus(bool isFocused){
+
+		if (tutorialMode == true) {
+			return;
+		}
 
 		if (isFocused) {
 			Debug.Log ("asdfasdf");

@@ -45,14 +45,23 @@ public class LocalRoomManager : MonoBehaviour {
 	Vector3 panelScreen;
 	Vector3 panelScreenOff;
 
+	public bool tutorialMode;
+
 	// Use this for initialization
 	void Start () {
-
-		FindMyRoom ();
 
 		panelScreen = bottomPanel.anchoredPosition;
 		panelScreenOff = new Vector3 (panelScreen.x, panelScreen.y - 500, panelScreen.z);
 		bottomPanel.anchoredPosition = panelScreenOff;
+
+		if (tutorialMode == true) {
+			
+			return;
+		}
+
+		FindMyRoom ();
+
+
 
 	}
 	
@@ -183,6 +192,14 @@ public class LocalRoomManager : MonoBehaviour {
 		Invoke ("LoadBrushes", .7f);
 		lineSpawn.GetColor (myRoom.myColor);
 
+
+	}
+
+	public void MoveUpPanel(){
+
+		Debug.Log ("move up p");
+
+		bottomPanel.DOAnchorPos (panelScreen, 1.0f);
 
 	}
 
@@ -322,7 +339,7 @@ public class LocalRoomManager : MonoBehaviour {
 	
 	}
 
-	void StillHaveBrushes(){
+	public void StillHaveBrushes(){
 	
 		offScreen = frameMessage.transform.position;
 
@@ -424,8 +441,8 @@ public class LocalRoomManager : MonoBehaviour {
 		myLineString = myLineString.TrimEnd('+');
 		myLineString = myLineString + "$";
 
-		Debug.Log (myRoom.roomID);
-		Debug.Log (myLineString);
+//		Debug.Log (myRoom.roomID);
+//		Debug.Log (myLineString);
 
 		StartCoroutine (doneDrawing(myRoom.roomID, myLineString));
 

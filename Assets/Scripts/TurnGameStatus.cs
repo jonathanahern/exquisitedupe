@@ -31,6 +31,8 @@ public class TurnGameStatus : MonoBehaviour {
 
 	Transform roomHolder;
 
+	int loadedStatus;
+
 	// Use this for initialization
 	void Start () {
 
@@ -43,18 +45,34 @@ public class TurnGameStatus : MonoBehaviour {
 
 	}
 
+	public void StatusUpdated () {
+	
+		if (loadedStatus == 0) {
+			PhaseOneReady ();
+		} else if (loadedStatus == 1) {
+			PhaseOneDone ();
+		} else if (loadedStatus == 2) {
+			PhaseTwoReady ();
+		} else if (loadedStatus == 3) {
+			PhaseTwoDone ();
+		} else if (loadedStatus == 4) {
+			PhaseThreeReady ();
+		} 
+	
+	}
+
 	public void NewStatus (int newStatus){
 	
 		if (newStatus == 0) {
-			PhaseOneReady ();
+			loadedStatus = 0;
 		} else if (newStatus == 1) {
-			PhaseOneDone ();
+			loadedStatus = 1;
 		} else if (newStatus == 2) {
-			PhaseTwoReady ();
+			loadedStatus = 2;
 		} else if (newStatus == 3) {
-			PhaseTwoDone ();
+			loadedStatus = 3;
 		} else if (newStatus == 4) {
-			PhaseThreeReady ();
+			loadedStatus = 4;
 		} 
 
 	}

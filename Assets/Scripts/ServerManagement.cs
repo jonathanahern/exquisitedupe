@@ -180,7 +180,7 @@ public class ServerManagement : MonoBehaviour {
 //		drawing = drawing.Replace ("++", "+");
 
 		string[] lines = drawing.Split ('+');
-		Debug.Log (drawing);
+		//Debug.Log (drawing);
 		foreach (string line in lines) {
 
 			GameObject lineGo = Instantiate (lineFab);
@@ -191,13 +191,13 @@ public class ServerManagement : MonoBehaviour {
 			lineRend.numPositions = points.Length;
 
 			for (int i = 0; i < points.Length; i++) {
-				Debug.Log (points [i]);
+				//Debug.Log (points [i]);
 				string[] vectArray = points [i].Split (',');
 				Vector3 tempVect = new Vector3 (
 					float.Parse (vectArray [0]),
 					float.Parse (vectArray [1]),
 					0);
-				Debug.Log (tempVect);
+				//Debug.Log (tempVect);
 
 				lineRend.SetPosition (i, tempVect);
 

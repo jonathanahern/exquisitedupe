@@ -19,6 +19,7 @@ public class CameraScript : MonoBehaviour {
 	float moveRate;
 
 	public LocalRoomManager localRoomMan;
+	public TutorialPhaseOneScript tutorialOne;
 
 	// Use this for initialization
 	void Start () {
@@ -114,6 +115,35 @@ public class CameraScript : MonoBehaviour {
 	
 		localRoomMan.StartGame ();
 
+	}
+
+	public void ZoomInTutorial (int playerNum){
+
+		seekerCam.orthographicSize = 2.5f;
+
+		if (playerNum == 2) {
+			goalX = 0;
+			seekerCam.transform.position = new Vector3 (1.35f, 2, -10);
+			moveCamera = true;
+
+		} 
+	}
+
+	public void MoveToSectionTutorial () {
+
+		moveCamera = false;
+
+		Vector3 camPos = seekerCam.transform.position;
+
+		Camera.main.transform.DOMove (camPos, 2.0f).OnComplete(StartTutorial);
+		DOTween.To(()=> Camera.main.orthographicSize, x=> Camera.main.orthographicSize = x, seekerCam.orthographicSize, 2.0f);
+
+	}
+
+	void StartTutorial(){
+	
+		tutorialOne.StartGame ();
+	
 	}
 
 }
