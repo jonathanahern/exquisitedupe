@@ -177,6 +177,12 @@ public class LoginMenu : MonoBehaviour {
 		}
 		
 	}
+
+	void RetryLoginRequest(string username, string password){
+
+		StartCoroutine(sendLoginRequest(username, password));
+	
+	}
 	
 	IEnumerator sendLoginRequest (string username, string password) {
 
@@ -191,6 +197,13 @@ public class LoginMenu : MonoBehaviour {
 			string returnText = e.Current as string;
 
 			Debug.Log (returnText);
+
+			if (returnText == "") {
+			
+				RetryLoginRequest (username, password);
+				yield break;
+
+			}
 
 			string[] returnBroken = returnText.Split ('|');
 			string success = returnBroken [0];
@@ -211,7 +224,7 @@ public class LoginMenu : MonoBehaviour {
 				PlayerPrefs.SetString (userNameLocation, username);
 				PlayerPrefs.SetString (passwordLocation, password);
 
-				UserAccountManagerScript.instance.LogIn (username, password, returnBroken[1]);
+				UserAccountManagerScript.instance.LogIn (username, password, returnBroken[1], 1);
 
 			} else {
 				
@@ -318,13 +331,16 @@ public class LoginMenu : MonoBehaviour {
 
 			if (returnText == "Success") {
 				//Account created successfully
-				
+
+				PlayerPrefs.SetString (userNameLocation, username);
+				PlayerPrefs.SetString (passwordLocation, password);
+
 				blankErrors();
 				//part = 2; //show logged in UI
 				//blank username field
 				input_register_username.text = ""; //password field is blanked at the end of this function, even when error is returned
 				
-		UserAccountManagerScript.instance.LogIn (username, password, "");
+		UserAccountManagerScript.instance.LogIn (username, password, "", 0);
 
 			} else if (returnText == "username in use") {
 				//Account Not Created due to username being used on another Account

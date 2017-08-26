@@ -21,6 +21,9 @@ public class TutorialPhaseOneScript : MonoBehaviour {
 	string intro1Words5 = "By drawing on the brushes you will create a complete masterpiece!";
 	string intro1Words6 = "Start drawing an elephant head!";
 
+	string intro2Words1 = "This time the category is \"SUPER HEROES\" and your subject is \"The Flash\"";
+	string intro2Words2 = "Try not to draw so obvious this time so the dupe can't guess it";
+
 	public LineSpawnerScipt lineSpawn;
 	public LocalRoomManager localRoom;
 
@@ -37,10 +40,26 @@ public class TutorialPhaseOneScript : MonoBehaviour {
 
 	string drawing1Location = "drawing1Location";
 
+	public bool drawing1;
+	public bool drawing2;
+
+	int playerNum = 0;
+
 	// Use this for initialization
 	void Start () {
 
-		cameraOne.ZoomInTutorial(2);
+		if (drawing1 == true) {
+			introText.text = intro1Words1;
+			playerNum = 2;
+		}
+
+		if (drawing2 == true) {
+			introText.text = intro2Words1;
+			playerNum = 4;
+		}
+
+
+		cameraOne.ZoomIn(playerNum);
 		lineSpawn.dontDraw = true;
 		Invoke ("OpenCurtains", 1.5f);
 
@@ -83,11 +102,27 @@ public class TutorialPhaseOneScript : MonoBehaviour {
 		}
 	}
 
+	public void DupeBubble2 () {
+
+		if (introText.text == intro2Words1) {
+			introText.text = intro2Words2;
+		} else if (introText.text == intro2Words2) {
+			tutorialDupe.SetActive (false);
+			cameraOne.MoveToSectionTutorial ();
+		}
+
+	}
+
 	public void StartGame(){
 
 		localRoom.MoveUpPanel ();
-		Invoke ("BubbleTwo", 1.0f);
-		lineSpawn.GetColor (2);
+		if (drawing1 == true) {
+			Invoke ("BubbleTwo", 1.0f);
+		} else if (drawing2 == true) {
+			FadeOutElephant ();
+			lineSpawn.dontDraw = false;
+		}
+		lineSpawn.GetColor (playerNum);
 
 	}
 
@@ -100,12 +135,15 @@ public class TutorialPhaseOneScript : MonoBehaviour {
 	
 		Color clear = new Color (1,1,1,0);
 		elephant.DOColor(clear,1.0f);
+		if (drawing2 == true) {
+			LoadBrushes ();
+			OkayToClick ();
+		}
 	
 	}
 
 	void LoadBrushes (){
-
-		int myColor = 2;
+		int myColor = playerNum;
 
 		for (int i = 0; i < brushes.Length; i++) {
 
@@ -141,7 +179,7 @@ public class TutorialPhaseOneScript : MonoBehaviour {
 	}
 	public void DoneDrawing (){
 
-		int myColor = 2;
+		int myColor = playerNum;
 
 		if (okayToClick == false) {
 			return;
@@ -216,8 +254,11 @@ public class TutorialPhaseOneScript : MonoBehaviour {
 		roomMan.CurtainsIn ();
 
 		GameObject[] lines = GameObject.FindGameObjectsWithTag ("Line");
-
-		myLineString = "[MYCOLOR]" + "2:";
+		if (drawing1 == true) {
+			myLineString = "[MYCOLOR]" + "2:";
+		} else {
+			myLineString = "[MYCOLOR]" + "4:";
+		}
 
 		foreach (GameObject line in lines) {
 
@@ -239,13 +280,11 @@ public class TutorialPhaseOneScript : MonoBehaviour {
 						myLineString = myLineString.Replace(character, string.Empty);
 					}
 
-
 					myLineString = myLineString.Replace("0.00", "0");
 					myLineString = myLineString.Replace("-0.", "-.");
 					myLineString = myLineString.Replace("0.", ".");
 					myLineString = myLineString.Replace("++", "+");
 					myLineString = myLineString.Replace(":+", ":");
-
 
 				}
 
@@ -303,7 +342,11 @@ public class TutorialPhaseOneScript : MonoBehaviour {
 
 	void StartNewScene (){
 
-		SceneManager.LoadScene ("Tutorial Lobby Menu 2");
+		if (drawing1 == true) {
+			SceneManager.LoadScene ("Tutorial Lobby Menu 2");
+		} else {
+			SceneManager.LoadScene ("Tutorial Turn Based Voting 2");
+		}
 
 	}
 

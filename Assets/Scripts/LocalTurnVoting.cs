@@ -11,6 +11,7 @@ public class LocalTurnVoting : MonoBehaviour {
 	TurnRoomScript myRoom;
 	string drawing;
 	int currentVote;
+	int currentAward = 0;
 	bool fateSet;
 	string myColor;
 
@@ -41,6 +42,7 @@ public class LocalTurnVoting : MonoBehaviour {
 	Vector2 thirdVotePos;
 
 	public Sprite monkeyArtistWords;
+	public Sprite monaMasterpieceWords;
 	public Sprite vagueArtistWords;
 	public Sprite captainObviousWords;
 	public Sprite dupeVotedElsewhere;
@@ -48,9 +50,11 @@ public class LocalTurnVoting : MonoBehaviour {
 	public Sprite wrongDupeGuess;
 	public Sprite rightDupeGuess;
 	public Sprite nonDupeGuess;
+	public Sprite noVoteSelf;
 
 	public GameObject buttonObj;
 	public GameObject cantVoteObj;
+	public GameObject cantVoteSelfObj;
 
 	bool dupeCaught = false;
 
@@ -89,8 +93,28 @@ public class LocalTurnVoting : MonoBehaviour {
 
 	private static string MYCOLOR_SYM = "[MYCOLOR]";
 
+	public bool tutorialMode;
+
 	// Use this for initialization
 	void Start () {
+
+		pedScreenPos = pedestal.transform.position.y;
+		pedOffPos = pedScreenPos - 3.0f;
+		Vector3 offScreen = new Vector3 (pedestal.transform.position.x, pedOffPos, pedestal.transform.position.z);
+		pedestal.transform.position = offScreen;
+
+		signScreenPos = sign.transform.position.y;
+		signOffPos = signScreenPos - 3.0f;
+
+		if (tutorialMode == true) {
+			MoveDownSign ();
+			return;
+		}
+
+		guessScreenPos = guessNonDupe.transform.position.y;
+		guessOffScreenPos = guessScreenPos - 3.0f;
+		Vector3 offScreen2 = new Vector3 (guessNonDupe.transform.position.x, guessOffScreenPos, guessNonDupe.transform.position.z);
+		guessNonDupe.transform.position = offScreen2;
 
 		for (int i = 0; i < lineMats.Length; i++) {
 
@@ -100,18 +124,6 @@ public class LocalTurnVoting : MonoBehaviour {
 
 		//snapShot = GameObject.FindObjectOfType<CaptureAndSave> ();
 
-		pedScreenPos = pedestal.transform.position.y;
-		pedOffPos = pedScreenPos - 3.0f;
-		Vector3 offScreen = new Vector3 (pedestal.transform.position.x, pedOffPos, pedestal.transform.position.z);
-		pedestal.transform.position = offScreen;
-
-		guessScreenPos = guessNonDupe.transform.position.y;
-		guessOffScreenPos = guessScreenPos - 3.0f;
-		Vector3 offScreen2 = new Vector3 (guessNonDupe.transform.position.x, guessOffScreenPos, guessNonDupe.transform.position.z);
-		guessNonDupe.transform.position = offScreen2;
-
-		signScreenPos = sign.transform.position.y;
-		signOffPos = signScreenPos - 3.0f;
 
 		//		foreach (Material lineMat in lineMats) {
 		//
@@ -182,6 +194,8 @@ public class LocalTurnVoting : MonoBehaviour {
 		Invoke ("TakePicture" , 3.0f);
 
 	}
+
+
 
 	// Update is called once per frame
 	void Update () {
@@ -312,25 +326,25 @@ public class LocalTurnVoting : MonoBehaviour {
 
 	}
 
-	void MoveUpPedestal(){
+	public void MoveUpPedestal(){
 
 		pedestal.transform.DOLocalMoveY (pedScreenPos, 1.0f).SetEase (Ease.OutBounce);
 
 	}
 
-	void MoveDownPedestal(){
+	public void MoveDownPedestal(){
 
 		pedestal.transform.DOLocalMoveY (pedOffPos, 1.0f).SetEase (Ease.OutBounce);
 
 	}
 
-	void MoveUpSign(){
+	public void MoveUpSign(){
 
 		sign.transform.DOLocalMoveY (signScreenPos, 1.0f).SetEase (Ease.OutBounce);
 
 	}
 
-	void MoveDownSign(){
+	public void MoveDownSign(){
 
 		sign.transform.DOLocalMoveY (signOffPos, 1.0f).SetEase (Ease.OutBounce);
 
@@ -342,7 +356,7 @@ public class LocalTurnVoting : MonoBehaviour {
 
 	}
 
-	void MoveOutGuesser(){
+	public void MoveOutGuesser(){
 
 		guessObject.transform.DOLocalMoveX (-1600, 1.0f).SetEase (Ease.OutBounce);
 
@@ -368,17 +382,30 @@ public class LocalTurnVoting : MonoBehaviour {
 
 	}
 
-	public void FlipSignToConfirm(int onDupe){
+	//0 onDupe, 1 offDupeandself, -1 onSelf
+	public void FlipSignToConfirm(int onWho){
 
 		Vector3 oneEighty = new Vector3 (0, 180, 0);
 		sign.transform.DORotate (oneEighty, 1.0f);
 
-		if (onDupe == 0) {
+		if (onWho == 0 && currentAward ==1) {
 			cantVoteObj.SetActive (true);
 			buttonObj.SetActive (false);
+		} else if (onWho == -1 && currentAward == 2){
+			cantVoteSelfObj.SetActive (true);
+			buttonObj.SetActive (false);
+
+		} else if (onWho == 0 && currentAward == 4){
+			cantVoteObj.SetActive (true);
+			buttonObj.SetActive (false);
+
 		} else {
 			cantVoteObj.SetActive (false);
 			buttonObj.SetActive (true);
+			if (tutorialMode == false) {
+				cantVoteSelfObj.SetActive (false);
+			}
+
 		}
 
 	}
@@ -576,37 +603,71 @@ public class LocalTurnVoting : MonoBehaviour {
 
 	}
 
+	void PaleRed(){
+		lineMats[0].color = dupeColors[0];
+		lineMats[1].color = regColors[1];
+		lineMats[2].color = regColors[2];
+		lineMats[3].color = regColors[3];
+	}
+
+	void PaleBlue (){
+		lineMats[1].color = dupeColors[1];
+		lineMats[0].color = regColors[0];
+		lineMats[2].color = regColors[2];
+		lineMats[3].color = regColors[3];
+	}
+
+	void PaleGreen (){
+		lineMats[2].color = dupeColors[2];
+		lineMats[1].color = regColors[1];
+		lineMats[0].color = regColors[0];
+		lineMats[3].color = regColors[3];
+	}
+
+	void PaleOrange (){
+		lineMats[3].color = dupeColors[3];
+		lineMats[0].color = regColors[0];
+		lineMats[2].color = regColors[2];
+		lineMats[1].color = regColors[1];
+	}
+
 	void LaunchVote2(){
 
 		pedestal.SetActive (true);
 		sign.SetActive (true);
+		int dupeNum = myRoom.dupeNum;
+		int colorNum = myRoom.myColor;
 
-		if (myRoom.dupeNum == 1) {
-			lineMats[0].color = dupeColors[0];
-			lineMats[1].color = regColors[1];
-			lineMats[2].color = regColors[2];
-			lineMats[3].color = regColors[3];
-		} else if (myRoom.dupeNum == 2) {
-			lineMats[1].color = dupeColors[1];
-			lineMats[0].color = regColors[0];
-			lineMats[2].color = regColors[2];
-			lineMats[3].color = regColors[3];
-		} else if (myRoom.dupeNum == 3) {
-			lineMats[2].color = dupeColors[2];
-			lineMats[1].color = regColors[1];
-			lineMats[0].color = regColors[0];
-			lineMats[3].color = regColors[3];
-		} else if (myRoom.dupeNum == 4) {
-			lineMats[3].color = dupeColors[3];
-			lineMats[0].color = regColors[0];
-			lineMats[2].color = regColors[2];
-			lineMats[1].color = regColors[1];
-		} 
+		if (myRoom.awardNum == 1) {
 
+			if (dupeNum == 1) {
+				PaleRed ();
+			} else if (dupeNum == 2) {
+				PaleBlue ();
+			} else if (dupeNum == 3) {
+				PaleGreen ();
+			} else if (dupeNum == 4) {
+				PaleOrange ();
+			} 
 
-		if (myRoom.awardNum > 0) {
-
+			currentAward = 1;
 			signWords.sprite = monkeyArtistWords;
+			MoveUpSign ();
+
+		} else if (myRoom.awardNum > 1) {
+
+			if (colorNum == 1) {
+				PaleRed ();
+			} else if (colorNum == 2) {
+				PaleBlue ();
+			} else if (colorNum == 3) {
+				PaleGreen ();
+			} else if (colorNum == 4) {
+				PaleOrange ();
+			} 
+
+			currentAward = 2;
+			signWords.sprite = monaMasterpieceWords;
 			MoveUpSign ();
 
 		}
@@ -623,6 +684,19 @@ public class LocalTurnVoting : MonoBehaviour {
 	}
 
 	void LaunchVote3(){
+		
+		int dupeNum = myRoom.dupeNum;
+		currentAward = 4;
+
+		if (dupeNum == 1) {
+			PaleRed ();
+		} else if (dupeNum == 2) {
+			PaleBlue ();
+		} else if (dupeNum == 3) {
+			PaleGreen ();
+		} else if (dupeNum == 4) {
+			PaleOrange ();
+		} 
 
 		FlipSignToWords ();
 
@@ -645,7 +719,7 @@ public class LocalTurnVoting : MonoBehaviour {
 
 	}
 
-	void LaunchDupeGuess (){
+	public void LaunchDupeGuess (){
 
 		pedestal.SetActive (false);
 		sign.SetActive (false);

@@ -87,6 +87,8 @@ public class LocalTurnScoring : MonoBehaviour {
 
 	public List<int> votes;
 	public List<int> winnersCircle;
+	public List<int> votesNums;
+	public int[] pointers;
 
 	private static string MYCOLOR_SYM = "[MYCOLOR]";
 
@@ -373,7 +375,7 @@ public class LocalTurnScoring : MonoBehaviour {
 		if (four == topCount) {
 			winnersCircle.Add (4);
 		}
-			
+
 		int[] results = winnersCircle.ToArray ();
 
 		return results;
@@ -428,6 +430,49 @@ public class LocalTurnScoring : MonoBehaviour {
 			return 0;
 		}
 			
+	}
+
+	string GetWinnerNames (){
+
+		string winnerNames = "";
+
+		votesNums = new List<int>();
+
+		votesNums.Add (WhoYouVoted (redPos [1]));
+		votesNums.Add (WhoYouVoted (bluePos [1]));
+		votesNums.Add (WhoYouVoted (greenPos [1]));
+		votesNums.Add (WhoYouVoted (orangePos [1]));
+
+		votesNums.Remove(0);
+		votesNums.Sort ();
+
+		pointers = new int[votesNums.Count];
+
+		votesNums.CopyTo(pointers);
+
+		int voteCount = votesNums.Count;
+
+		for (int i = voteCount-1; i >= 1; i--) {
+			Debug.Log ("COUNT " + i);
+			if (votesNums [i] == votesNums [i - 1]) {
+				votesNums.RemoveAt (i);
+			}
+
+		}
+
+		voteCount = votesNums.Count;
+
+		for (int i = 0; i < voteCount; i++) {
+
+			winnerNames = winnerNames + players[votesNums [i] -1].text;
+			if (i != voteCount - 1) {
+				winnerNames = winnerNames + " and ";
+			}
+
+		}
+
+		return winnerNames;
+	
 	}
 
 	void CreateDrawing (){
@@ -537,7 +582,7 @@ public class LocalTurnScoring : MonoBehaviour {
 //		Invoke ("WhoVotedCorrect", 10.0f);
 //		Invoke ("GiveDupeGuessPoints", 13.0f);
 
-		//
+//
 	
 	}
 
@@ -647,12 +692,14 @@ public class LocalTurnScoring : MonoBehaviour {
 		if (dupeTie == true) {
 			GivePoints (myRoom.dupeNum, 3, 1);
 		} else if (dupeGuessed == myRoom.dupeNum) {
-			GivePointsEveryoneBut (myRoom.dupeNum, 1);
+			GivePointsEveryoneBut (myRoom.dupeNum, 2);
+		} else if (dupeGuessed != myRoom.dupeNum) {
+			GivePoints (myRoom.dupeNum, 3, 1);
 		} else  {
 			GivePointsEveryoneBut (myRoom.dupeNum, 1);
 		}
 
-		Invoke ("StartSecondAward", 1.5f);
+		Invoke ("StartSecondAward", 2.0f);
 	
 	}
 
@@ -660,10 +707,12 @@ public class LocalTurnScoring : MonoBehaviour {
 	
 		DestroyVotes ();
 
-		award2Winner = AwardWinner (FindWinner (1));
+		//award2Winner = AwardWinner (FindWinner (1));
 		//Debug.Log (myRoom.players [award2Winner - 1]);
 
-		if (myRoom.awardNum > 0) {
+		if (myRoom.awardNum == 1) {
+
+			award2Winner = AwardWinner (FindWinner (1));
 
 			questionText.text = "THE MONKEY ARTIST GOES TO...";
 			if (award2Winner == 0) {
@@ -671,6 +720,12 @@ public class LocalTurnScoring : MonoBehaviour {
 			} else {
 				nameText.text = myRoom.players [award2Winner - 1];
 			}
+
+		} else if (myRoom.awardNum > 1) {
+
+			string awardWinners = GetWinnerNames();
+			questionText.text = "WHO RECEIVED A MONA MASTERPIECE?";
+			nameText.text = awardWinners;
 
 		}
 
@@ -717,11 +772,28 @@ public class LocalTurnScoring : MonoBehaviour {
 
 	void GiveOutAward2Points (){
 
-		if (award2Winner != 0) {
-			GivePointsEveryoneButAndDupe (award2Winner, 1);
-		}
+		if (myRoom.awardNum == 1) {
+			if (award2Winner != 0) {
+				GivePointsEveryoneButAndDupe (award2Winner, 1);
+			}
+		} else if (myRoom.awardNum > 1) {
 
-		Invoke ("StartThirdAward", 2.5f);
+			int lastNum = 100;
+			int animate;
+
+			for (int i = 0; i < pointers.Length; i++) {
+				if (lastNum == pointers [i]) {
+					animate = 0;
+				} else {
+					animate = 1;
+				}
+				GivePoints (pointers [i], 1, animate);
+				lastNum = pointers [i];
+			}
+
+		} 
+
+		Invoke ("StartThirdAward", 3.0f);
 
 	}
 
@@ -930,7 +1002,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			dupeStatusObj.transform.DOLocalMoveX (0, 1.0f);
 		}
 
-		Invoke ("EndTheRound", 2.5f);
+		Invoke ("EndTheRound", 4.5f);
 
 	}
 

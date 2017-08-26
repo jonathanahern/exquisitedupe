@@ -56,6 +56,7 @@ public class RoomManager : MonoBehaviour {
 	public bool cameFromTurnBased;
 	public bool cameFromScoring = false;
 	public bool startingNew = false;
+	public bool cameFromTutorial = false;
 
 	public string[] roomNum = new string[5];
 	public string[] playersReady = new string[5];
@@ -92,13 +93,14 @@ public class RoomManager : MonoBehaviour {
 
 	public bool tutorialMode;
 
+	string testString;
+
 	void Start (){
 
 		if (tutorialMode == true) {
 			return;
 		}
 
-		
 		categoryButtons = new List<GameObject>();
 		acceptableStrings = new List<string>();
 		bestStrings = new List<string>();
@@ -115,8 +117,8 @@ public class RoomManager : MonoBehaviour {
 
 	void Update () {
 
-//		if (Input.GetKeyDown (KeyCode.A)) {
-//			CurtainsIn ();
+//		if (Input.GetKeyDown (KeyCode.R)) {
+//			CreateRoom ("ACTRESSES", testString, -2);
 //		}
 //
 //		if (Input.GetKeyDown (KeyCode.S)) {
@@ -567,6 +569,7 @@ public class RoomManager : MonoBehaviour {
 		if (startRoom == -2) {
 
 			int serverSlot = roomScript.myColor + 4;
+			Debug.Log ("server Slot" + serverSlot.ToString ());
 			string roomIDstring = "|[ID]" + roomScript.roomID.ToString();
 
 			if (username == null) {
@@ -594,8 +597,7 @@ public class RoomManager : MonoBehaviour {
 				if (lobbyMenu.turnHolder.childCount < 2) {
 					FindEmptyRooms ();
 				}
-
-
+					
 			}
 
 		}
@@ -628,7 +630,7 @@ public class RoomManager : MonoBehaviour {
 
 	IEnumerator doubleCheckRoom (string roomIDstring, string myColor, string usernameToSend, string roomTypeCheck ){
 	
-		//Debug.Log ("Submitted room: " + roomTypeCheck);
+		Debug.Log ("Submitted room: " + roomTypeCheck + " & " + roomIDstring);
 
 		IEnumerator e = DCP.RunCS ("turnRooms", "DoubleCheckRoom", new string[4] {roomIDstring, myColor, usernameToSend, roomTypeCheck});
 
@@ -1371,7 +1373,14 @@ public class RoomManager : MonoBehaviour {
 
 	void RefreshingTurnOff (){
 	
-		lobbyMenu.GetComponent<LobbyMenu>().refreshingScreen.SetActive (false);
+		if (lobbyMenu == null) {
+			lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
+		}
+
+		if (lobbyMenu != null) {
+			lobbyMenu.GetComponent<LobbyMenu> ().refreshingScreen.SetActive (false);
+		}
+
 	}
 
 // 0 for status update, 1 to create room
@@ -1382,4 +1391,14 @@ public class RoomManager : MonoBehaviour {
 
 	}
 
+	public void GiveMeDeath(){
+		CurtainsOut ();
+		Invoke ("Death",2.0f);
+	}
+
+	void Death(){
+
+		//Destroy(gameObject);
+
+	}
 }

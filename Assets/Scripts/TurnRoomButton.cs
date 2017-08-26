@@ -12,6 +12,7 @@ public class TurnRoomButton : MonoBehaviour {
 	public string brushes;
 	public string grounding;
 	private string fate;
+	bool alreadyClicked;
 
 	// Use this for initialization
 	void Start () {
@@ -58,6 +59,12 @@ public class TurnRoomButton : MonoBehaviour {
 
 	void StartThePainting (){
 
+		if (alreadyClicked == true) {
+			return;
+		}
+		alreadyClicked = true;
+		Invoke ("BackToFalse", 1.0f);
+
 		int dupeNum = Random.Range (1, 5);
 		int rightWord = Random.Range (1, 11);
 		int wrongWord = Random.Range (1, 11);
@@ -82,12 +89,16 @@ public class TurnRoomButton : MonoBehaviour {
 
 		fate = "|[WORDS]" + newWords + "|[BRUSHES]" + brushes + "|" + grounding + "|[FATE]" + dupeNum + "/" + rightWord + "/" + wrongWord + "/" + awardNum;
 
-		Debug.Log ("From butt: " + words);
+		Debug.Log ("From butt: " + fate + words);
 
 		UserAccountManagerScript.instance.TurnRoomSearch(roomType.text, fate, gameObject);
 
 		LobbyMenu.instance.LoadingScreenFromNewCats ();
 	
+	}
+
+	void BackToFalse () {
+		alreadyClicked = false;
 	}
 
 }

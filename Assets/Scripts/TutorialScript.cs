@@ -13,8 +13,8 @@ public class TutorialScript : MonoBehaviour {
 	bool readyStartFourLegged;
 	bool readyJoin;
 	string introWords1 = "Welcome to Exquisite Dupe!";
-	string introWords2 = "In this contest of wits your are competing against players across the globe to become a true artist";
-	string introWords3 = "Right now you have no paintings in progress. To start click the button below";
+	string introWords2 = "In this contest of wits you are competing against players across the globe to become a true artist";
+	string introWords3 = "Right now you have no paintings in progress. To start, click \"join\" below";
 
 	string intro2Words1 = "Each category is a collection of subjects which have a shape or theme in common";
 	string intro2Words2 = "Click on " + "\"" + "Four Legged Animals" + "\"" + " to be assigned a subject and begin painting!";
@@ -36,6 +36,7 @@ public class TutorialScript : MonoBehaviour {
 		if (menu1 == true) {
 			introText.text = introWords1;
 			intro2Text.text = intro2Words1;
+			Invoke ("OpenCurtains", 1.0f);
 		}
 
 		roomMan = GameObject.FindGameObjectWithTag ("Room Manager").GetComponent<RoomManager>();
@@ -132,9 +133,15 @@ public class TutorialScript : MonoBehaviour {
 		
 			roomMan.CurtainsIn ();
 			Debug.Log ("start next phase");
-
+			Invoke ("StartVoteTutorial1", 1.5f);
 
 		}
 
+	}
+
+	void StartVoteTutorial1 (){
+	
+		SceneManager.LoadScene ("Tutorial Turn Based Voting");
+	
 	}
 }

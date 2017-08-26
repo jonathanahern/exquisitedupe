@@ -117,18 +117,6 @@ public class CameraScript : MonoBehaviour {
 
 	}
 
-	public void ZoomInTutorial (int playerNum){
-
-		seekerCam.orthographicSize = 2.5f;
-
-		if (playerNum == 2) {
-			goalX = 0;
-			seekerCam.transform.position = new Vector3 (1.35f, 2, -10);
-			moveCamera = true;
-
-		} 
-	}
-
 	public void MoveToSectionTutorial () {
 
 		moveCamera = false;

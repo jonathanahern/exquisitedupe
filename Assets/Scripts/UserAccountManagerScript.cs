@@ -72,7 +72,7 @@ public class UserAccountManagerScript : MonoBehaviour {
 	
 	}
 
-	public void LogIn(string username, string password, string rooms){
+	public void LogIn(string username, string password, string rooms, int firstGame){
 
 		LoggedIn_Username = username;
 		LoggedIn_Password = password;
@@ -84,8 +84,11 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 		Debug.Log ("User in as: " + username);
 
-		SceneManager.LoadScene (loggedInSceneName);
-
+		if (firstGame == 0) {
+			SceneManager.LoadScene ("Tutorial Lobby Menu");
+		} else {
+			SceneManager.LoadScene (loggedInSceneName);
+		}
 	}
 
 	public void SendData (string databaseName, string data) { 

@@ -463,7 +463,9 @@ public class LocalRoomManager : MonoBehaviour {
 
 		Debug.Log ("Returned:" + returnText);
 
-		if (returnText.Contains(myRoom.myColor.ToString()) == false){
+		string drawingID = "[MYCOLOR]" + myRoom.myColor.ToString ();
+
+		if (returnText.Contains(drawingID) == false){
 
 			CollectYourLineData();
 			yield break;

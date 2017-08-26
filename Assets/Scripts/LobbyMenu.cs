@@ -4,11 +4,11 @@ using UnityEngine;
 using DG.Tweening;
 using UnityEngine.UI;
 using DatabaseControl;
+using UnityEngine.SceneManagement;
 
 public class LobbyMenu : MonoBehaviour {
 
 	public static LobbyMenu instance;
-
 	bool okToClick = true;
 
 	public GameObject mainButtons;
@@ -63,6 +63,10 @@ public class LobbyMenu : MonoBehaviour {
 		startPos = newCats.position.x;
 		roomMan = GameObject.FindGameObjectWithTag ("Room Manager").GetComponent<RoomManager> ();
 
+		if (roomMan.cameFromTutorial == true) {
+			GetAllCategories ();
+		}
+
 		if (tutorialMode == true) {
 		
 			return;
@@ -72,6 +76,7 @@ public class LobbyMenu : MonoBehaviour {
 
 		roomMan.roomsReady = false;
 		if (roomMan.cameFromTurnBased == true) {
+			Debug.Log ("came From turn based");
 			TurnBasedClicked ();
 			roomMan.CurtainsOut();
 			//roomMan.FindEmptyRooms ();
@@ -156,6 +161,7 @@ public class LobbyMenu : MonoBehaviour {
 		if (isFocused) {
 			Debug.Log ("asdfasdf");
 			CancelInvoke ();
+			Invoke ("OkToClickAgain", 1.0f);
 
 			if (roomMan.refreshing == true) {
 				InvokeRepeating ("AutoUpdateRooms", 12.0f, 20.0f);
@@ -305,6 +311,14 @@ public class LobbyMenu : MonoBehaviour {
 
 		string returnText = e.Current as string;
 
+		if (returnText == "") {
+			Debug.Log ("not cats returned");
+
+			GetAllCategories ();
+			yield break;
+		
+		}
+
 		CreateCatButtons (returnText);
 
 	}
@@ -376,6 +390,18 @@ public class LobbyMenu : MonoBehaviour {
 
 		loadingText.SetActive (false);
 
+	}
+
+	public void LoadTutorial (){
+	
+		Invoke ("StartTutorial", 2.0f);
+		roomMan.CurtainsIn ();
+
+	}
+
+	void StartTutorial () {
+	
+		SceneManager.LoadScene ("Tutorial Lobby Menu");
 	}
 
 //	public void DetachButtons(){

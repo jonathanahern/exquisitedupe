@@ -45,39 +45,39 @@ public class LineSpawnerScipt : MonoBehaviour {
 	public void GetColor(int color) {
 	
 		if (color == 1) {
-			xMin = -2.43f;
-			xMax = -0.033f;
-			yMin = 0.033f;
-			yMax = 3.61f;
+			xMin = -2.46f;
+			xMax = -0.032f;
+			yMin = 0.03f;
+			yMax = 3.64f;
 			linePrefab = redPrefab;
 			dotPrefab = redDot;
 
 		}
 
 		else if (color == 2) {
-			xMin = .033f;
-			xMax = 2.43f;
-			yMin = 0.033f;
-			yMax = 3.61f;
+			xMin = .032f;
+			xMax = 2.46f;
+			yMin = 0.03f;
+			yMax = 3.64f;
 			linePrefab = bluePrefab;
 			dotPrefab = blueDot;
 
 		}
 
 		else if (color == 3) {
-			xMin = .033f;
-			xMax = 2.43f;
-			yMin = -3.61f;
-			yMax = -0.033f;
+			xMin = .032f;
+			xMax = 2.46f;
+			yMin = -3.64f;
+			yMax = -0.03f;
 			linePrefab = greenPrefab;
 			dotPrefab = greenDot;
 		}
 
 		else if (color == 4) {
-			xMin = -2.43f;
-			xMax = -0.033f;
-			yMin = -3.61f;
-			yMax = -0.033f;
+			xMin = -2.46f;
+			xMax = -0.032f;
+			yMin = -3.64f;
+			yMax = -0.03f;
 			linePrefab = orangePrefab;
 			dotPrefab = orangeDot;
 		}

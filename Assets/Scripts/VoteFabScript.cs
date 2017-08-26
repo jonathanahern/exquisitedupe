@@ -13,7 +13,7 @@ public class VoteFabScript : MonoBehaviour {
 	private float maxY = 3.25f;
 
 	Vector3 mousePos;
-	public bool stuck = true;
+	public bool stuck = false;
 	bool inFrame = false;
 
 	public Color red; 
@@ -30,6 +30,7 @@ public class VoteFabScript : MonoBehaviour {
 
 	bool postDupe = false;
 	int dupeNum;
+	int myColor;
 
 	public Sprite redDupe;
 	public Sprite blueDupe;
@@ -51,7 +52,14 @@ public class VoteFabScript : MonoBehaviour {
 	public Sprite greenCaptObvious;
 	public Sprite orangeCaptObvious;
 
+	public Sprite redMona;
+	public Sprite blueMona;
+	public Sprite greenMona;
+	public Sprite orangeMona;
+
 	public LocalTurnVoting localTurn;
+
+	int badNum;
 
 
 	void Start() {
@@ -61,9 +69,9 @@ public class VoteFabScript : MonoBehaviour {
 
 	void OnMouseDrag() {
 
-//		if (stuck == true) {
-//			return;
-//		}
+		if (stuck == true) {
+			return;
+		}
 
 		mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 		mousePos.z = -1.0f;
@@ -119,9 +127,9 @@ public class VoteFabScript : MonoBehaviour {
 
 	void OnMouseDown(){
 		
-//		if (stuck == true) {
-//			return;
-//		}
+		if (stuck == true) {
+			return;
+		}
 //
 //
 //		if (awardScript.voteSignOut == true) {
@@ -134,6 +142,8 @@ public class VoteFabScript : MonoBehaviour {
 			transform.parent = null;
 		}
 
+
+
 		localTurn.FlipSignToWords ();
 
 
@@ -141,7 +151,7 @@ public class VoteFabScript : MonoBehaviour {
 
 
 	void OnMouseUp(){
-		//0 onDupe, 1 offDupe
+		//0 onDupe, 1 offDupeandself, -1 onSelf
 
 		if (inFrame == false) {
 			return;
@@ -153,7 +163,9 @@ public class VoteFabScript : MonoBehaviour {
 
 			if (postDupe == true && dupeNum == 1) {
 				onDupe = 0;
-			} else {
+			} else if (postDupe == true && myColor == 1) {
+				onDupe = -1;
+			}else {
 				onDupe = 1;
 			}
 
@@ -161,6 +173,8 @@ public class VoteFabScript : MonoBehaviour {
 
 			if (postDupe == true && dupeNum == 2) {
 				onDupe = 0;
+			} else if (postDupe == true && myColor == 2) {
+				onDupe = -1;
 			} else {
 				onDupe = 1;
 			}
@@ -169,6 +183,8 @@ public class VoteFabScript : MonoBehaviour {
 
 			if (postDupe == true && dupeNum == 3) {
 				onDupe = 0;
+			} else if (postDupe == true && myColor == 3) {
+				onDupe = -1;
 			} else {
 				onDupe = 1;
 			}
@@ -177,6 +193,8 @@ public class VoteFabScript : MonoBehaviour {
 
 			if (postDupe == true && dupeNum == 4) {
 				onDupe = 0;
+			} else if (postDupe == true && myColor == 4) {
+				onDupe = -1;
 			} else {
 				onDupe = 1;
 			}
@@ -196,7 +214,7 @@ public class VoteFabScript : MonoBehaviour {
 
 			if (pos.x <= 0 && pos.y >= 0) {
 
-			if (postDupe == true && dupeNum == 1) {
+			if (postDupe == true && badNum == 1) {
 				outerLayer.sprite = xOut;
 			} else {
 				outerLayer.sprite = outline;
@@ -205,7 +223,7 @@ public class VoteFabScript : MonoBehaviour {
 
 			} else if (pos.x >= 0 && pos.y >= 0) {
 			
-			if (postDupe == true && dupeNum == 2) {
+			if (postDupe == true && badNum == 2) {
 				outerLayer.sprite = xOut;
 			} else {
 				outerLayer.sprite = outline;
@@ -214,7 +232,7 @@ public class VoteFabScript : MonoBehaviour {
 
 			} else if (pos.x >= 0 && pos.y <= 0) {
 			
-			if (postDupe == true && dupeNum == 3) {
+			if (postDupe == true && badNum == 3) {
 				outerLayer.sprite = xOut;
 			} else {
 				outerLayer.sprite = outline;
@@ -223,7 +241,7 @@ public class VoteFabScript : MonoBehaviour {
 
 			} else if (pos.x <= 0 && pos.y <= 0) {
 			
-			if (postDupe == true && dupeNum == 4) {
+			if (postDupe == true && badNum == 4) {
 				outerLayer.sprite = xOut;
 			} else {
 				outerLayer.sprite = outline;
@@ -256,8 +274,11 @@ public class VoteFabScript : MonoBehaviour {
 
 		postDupe = true;
 		dupeNum = dupe;
+		myColor = fromColor;
 
-		if (awardNum > 0) {
+		if (awardNum == 1) {
+			badNum = dupe;
+
 			if (fromColor == 1) {
 				innerSprite.sprite = redMonkey;
 			} else if (fromColor == 2) {
@@ -267,13 +288,25 @@ public class VoteFabScript : MonoBehaviour {
 			} else if (fromColor == 4) {
 				innerSprite.sprite = orangeMonkey;
 			}
-		}
+		} else if (awardNum > 1) {
+			badNum = myColor;
+			if (fromColor == 1) {
+				innerSprite.sprite = redMona;
+			} else if (fromColor == 2) {
+				innerSprite.sprite = blueMona;
+			} else if (fromColor == 3) {
+				innerSprite.sprite = greenMona;
+			} else if (fromColor == 4) {
+				innerSprite.sprite = orangeMona;
+			}
+		} 
 	}
 
 	public void SetupThirdVote(int fromColor, string dupeCaught, int dupe){
 
 		postDupe = true;
 		dupeNum = dupe;
+		badNum = dupe;
 
 		if (dupeCaught == "x") {
 			if (fromColor == 1) {
