@@ -74,7 +74,7 @@ public class TurnRoomButton : MonoBehaviour {
 			wrongWord = Random.Range (1, 11);
 		}
 
-		int awardNum = Random.Range (1, 4);
+		int awardNum = Random.Range (1, 3);
 
 		string[] wordsSplit = words.Split ('/');
 		string newWords = "";

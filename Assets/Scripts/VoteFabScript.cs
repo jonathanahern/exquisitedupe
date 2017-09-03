@@ -26,6 +26,11 @@ public class VoteFabScript : MonoBehaviour {
 	public SpriteRenderer outerLayer;
 	public SpriteRenderer innerSprite;
 
+	public Sprite ribbonSprite;
+	public Sprite splatterSprite;
+	public Sprite stampSprite;
+	Sprite rightSprite;
+
 	public Sprite xOut;
 	public Sprite outline;
 
@@ -224,7 +229,7 @@ public class VoteFabScript : MonoBehaviour {
 			if (postDupe == true && badNum == 1) {
 				outerLayer.sprite = xOut;
 			} else {
-				outerLayer.sprite = outline;
+				outerLayer.sprite = rightSprite;
 				outerLayer.color = red;
 			}
 
@@ -233,7 +238,7 @@ public class VoteFabScript : MonoBehaviour {
 			if (postDupe == true && badNum == 2) {
 				outerLayer.sprite = xOut;
 			} else {
-				outerLayer.sprite = outline;
+				outerLayer.sprite = rightSprite;
 				outerLayer.color = blue;
 			}
 
@@ -242,7 +247,7 @@ public class VoteFabScript : MonoBehaviour {
 			if (postDupe == true && badNum == 3) {
 				outerLayer.sprite = xOut;
 			} else {
-				outerLayer.sprite = outline;
+				outerLayer.sprite = rightSprite;
 				outerLayer.color = green;
 			}
 
@@ -251,7 +256,7 @@ public class VoteFabScript : MonoBehaviour {
 			if (postDupe == true && badNum == 4) {
 				outerLayer.sprite = xOut;
 			} else {
-				outerLayer.sprite = outline;
+				outerLayer.sprite = rightSprite;
 				outerLayer.color = orange;
 			}
 
@@ -259,11 +264,13 @@ public class VoteFabScript : MonoBehaviour {
 			
 				outerLayer.color = offWhite;
 			}
-
-
+			
 	}
 
 	public void SetupDupeVote(int fromColor){
+
+		outerLayer.sprite = stampSprite;
+		rightSprite = stampSprite;
 
 		if (fromColor == 1) {
 			innerSprite.sprite = redDupe;
@@ -285,7 +292,8 @@ public class VoteFabScript : MonoBehaviour {
 
 		if (awardNum == 1) {
 			badNum = dupe;
-
+			outerLayer.sprite = splatterSprite;
+			rightSprite = splatterSprite;
 			if (fromColor == 1) {
 				innerSprite.sprite = redMonkey;
 			} else if (fromColor == 2) {
@@ -297,6 +305,8 @@ public class VoteFabScript : MonoBehaviour {
 			}
 		} else if (awardNum > 1) {
 			badNum = myColor;
+			outerLayer.sprite = ribbonSprite;
+			rightSprite = ribbonSprite;
 			if (fromColor == 1) {
 				innerSprite.sprite = redMona;
 			} else if (fromColor == 2) {
@@ -314,7 +324,8 @@ public class VoteFabScript : MonoBehaviour {
 		postDupe = true;
 		dupeNum = dupe;
 		badNum = dupe;
-
+		outerLayer.sprite = splatterSprite;
+		rightSprite = splatterSprite;
 		if (dupeCaught == "x") {
 			if (fromColor == 1) {
 				innerSprite.sprite = redVagueArtist;
