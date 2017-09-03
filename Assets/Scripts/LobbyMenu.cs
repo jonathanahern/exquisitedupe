@@ -47,6 +47,7 @@ public class LobbyMenu : MonoBehaviour {
 	public Text loadScreenWords;
 
 	public bool tutorialMode = false;
+	int roomCount;
 
 	// Use this for initialization
 	void Awake () {
@@ -65,14 +66,12 @@ public class LobbyMenu : MonoBehaviour {
 
 		if (roomMan.cameFromTutorial == true) {
 			GetAllCategories ();
+			roomMan.cameFromTutorial = false;
 		}
 
 		if (tutorialMode == true) {
-		
 			return;
-		
 		}
-
 
 		roomMan.roomsReady = false;
 		if (roomMan.cameFromTurnBased == true) {
@@ -85,13 +84,18 @@ public class LobbyMenu : MonoBehaviour {
 			//roomMan.DropOffButtons ();
 		}
 
+		UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
+		string roomsString = userAccount.activeRooms;
+
+		roomsString = roomsString.TrimEnd ('/');
+		roomCount = roomsString.Split ('/').Length;
+		Debug.Log (roomCount);
+
 		if (roomMan.cameFromScoring == false) {
 			highScores.gameObject.GetComponent<HighScoreScript> ().UpdateTheScore ();
 		} else {
 			GoToHighScores ();
 			roomMan.cameFromScoring = false;
-			UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
-			string roomsString = userAccount.activeRooms;
 
 			if (roomsString.Length < 5) {
 				roomMan.noRooms = true;
@@ -133,7 +137,7 @@ public class LobbyMenu : MonoBehaviour {
 		if (roomMan.noRooms == true) {
 			return;
 		}
-		Debug.Log ("TURN ON");
+		//Debug.Log ("TURN ON");
 		refreshingScreen.SetActive (true);
 		//loadScreenWords.text = "refreshing...";
 		roomMan.UpdateStatus ();
@@ -189,7 +193,7 @@ public class LobbyMenu : MonoBehaviour {
 
 		Invoke ("OkToClickAgain", 2.5f);
 
-		if (statusHolder.childCount > 4) {
+		if (roomCount > 4) {
 			FiveRoomsOnly ();
 			return;
 		}
@@ -318,7 +322,7 @@ public class LobbyMenu : MonoBehaviour {
 			yield break;
 		
 		}
-
+			
 		CreateCatButtons (returnText);
 
 	}

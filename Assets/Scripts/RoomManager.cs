@@ -111,7 +111,9 @@ public class RoomManager : MonoBehaviour {
 			lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
 		}
 
-		lobbyMenu.GetAllCategories ();
+		if (buttonHolder.childCount < 1) {
+			lobbyMenu.GetAllCategories ();
+		}
 
 	}
 
@@ -628,6 +630,12 @@ public class RoomManager : MonoBehaviour {
 //
 //	}
 
+	void RetryDoubleCheck (string roomIDstring, string myColor, string usernameToSend, string roomTypeCheck){
+	
+		StartCoroutine (doubleCheckRoom(roomIDstring, myColor, usernameToSend, roomTypeCheck));
+
+	}
+
 	IEnumerator doubleCheckRoom (string roomIDstring, string myColor, string usernameToSend, string roomTypeCheck ){
 	
 		Debug.Log ("Submitted room: " + roomTypeCheck + " & " + roomIDstring);
@@ -641,6 +649,14 @@ public class RoomManager : MonoBehaviour {
 		string returnText = e.Current as string;
 
 		Debug.Log ("UpdatedRoom:" + returnText);
+
+		if (returnText == "") {
+		
+			RetryDoubleCheck (roomIDstring, myColor, usernameToSend, roomTypeCheck);
+			Debug.Log ("BLLLAAANNNK");
+			yield break;
+	
+		}
 
 		if (returnText == "Good") {
 

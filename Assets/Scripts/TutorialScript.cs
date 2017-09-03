@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using DG.Tweening;
 
 public class TutorialScript : MonoBehaviour {
 
@@ -22,6 +23,11 @@ public class TutorialScript : MonoBehaviour {
 	string intro3Words1 = "Nice work! Now we just wait for the other players to finish";
 	string intro3Words2 = "That was fast. Click on \"vote\" to continue";
 
+	public RectTransform bubbleOne;
+	public RectTransform bubbleTwo;
+	public RectTransform joinButton;
+	public RectTransform fourLegged;
+
 	public GameObject bubble;
 	public TurnGameStatus status;
 	bool readyVote;
@@ -37,6 +43,7 @@ public class TutorialScript : MonoBehaviour {
 			introText.text = introWords1;
 			intro2Text.text = intro2Words1;
 			Invoke ("OpenCurtains", 1.0f);
+			InvokeRepeating ("BubbleOneShake", 3.0f, 3.0f);
 		}
 
 		roomMan = GameObject.FindGameObjectWithTag ("Room Manager").GetComponent<RoomManager>();
@@ -51,14 +58,55 @@ public class TutorialScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+
+//		if (Input.GetKeyDown (KeyCode.W)) {
+//		
+//			bubbleOne.DOShakeRotation (1.0f, 20, 10);
+//		
+//		}
+
+//		if (Input.GetKeyDown (KeyCode.E)) {
+//
+//			bubbleOne.DOShakeScale(1.0f, .2f, 10);
+//
+//		}
+
+
+	}
+
+	void BubbleOneShake (){
 		
+		bubbleOne.DOShakeScale(1.0f, .2f, 10);
+	
+	}
+
+	void BubbleTwoShake (){
+
+		bubbleTwo.DOShakeScale(1.0f, .2f, 10);
+
+	}
+
+	void JoinButtonShake (){
+
+		joinButton.DOShakeScale(1.0f, .2f, 10);
+
+	}
+
+	void FourLeggedShake (){
+
+		fourLegged.DOShakeScale(1.0f, .2f, 10);
+
 	}
 
 	public void IntroBubble () {
 	
 		if (introText.text == introWords1) {
 			introText.text = introWords2;
+			CancelInvoke ();
+			InvokeRepeating ("BubbleOneShake", 4.0f, 3.0f);
 		} else if (introText.text == introWords2) {
+			CancelInvoke ();
+			InvokeRepeating ("JoinButtonShake", 1.0f, 1.8f);
 			introText.text = introWords3;
 			readyJoin = true;
 		}
@@ -68,6 +116,8 @@ public class TutorialScript : MonoBehaviour {
 	public void Intro2Bubble () {
 
 		if (intro2Text.text == intro2Words1) {
+			CancelInvoke ();
+			InvokeRepeating ("FourLeggedShake", .5f, 1.8f);
 			intro2Text.text = intro2Words2;
 			readyStartFourLegged = true;
 		} 
@@ -77,13 +127,15 @@ public class TutorialScript : MonoBehaviour {
 	public void JoinAPainting (){
 		if (readyJoin == true) {
 			lobbyMenu.NewTurnBased ();
+			CancelInvoke ();
+			InvokeRepeating ("BubbleTwoShake", 5.0f, 3.0f);
 		}
 	}
 
 	public void StartFourLegged (){
 		Debug.Log ("hitasdf");
 		if (readyStartFourLegged == true) {
-			
+			CancelInvoke ();
 			roomMan.CurtainsIn ();
 
 			Invoke ("StartNextScene", 1.0f);
@@ -122,6 +174,7 @@ public class TutorialScript : MonoBehaviour {
 		introText.text = intro3Words2;
 		bubble.SetActive (true);
 		readyVote = true;
+		InvokeRepeating ("JoinButtonShake", .5f, 4.0f);
 	
 	}
 

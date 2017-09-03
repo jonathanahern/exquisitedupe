@@ -21,6 +21,10 @@ public class CategoryCreatorScript : MonoBehaviour {
 
 	public GameObject wordsPanel;
 
+	public Text newBrushesText;
+	public Text newBrushesTextTitle;
+	public GameObject brushesPanel;
+
 	private static string ROOMTYPE_SYM = "[ROOMTYPE]";
 	private static string WORDS_SYM = "[WORDS]";
 	private static string BRUSHES_SYM = "[BRUSHES]";
@@ -231,7 +235,30 @@ public class CategoryCreatorScript : MonoBehaviour {
 		string returnText = e.Current as string;
 
 		Debug.Log ("Cat Altered:" + returnText);
+	}
 
+	public void SendAlteredBrushes(){
+	
+		StartCoroutine (sendAlteredBrushes());
+	
+	}
+
+	IEnumerator sendAlteredBrushes(){
+
+		string myNewRoomType = ROOMTYPE_SYM + newBrushesTextTitle.text;
+		string myAlteredBrushes = newBrushesText.text;
+
+		IEnumerator e = DCP.RunCS ("categories", "AlterBrushes", new string[2] {myNewRoomType, myAlteredBrushes});
+
+		Debug.Log (myNewRoomType + "&&&" +  myAlteredBrushes);
+
+		while (e.MoveNext ()) {
+			yield return e.Current;
+		}
+
+		string returnText = e.Current as string;
+
+		Debug.Log ("Cat Altered:" + returnText);
 	}
 
 	public void MoveAddWordsPanel(){
@@ -256,6 +283,25 @@ public class CategoryCreatorScript : MonoBehaviour {
 	public void MoveAddWordsPanelAlter(){
 
 		RectTransform rectTran = wordsPanelAlter.GetComponent<RectTransform>();
+		float pos = rectTran.anchoredPosition.x;
+
+		LineSpawnerScipt lineSpawn = GameObject.FindGameObjectWithTag ("Line Spawner").GetComponent<LineSpawnerScipt> ();
+
+		Debug.Log (pos);
+
+		if (pos > 1000) {
+			lineSpawn.dontDraw = true;
+			rectTran.DOAnchorPosX (0, 1.0f);
+		} else {
+			lineSpawn.dontDraw = false;
+			rectTran.DOAnchorPosX (1500, 1.0f);
+		}
+
+	}
+
+	public void MoveAlterBrushesPanel(){
+
+		RectTransform rectTran = brushesPanel.GetComponent<RectTransform>();
 		float pos = rectTran.anchoredPosition.x;
 
 		LineSpawnerScipt lineSpawn = GameObject.FindGameObjectWithTag ("Line Spawner").GetComponent<LineSpawnerScipt> ();

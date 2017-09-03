@@ -40,6 +40,8 @@ public class TutorialPhaseOneScript : MonoBehaviour {
 
 	string drawing1Location = "drawing1Location";
 
+	public RectTransform bubbleOne;
+
 	public bool drawing1;
 	public bool drawing2;
 
@@ -51,11 +53,13 @@ public class TutorialPhaseOneScript : MonoBehaviour {
 		if (drawing1 == true) {
 			introText.text = intro1Words1;
 			playerNum = 2;
+			InvokeRepeating ("BubbleOneShake", 5.0f, 3.0f);
 		}
 
 		if (drawing2 == true) {
 			introText.text = intro2Words1;
 			playerNum = 4;
+			InvokeRepeating ("BubbleOneShake", 5.0f, 3.0f);
 		}
 
 
@@ -68,6 +72,12 @@ public class TutorialPhaseOneScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		
+	}
+
+	void BubbleOneShake (){
+
+		bubbleOne.DOShakeScale(1.0f, .2f, 10);
+
 	}
 
 	void OpenCurtains (){
@@ -83,22 +93,34 @@ public class TutorialPhaseOneScript : MonoBehaviour {
 
 		if (introText.text == intro1Words1) {
 			introText.text = intro1Words2;
+			CancelInvoke ();
+			InvokeRepeating ("BubbleOneShake", 4.0f, 3.0f);
 		} else if (introText.text == intro1Words2){
 			speechBubble.SetActive (false);
 			cameraOne.MoveToSectionTutorial ();
 			introText.text = intro1Words3;
+			CancelInvoke ();
+			InvokeRepeating ("BubbleOneShake", 7.0f, 3.0f);
+
 		} else if (introText.text == intro1Words3){
 			FadeOutElephant ();
 			LoadBrushes ();
 			introText.text = intro1Words4;
+			CancelInvoke ();
+			InvokeRepeating ("BubbleOneShake", 3.0f, 3.0f);
 		} else if (introText.text == intro1Words4){
 			introText.text = intro1Words5;
+			CancelInvoke ();
+			InvokeRepeating ("BubbleOneShake", 3.0f, 3.0f);
 		} else if (introText.text == intro1Words5){
 			introText.text = intro1Words6;
+			CancelInvoke ();
+			InvokeRepeating ("BubbleOneShake", 3.0f, 3.0f);
 		} else if (introText.text == intro1Words6){
 			tutorialDupe.SetActive (false);
 			lineSpawn.dontDraw = false;
 			okayToClick = true;
+			CancelInvoke ();
 		}
 	}
 
@@ -106,7 +128,10 @@ public class TutorialPhaseOneScript : MonoBehaviour {
 
 		if (introText.text == intro2Words1) {
 			introText.text = intro2Words2;
+			CancelInvoke ();
+			InvokeRepeating ("BubbleOneShake", 3.0f, 3.0f);
 		} else if (introText.text == intro2Words2) {
+			CancelInvoke ();
 			tutorialDupe.SetActive (false);
 			cameraOne.MoveToSectionTutorial ();
 		}

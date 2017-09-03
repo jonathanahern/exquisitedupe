@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class VoteFabScript : MonoBehaviour {
 
@@ -61,9 +62,21 @@ public class VoteFabScript : MonoBehaviour {
 
 	int badNum;
 
-
 	void Start() {
 
+
+
+	}
+
+	public void WiggleStart (){
+
+		InvokeRepeating ("WiggleVote", 1.0f, 2.5f);
+
+	}
+
+	void WiggleVote(){
+
+		gameObject.transform.DOShakeScale (1.5f, 1f, 10, 90);
 		
 	}
 
@@ -130,22 +143,16 @@ public class VoteFabScript : MonoBehaviour {
 		if (stuck == true) {
 			return;
 		}
-//
-//
-//		if (awardScript.voteSignOut == true) {
-//		
-//			awardScript.MoveItOut ();
-//		
-//		}
+
 
 		if (transform.parent != null) {
+
+			CancelInvoke ();
+			DOTween.PauseAll();
 			transform.parent = null;
 		}
-
-
-
+			
 		localTurn.FlipSignToWords ();
-
 
 	}
 
