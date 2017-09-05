@@ -1240,7 +1240,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		roomMan.GetComponent<RoomManager> ().CurtainsIn ();
 		roomMan.GetComponent<RoomManager> ().cameFromScoring = true;
-		Invoke ("ReallyEndRound", 2.0f);
+		Invoke ("ReallyEndRound", 4.0f);
 
 	}
 
