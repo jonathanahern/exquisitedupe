@@ -29,6 +29,7 @@ public class VoteFabScript : MonoBehaviour {
 	public Sprite ribbonSprite;
 	public Sprite splatterSprite;
 	public Sprite stampSprite;
+	public Sprite stampCircleSprite;
 	Sprite rightSprite;
 
 	public Sprite xOut;
@@ -347,6 +348,27 @@ public class VoteFabScript : MonoBehaviour {
 				innerSprite.sprite = orangeCaptObvious;
 			}
 		}
+	}
+
+	public void SetupDupeReveal(int fromColor){
+
+		outerLayer.sprite = stampCircleSprite;
+		rightSprite = stampCircleSprite;
+
+		if (fromColor == 1) {
+			innerSprite.sprite = redDupe;
+			outerLayer.sprite = stampCircleSprite;
+		} else if (fromColor == 2) {
+			innerSprite.sprite = blueDupe;
+			outerLayer.sprite = stampCircleSprite;
+		} else if (fromColor == 3) {
+			innerSprite.sprite = greenDupe;
+			outerLayer.sprite = stampCircleSprite;
+		} else if (fromColor == 4) {
+			innerSprite.sprite = orangeDupe;
+			outerLayer.sprite = stampCircleSprite;
+		}
+
 	}
 
 }

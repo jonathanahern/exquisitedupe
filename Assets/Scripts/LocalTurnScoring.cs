@@ -85,10 +85,15 @@ public class LocalTurnScoring : MonoBehaviour {
 
 	Vector2 dupeDrewScreenPos;
 
+	public Transform[] awardHolder;
+	public GameObject awardPrefab;
+
 	public List<int> votes;
 	public List<int> winnersCircle;
 	public List<int> votesNums;
 	public int[] pointers;
+
+	int[] monaPoints = {0,0,0,0};
 
 	private static string MYCOLOR_SYM = "[MYCOLOR]";
 
@@ -591,19 +596,19 @@ public class LocalTurnScoring : MonoBehaviour {
 		GiveDupeGuessPoints ();
 
 		GameObject dupeVoteRed = Instantiate (voteFab, redPos[0], Quaternion.identity);
-		dupeVoteRed.GetComponent<VoteFabScript> ().SetupDupeVote(1);
+		dupeVoteRed.GetComponent<VoteFabScript> ().SetupDupeReveal(1);
 		dupeVoteRed.GetComponent<VoteFabScript> ().CheckColor();
 
 		GameObject dupeVoteBlue = Instantiate (voteFab, bluePos[0], Quaternion.identity);
-		dupeVoteBlue.GetComponent<VoteFabScript> ().SetupDupeVote(2);
+		dupeVoteBlue.GetComponent<VoteFabScript> ().SetupDupeReveal(2);
 		dupeVoteBlue.GetComponent<VoteFabScript> ().CheckColor();
 
 		GameObject dupeVoteGreen = Instantiate (voteFab, greenPos[0], Quaternion.identity);
-		dupeVoteGreen.GetComponent<VoteFabScript> ().SetupDupeVote(3);
+		dupeVoteGreen.GetComponent<VoteFabScript> ().SetupDupeReveal(3);
 		dupeVoteGreen.GetComponent<VoteFabScript> ().CheckColor();
 
 		GameObject dupeVoteOrange = Instantiate (voteFab, orangePos[0], Quaternion.identity);
-		dupeVoteOrange.GetComponent<VoteFabScript> ().SetupDupeVote(4);
+		dupeVoteOrange.GetComponent<VoteFabScript> ().SetupDupeReveal(4);
 		dupeVoteOrange.GetComponent<VoteFabScript> ().CheckColor();
 
 		if (dupeTie == true) {
@@ -691,16 +696,60 @@ public class LocalTurnScoring : MonoBehaviour {
 		
 		if (dupeTie == true) {
 			GivePoints (myRoom.dupeNum, 3, 1);
+			CreateDupeEscapeAwardIcon ();
 		} else if (dupeGuessed == myRoom.dupeNum) {
 			GivePointsEveryoneBut (myRoom.dupeNum, 2);
+			CreateDupeCapturedAwardIcon ();
 		} else if (dupeGuessed != myRoom.dupeNum) {
 			GivePoints (myRoom.dupeNum, 3, 1);
+			CreateDupeEscapeAwardIcon ();
 		} else  {
 			GivePointsEveryoneBut (myRoom.dupeNum, 1);
+			CreateDupeCapturedAwardIcon ();
 		}
 
 		Invoke ("StartSecondAward", 2.0f);
 	
+	}
+
+	void CreateDupeEscapeAwardIcon () {
+	
+		int dupeNum = myRoom.dupeNum;
+
+		GameObject newIcon = Instantiate(awardPrefab,Vector3.zero,Quaternion.identity, awardHolder[dupeNum -1]);
+		AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
+		awardScript.SetupEscaped (dupeNum);
+	
+	}
+
+	void CreateDupeCapturedAwardIcon(){
+
+		int dupeNum = myRoom.dupeNum;
+
+		if (dupeNum != 1) {
+			GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [0]);
+			AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
+			awardScript.SetupCaptured (dupeNum);
+		}
+
+		if (dupeNum != 2) {
+			GameObject newIcon2 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [1]);
+			AwardIconScript awardScript2 = newIcon2.GetComponent<AwardIconScript> ();
+			awardScript2.SetupCaptured (dupeNum);
+		}
+
+		if (dupeNum != 3) {
+			GameObject newIcon3 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [2]);
+			AwardIconScript awardScript3 = newIcon3.GetComponent<AwardIconScript> ();
+			awardScript3.SetupCaptured (dupeNum);
+		}
+
+		if (dupeNum != 4) {
+			GameObject newIcon4 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [3]);
+			AwardIconScript awardScript4 = newIcon4.GetComponent<AwardIconScript> ();
+			awardScript4.SetupCaptured (dupeNum);
+		}
+
 	}
 
 	void StartSecondAward(){
@@ -773,9 +822,14 @@ public class LocalTurnScoring : MonoBehaviour {
 	void GiveOutAward2Points (){
 
 		if (myRoom.awardNum == 1) {
+			
 			if (award2Winner != 0) {
 				GivePointsEveryoneButAndDupe (award2Winner, 1);
+				AddSplatterToOne (1, 2);
+			} else {
+				AddSplatterToAll (myRoom.awardNum);
 			}
+
 		} else if (myRoom.awardNum > 1) {
 
 			int lastNum = 100;
@@ -787,14 +841,118 @@ public class LocalTurnScoring : MonoBehaviour {
 				} else {
 					animate = 1;
 				}
+
+				monaPoints [pointers[i] - 1] = monaPoints [pointers[i] - 1] + 1;
+
 				GivePoints (pointers [i], 1, animate);
+
 				lastNum = pointers [i];
 			}
 
 		} 
 
+		GiveMonaAwardIcons ();
 		Invoke ("StartThirdAward", 3.0f);
 
+	}
+
+	void AddSplatterToAll(int awardNum){
+	
+		int dupeNum = myRoom.dupeNum;
+
+		if (dupeNum != 1) {
+			GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [0]);
+			AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
+			awardScript.SetupSplatter (1, awardNum);
+		}
+
+		if (dupeNum != 2) {
+			GameObject newIcon2 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [1]);
+			AwardIconScript awardScript2 = newIcon2.GetComponent<AwardIconScript> ();
+			awardScript2.SetupSplatter (2, awardNum);
+		}
+
+		if (dupeNum != 3) {
+			GameObject newIcon3 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [2]);
+			AwardIconScript awardScript3 = newIcon3.GetComponent<AwardIconScript> ();
+			awardScript3.SetupSplatter (3, awardNum);
+		}
+
+		if (dupeNum != 4) {
+			GameObject newIcon4 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [3]);
+			AwardIconScript awardScript4 = newIcon4.GetComponent<AwardIconScript> ();
+			awardScript4.SetupSplatter (4, awardNum);
+		}
+				
+	}
+
+	//1=monkey, 2=vague, 3=obvious
+	void AddSplatterToOne(int awardNum, int awardPhase){
+
+		int dupeNum = myRoom.dupeNum;
+		int splatterWinner = AwardWinner (FindWinner (awardPhase));
+
+		if (dupeNum != 1) {
+			GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [0]);
+			AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
+			if (splatterWinner == 1) {
+				awardScript.SetupSplatter (1, awardNum);
+			} else {
+				awardScript.SetupSplatterAvoider (awardNum);
+			}
+		}
+
+		if (dupeNum != 2) {
+			GameObject newIcon2 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [1]);
+			AwardIconScript awardScript2 = newIcon2.GetComponent<AwardIconScript> ();
+			if (splatterWinner == 2) {
+				awardScript2.SetupSplatter (2,awardNum);
+			} else {
+				awardScript2.SetupSplatterAvoider (awardNum);
+			}
+		}
+
+		if (dupeNum != 3) {
+			GameObject newIcon3 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [2]);
+			AwardIconScript awardScript3 = newIcon3.GetComponent<AwardIconScript> ();
+			if (splatterWinner == 3) {
+				awardScript3.SetupSplatter (3,awardNum);
+			} else {
+				awardScript3.SetupSplatterAvoider (awardNum);
+			}
+		}
+
+		if (dupeNum != 4) {
+			GameObject newIcon4 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [3]);
+			AwardIconScript awardScript4 = newIcon4.GetComponent<AwardIconScript> ();
+			awardScript4.SetupMonkey (4);
+			if (splatterWinner == 4) {
+				awardScript4.SetupSplatter (4,awardNum);
+			} else {
+				awardScript4.SetupSplatterAvoider (awardNum);
+			}
+		}
+
+
+
+
+	}
+
+	void GiveMonaAwardIcons(){
+		Debug.Log (monaPoints.Length);
+
+		for (int i = 0; i < monaPoints.Length; i++) {
+			
+			if (monaPoints [i] != 0) {
+				GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [i]);
+				AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
+				awardScript.SetupMona (monaPoints[i]);
+			
+			}
+
+
+		}
+	
 	}
 
 	void StartThirdAward(){
@@ -859,8 +1017,22 @@ public class LocalTurnScoring : MonoBehaviour {
 
 	void GiveOutAward3Points (){
 
+		int awardNum;
+
+		if (myRoom.dupeCaught == "o") {
+			awardNum = 3;
+		} else {
+			awardNum = 2;
+		}
+
 		if (award3Winner != 0) {
-			GivePointsEveryoneButAndDupe (award3Winner, 1);
+			
+			GivePointsEveryoneButAndDupe (award3Winner, 2);
+			AddSplatterToOne (awardNum, 2);
+
+		} else {
+			AddSplatterToAll (awardNum);
+
 		}
 
 		Invoke ("StartNonDupeGuessReveal", 1.5f);
@@ -941,10 +1113,22 @@ public class LocalTurnScoring : MonoBehaviour {
 
 			GivePoints (playerNum, points, animationNum);
 
+			if (points != 0) {
+				SetupGuessIcon (playerNum, points);
+			}
+
 		}
 
 		Invoke ("MoveOutGuesses", 3.5f);
 			
+	}
+
+	void SetupGuessIcon (int playerNum, int points){
+		
+		GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [playerNum - 1]);
+		AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
+		awardScript.SetupGuess (points);
+
 	}
 
 	void MoveOutGuesses(){
@@ -992,17 +1176,60 @@ public class LocalTurnScoring : MonoBehaviour {
 	void GiveFinalePoints (){
 
 		if (dupeGuess == myRoom.rightword) {
-
-			GivePoints (myRoom.dupeNum, 2, 1);
+			RightDupeGuess ();
+			GivePoints (myRoom.dupeNum, 3, 1);
 
 		} else {
+			WrongDupeGuess ();
 			GivePointsEveryoneBut (myRoom.dupeNum, 2);
 			dupeStatusText.text = "THE TRUE SUBJECT WAS " + myRoom.rightword; 
 			finale.transform.DOLocalMoveX (1000, 1.0f);
 			dupeStatusObj.transform.DOLocalMoveX (0, 1.0f);
+
 		}
 
 		Invoke ("EndTheRound", 4.5f);
+
+	}
+
+	void RightDupeGuess(){
+	
+		int dupeNum = myRoom.dupeNum;
+
+		GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [dupeNum -1]);
+		AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
+		awardScript.SetupDupeGuess (3,dupeNum);
+
+	
+	}
+
+	void WrongDupeGuess(){
+	
+		int dupeNum = myRoom.dupeNum;
+
+		if (dupeNum != 1) {
+			GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [0]);
+			AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
+			awardScript.SetupDupeGuess (2,dupeNum);
+		}
+
+		if (dupeNum != 2) {
+			GameObject newIcon2 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [1]);
+			AwardIconScript awardScript2 = newIcon2.GetComponent<AwardIconScript> ();
+			awardScript2.SetupDupeGuess (2,dupeNum);
+		}
+
+		if (dupeNum != 3) {
+			GameObject newIcon3 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [2]);
+			AwardIconScript awardScript3 = newIcon3.GetComponent<AwardIconScript> ();
+			awardScript3.SetupDupeGuess (2,dupeNum);
+		}
+
+		if (dupeNum != 4) {
+			GameObject newIcon4 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [3]);
+			AwardIconScript awardScript4 = newIcon4.GetComponent<AwardIconScript> ();
+			awardScript4.SetupDupeGuess (2,dupeNum);
+		}
 
 	}
 
