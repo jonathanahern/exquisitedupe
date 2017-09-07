@@ -31,6 +31,10 @@ public class LocalTurnScoring : MonoBehaviour {
 	public Text award3QText;
 	public GameObject finale;
 	public GameObject guess;
+	public GameObject trueArtist;
+	public GameObject congrats;
+	public Text gameWinnerName;
+	int winnerNumber;
 
 	public GameObject[] scoreObj;
 
@@ -61,7 +65,6 @@ public class LocalTurnScoring : MonoBehaviour {
 	bool gotThree = false;
 	bool gotFour = false;
 
-
 	public int awardThree;
 
 	public GameObject voteFab;
@@ -89,14 +92,18 @@ public class LocalTurnScoring : MonoBehaviour {
 	public Transform[] awardHolder;
 	public GameObject awardPrefab;
 
+	public GameObject exitSign;
+
 	public List<int> votes;
 	public List<int> winnersCircle;
 	public List<int> votesNums;
+	public List<int> winnersGame;
 	public int[] pointers;
 
 	int[] monaPoints = {0,0,0,0};
 
 	private static string MYCOLOR_SYM = "[MYCOLOR]";
+
 	//bool privateScoring = false;
 
 	// Use this for initialization
@@ -1284,6 +1291,14 @@ public class LocalTurnScoring : MonoBehaviour {
 		RoomManager roomManScript = roomMan.GetComponent<RoomManager> ();
 
 		if (myRoom.privateRoom == true) {
+
+			if (myRoom.roundNum > 3) {
+			
+				EndGameSequence ();
+				return;
+			
+			}
+
 			StoreScore ();
 			string catName = myRoom.roomType;
 			roomManScript.StartNextPrivateRound (catName);
@@ -1347,6 +1362,96 @@ public class LocalTurnScoring : MonoBehaviour {
 		roomMan.GetComponent<RoomManager> ().SendTheScore (myScore, myColor, roomIDstring, roomsString);
 		RoomManager.instance.cameFromTurnBased = true;
 		SceneManager.LoadScene ("Lobby Menu");
+
+	}
+
+	void EndGameSequence(){
+	
+		ClearPlayerPrefs ();
+
+		winnersGame = new List<int>();
+
+		for (int i = 0; i < players.Length; i++) {
+			int scoreString = int.Parse(scores [i].text);
+			winnersGame.Add (scoreString);
+		}
+
+		winnersGame.Sort ();
+
+		string winnersScore = winnersGame [winnersGame.Count - 1].ToString ();
+
+		for (int i = 0; i < scores.Length; i++) {
+		
+			if (scores [i].text == winnersScore) {
+				winnerNumber = i;
+			}
+		
+		}
+
+		gameWinnerName.text = players [winnerNumber].text;
+
+		finale.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce);
+		trueArtist.transform.DOLocalMoveX (1000, 1.0f).SetEase (Ease.OutBounce);
+		Invoke ("BringInWinner", 3.5f);
+
+	}
+
+	void BringInWinner(){
+		
+		trueArtist.transform.DOLocalMoveX (-1000, 1.0f).SetEase (Ease.OutBounce);
+		congrats.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce);
+		exitSign.SetActive (true);
+
+	}
+
+	public void ExitSign (){
+		
+		RoomManager roomManScript = roomMan.GetComponent<RoomManager> ();
+		UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
+
+		string roomsString = userAccount.activeRooms;
+		string currentRoom = myRoom.roomID + "/";
+
+		roomsString = roomsString.Replace (currentRoom, string.Empty);
+
+		if (roomsString.Length < 5) {
+			roomsString = string.Empty;
+		}
+
+		userAccount.activeRooms = roomsString;
+		userAccount.StoreEditedRooms (roomsString);
+
+		Destroy(myRoom.gameObject);
+		roomManScript.CurtainsIn ();
+
+		Invoke ("LeavePrivateGame", 2.0f);
+
+	}
+
+	void LeavePrivateGame(){
+	
+		RoomManager.instance.cameFromTurnBased = true;
+		SceneManager.LoadScene ("Lobby Menu");
+	
+	}
+
+	void ClearPlayerPrefs (){
+
+		for (int i = 0; i < players.Length; i++) {
+
+			string location = players [i].text + "abcde";
+
+			PlayerPrefs.DeleteKey (location);
+
+		}
+			
+		for (int i = 0; i < 3; i++) {
+		
+			string roundLoc = i+1.ToString() + "check" + "abcde";
+		
+			PlayerPrefs.DeleteKey (roundLoc);
+
+		}
 
 	}
 

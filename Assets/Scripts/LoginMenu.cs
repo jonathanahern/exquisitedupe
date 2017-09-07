@@ -186,6 +186,8 @@ public class LoginMenu : MonoBehaviour {
 	
 	IEnumerator sendLoginRequest (string username, string password) {
 
+		Debug.Log (username + password);
+
 		if (isDatabaseSetup == true) {
 		
 			IEnumerator e = DCP.RunCS (databaseName, "Login", new string[2] { username, password });
