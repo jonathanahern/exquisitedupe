@@ -55,6 +55,7 @@ public class LocalTurnScoring : MonoBehaviour {
 	public GameObject orangeFlash;
 
 	public Text[] players;
+	public Text[] scores;
 	bool gotOne = false;
 	bool gotTwo = false;
 	bool gotThree = false;
@@ -96,6 +97,7 @@ public class LocalTurnScoring : MonoBehaviour {
 	int[] monaPoints = {0,0,0,0};
 
 	private static string MYCOLOR_SYM = "[MYCOLOR]";
+	//bool privateScoring = false;
 
 	// Use this for initialization
 	void Start () {
@@ -127,15 +129,15 @@ public class LocalTurnScoring : MonoBehaviour {
 		}
 
 		//Debug.Log (myRoom.gameObject.name);
+	
+		myColor = myRoom.myActualColor;
+		myRoomID = myRoom.roomID;
 
-		for (int i = 0; i < myRoom.players.Length; i++) {
+		for (int i = 0; i < players.Length; i++) {
 
-			players[i].text = myRoom.players [i];
+			players [i].text = myRoom.players [i];
 
 		}
-
-		myColor = myRoom.myColor;
-		myRoomID = myRoom.roomID;
 
 		guessOnScreen = new Vector2[guessObjs.Length];
 		guessOffScreen = new Vector2[guessObjs.Length];
@@ -156,6 +158,27 @@ public class LocalTurnScoring : MonoBehaviour {
 		dupeDrewScreenPos = dupeDrew.GetComponent<RectTransform> ().anchoredPosition;
 		Vector2 offScreenDupe = new Vector2 (dupeDrewScreenPos.x - 1500,dupeDrewScreenPos.y);
 		dupeDrew.GetComponent<RectTransform> ().anchoredPosition = offScreenDupe;
+
+		if (myRoom.privateRoom == true && myRoom.roundNum != 1) {
+
+			for (int i = 0; i < players.Length; i++) {
+
+				int curScore = PlayerPrefs.GetInt (players [i].text + "abcde");
+				scores [i].text = curScore.ToString();
+
+				if (i == 0) {
+					redScore = curScore;
+				} else if (i == 1) {
+					blueScore = curScore;
+				} else if (i == 2) {
+					greenScore = curScore;
+				} else if (i == 3) {
+					orangeScore = curScore;
+				}
+
+			}
+
+		}
 
 	}
 	
@@ -671,7 +694,7 @@ public class LocalTurnScoring : MonoBehaviour {
 		string caughtString = "WE CAUGHT THE DUPE";
 		string escapeString = "THE DUPE GOT AWAY";
 
-		if (myRoom.dupeNum == myRoom.myColor) {
+		if (myRoom.dupeNum == myColor) {
 			caughtString = "THEY CAUGHT YOU!!!";
 			escapeString = "YOU GOT AWAY WITH IT";
 		}
@@ -939,7 +962,6 @@ public class LocalTurnScoring : MonoBehaviour {
 	}
 
 	void GiveMonaAwardIcons(){
-		Debug.Log (monaPoints.Length);
 
 		for (int i = 0; i < monaPoints.Length; i++) {
 			
@@ -1188,7 +1210,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		}
 
-		Invoke ("EndTheRound", 4.5f);
+		Invoke ("EndTheRound", 6.5f);
 
 	}
 
@@ -1233,18 +1255,65 @@ public class LocalTurnScoring : MonoBehaviour {
 
 	}
 
+	void StoreScore (){
+	
+		//string roundNum = myRoom.roundNum.ToString();
 
-	void EndTheRound (){
+		string roundLoc = myRoom.roundNum + "check" + "abcde";
+		string doneString = PlayerPrefs.GetString (roundLoc);
 
-		Destroy(myRoom.gameObject);
+		if (doneString == "Done") {
+			return;
+		}
 
-		roomMan.GetComponent<RoomManager> ().CurtainsIn ();
-		roomMan.GetComponent<RoomManager> ().cameFromScoring = true;
-		Invoke ("ReallyEndRound", 4.0f);
+		for (int i = 0; i < players.Length; i++) {
+
+			string location = players [i].text + "abcde";
+			int currentScore = PlayerPrefs.GetInt (location);
+			int newScore = currentScore + int.Parse (scores [i].text);
+			PlayerPrefs.SetInt (location, newScore);
+
+		}
+
+		PlayerPrefs.SetString (roundLoc, "Done");
 
 	}
 
-	void ReallyEndRound (){
+	void EndTheRound (){
+
+		RoomManager roomManScript = roomMan.GetComponent<RoomManager> ();
+
+		if (myRoom.privateRoom == true) {
+			StoreScore ();
+			string catName = myRoom.roomType;
+			roomManScript.StartNextPrivateRound (catName);
+
+			UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
+
+			string roomsString = userAccount.activeRooms;
+			string currentRoom = myRoom.roomID + "/";
+
+			roomsString = roomsString.Replace (currentRoom, string.Empty);
+
+			if (roomsString.Length < 5) {
+				roomsString = string.Empty;
+			}
+
+			userAccount.activeRooms = roomsString;
+			userAccount.StoreEditedRooms (roomsString);
+
+		} else {
+			roomManScript.cameFromScoring = true;
+			Invoke ("ReallyEndRoundPublic", 1.0f);
+		}
+
+		Destroy(myRoom.gameObject);
+
+		roomManScript.CurtainsIn ();
+
+	}
+
+	void ReallyEndRoundPublic (){
 	
 		int myScore = 0;
 
@@ -1275,10 +1344,10 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		userAccount.activeRooms = roomsString;
 
-		roomMan.GetComponent<RoomManager>().SendTheScore (myScore, myColor, roomIDstring, roomsString);
-		RoomManager.instance.cameFromTurnBased=true;
+		roomMan.GetComponent<RoomManager> ().SendTheScore (myScore, myColor, roomIDstring, roomsString);
+		RoomManager.instance.cameFromTurnBased = true;
 		SceneManager.LoadScene ("Lobby Menu");
-	
+
 	}
 
 	//play animation = 1

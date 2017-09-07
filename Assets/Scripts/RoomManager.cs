@@ -95,6 +95,11 @@ public class RoomManager : MonoBehaviour {
 
 	string testString;
 
+	public TurnRoomButton[] privateCat;
+	private string[] catNames;
+	public GameObject sign;
+	public Text categoryName;
+
 	void Start (){
 
 		if (tutorialMode == true) {
@@ -113,6 +118,14 @@ public class RoomManager : MonoBehaviour {
 
 		if (buttonHolder.childCount < 1) {
 			lobbyMenu.GetAllCategories ();
+		}
+
+		catNames = new string[privateCat.Length];
+
+		for (int i = 0; i < catNames.Length; i++) {
+
+			catNames [i] = privateCat [i].roomTypeString;
+
 		}
 
 	}
@@ -301,16 +314,30 @@ public class RoomManager : MonoBehaviour {
 				string[] players = playersWhole.Split('/');
 
 				myRoom.players = new string[players.Length];
+				int colorMod = myRoom.colorMod;
 
 				for (int i = 0; i < players.Length; i++) {
 
-					//Debug.Log (username + players [i]);
-					myRoom.players [i] = players [i];
-
 					if (players[i] == username) {
+						Debug.Log ("colormod CHECK!: " + myRoom.colorMod.ToString());
 						myRoom.myColor = i + 1;
 					}
+				
+				}
 
+
+
+				if (players.Length > 3) {
+					for (int i = 0; i < players.Length; i++) {
+
+						int playerPos = i - colorMod;
+
+						if (playerPos < 0) {
+							playerPos = playerPos + 4;
+						}
+
+						myRoom.players [i] = players [playerPos];
+					}
 				}
 
 			} else if (piece.StartsWith (STATUS_SYM)) {
@@ -386,6 +413,8 @@ public class RoomManager : MonoBehaviour {
 		TurnRoomScript roomScript = newRoom.GetComponent<TurnRoomScript> ();
 		tempRoom = newRoom;
 
+		Debug.Log ("All: " + roomId);
+
 		string[] pieces = roomId.Split('|');
 
 		foreach (string piece in pieces) {
@@ -394,12 +423,13 @@ public class RoomManager : MonoBehaviour {
 
 				int color = int.Parse (piece.Substring (COLOR_SYM.Length));
 
+				Debug.Log ("colormod2: " + roomScript.colorMod.ToString());
+
 				roomScript.myColor = color - 4;
 
 			} else if (piece.StartsWith (ID_SYM)) {
 
 				roomScript.roomID = int.Parse(piece.Substring (ID_SYM.Length));
-
 
 			} else if (piece.StartsWith (WORDS_SYM)) {
 				
@@ -457,84 +487,63 @@ public class RoomManager : MonoBehaviour {
 
 				roomScript.awardNum = int.Parse(fate [3]);
 
-			} else if (piece.StartsWith (PLAYERS_SYM)) {
+				roomScript.colorMod = int.Parse(fate [4]);
+				Debug.Log ("colormod3: " + roomScript.colorMod.ToString());
 
+			} else if (piece.StartsWith (PLAYERS_SYM)) {
+				
 				string playersWhole = piece.Substring (PLAYERS_SYM.Length);
+				Debug.Log (playersWhole + " SDFSDF");
 				string[] players = playersWhole.Split('/');
 
 				roomScript.players = new string[players.Length];
 
+				int colorMod = roomScript.colorMod;
+
 				for (int i = 0; i < players.Length; i++) {
 
-					//Debug.Log (username + players [i]);
-					roomScript.players [i] = players [i];
-
 					if (players[i] == username) {
+						Debug.Log ("colormod: " + roomScript.colorMod.ToString());
 						roomScript.myColor = i + 1;
 					}
 
+				}
+
+				if (players.Length > 3) {
+					for (int i = 0; i < players.Length; i++) {
+						        
+						int playerPos = i - colorMod;
+
+						if (playerPos < 0) {
+							playerPos = playerPos + 4;
+						}
+
+						roomScript.players [i] = players [playerPos];
+					}
 				}
 					
 			} else if (piece.StartsWith (CATEGORY_SYM)) {
 
 				string category = piece.Substring (CATEGORY_SYM.Length);
+
+				Debug.Log ("It did happen! " + category);
+
+				if (category.StartsWith ("abcde")) {
+				
+					category = category.Substring (5);
+					roomScript.privateRoom = true;
+				}
+
 				roomScript.roomType = category;
 			}
 
 			else if (piece.StartsWith (STATUS_SYM)) {
 
-				int myColor = roomScript.myColor;
-
-				string stringID = roomScript.myColor.ToString ();
-
 				string status = piece.Substring (STATUS_SYM.Length);
-
 				roomScript.status = "waiting...";
-
 				roomScript.statusNum = 0;
+				roomScript.statusServer = status;
 
-				//Debug.Log ("Status: " + status + ", StringID: " + stringID);
-
-				string stringIdLetter;
-
-				if (myColor == 1) {
-					stringIdLetter = "a";
-				} else if (myColor == 2) {
-					stringIdLetter = "b";
-				} else if (myColor == 3) {
-					stringIdLetter = "c";
-				} else if (myColor == 4) {
-					stringIdLetter = "d";
-				} else {
-					stringIdLetter = "z";
-				}
-
-				//Debug.Log ("letter id: " + stringIdLetter);
-					
-				if (status.Contains ("a") && status.Contains ("b") && status.Contains ("c") && status.Contains ("d")) {
-					roomScript.statusNum = 4;
-				} else if (status.Contains(stringIdLetter)){
-					roomScript.statusNum = 3;
-				} else if (status.Contains ("1") && status.Contains ("2") && status.Contains ("3") && status.Contains ("4")) {
-					roomScript.statusNum = 2;
-				} else if (status.Contains(stringID)){
-					roomScript.statusNum = 1;
-				}
-
-				if (status.Contains ("x")) {
-
-					roomScript.dupeCaught = "x";
-
-				} else if (status.Contains ("o")) {
-
-					roomScript.dupeCaught = "o";
-
-				} else {
-				
-					roomScript.dupeCaught = "n";
-
-				}
-		
 			}
 
 			else if (piece.StartsWith (DRAWING_SYM)) {
@@ -567,6 +576,61 @@ public class RoomManager : MonoBehaviour {
 
 		}
 
+		int tempColor = roomScript.myColor;
+		tempColor = tempColor + roomScript.colorMod;
+		if (tempColor > 4) {
+			tempColor = tempColor - 4;
+		}
+		roomScript.myActualColor = tempColor;
+
+
+		int myColor = roomScript.myActualColor;
+		string stringID = roomScript.myActualColor.ToString ();
+		string stringIdLetter;
+
+		Debug.Log ("Color: " + roomScript.statusServer + " " + roomScript.myActualColor);
+
+		if (myColor == 1) {
+			stringIdLetter = "a";
+		} else if (myColor == 2) {
+			stringIdLetter = "b";
+		} else if (myColor == 3) {
+			stringIdLetter = "c";
+		} else if (myColor == 4) {
+			stringIdLetter = "d";
+		} else {
+			stringIdLetter = "z";
+		}
+
+		if (roomScript.statusServer.Contains ("a") && roomScript.statusServer.Contains ("b") && roomScript.statusServer.Contains ("c") && roomScript.statusServer.Contains ("d")) {
+			roomScript.statusNum = 4;
+		} else if (roomScript.statusServer.Contains(stringIdLetter)){
+			roomScript.statusNum = 3;
+		} else if (roomScript.statusServer.Contains ("1") && roomScript.statusServer.Contains ("2") && roomScript.statusServer.Contains ("3") && roomScript.statusServer.Contains ("4")) {
+			roomScript.statusNum = 2;
+		} else if (roomScript.statusServer.Contains(stringID)){
+			roomScript.statusNum = 1;
+		}
+
+		if (roomScript.statusServer.Contains ("x")) {
+			roomScript.dupeCaught = "x";
+		} else if (roomScript.statusServer.Contains ("o")) {
+			roomScript.dupeCaught = "o";
+		} else {
+			roomScript.dupeCaught = "n";
+		}
+
+
+
+
+
+
+
+		if (roomType.StartsWith ("abcde")) {
+
+			roomScript.privateRoom = true;
+
+		}
 
 		if (startRoom == -2) {
 
@@ -605,30 +669,7 @@ public class RoomManager : MonoBehaviour {
 		}
 			
 	}
-
-//	public void ComingIntoFocus(){
-//
-//		if (statusHolder == null) {
-//			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
-//		}
-//
-//		int childCount = roomHolder.transform.childCount;
-//		int statusCount = statusHolder.transform.childCount;
-//
-//		if (childCount > 0) {
-//			for (int i = 0; i < childCount; i++) {
-//				Destroy(roomHolder.transform.GetChild(i).gameObject);
-//			}
-//		}
-//
-//		if (statusCount > 0) {
-//			for (int i = 0; i < statusCount; i++) {
-//				Destroy(statusHolder.transform.GetChild(i).gameObject);
-//			}
-//		}
-//
-//
-//	}
+		
 
 	void RetryDoubleCheck (string roomIDstring, string myColor, string usernameToSend, string roomTypeCheck){
 	
@@ -731,7 +772,39 @@ public class RoomManager : MonoBehaviour {
 					status.PhaseTwoDone ();
 				} else if (turnRoom.statusNum == 4) {
 					status.PhaseThreeReady ();
-				} 
+				}
+
+				if (turnRoom.privateRoom == true) {
+					int roundNumber = 0;	
+					for (int t = 0; t < privateCat.Length; t++) {
+
+
+						if (privateCat[t].roomTypeString == turnRoom.roomType) {
+							roundNumber = t + 1;
+
+						}
+
+					}
+
+					string roundString = "";
+
+					if (roundNumber == 1) {
+						roundString = "ROUND ONE";
+						turnRoom.roundNum = 1;
+					} else if (roundNumber == 2) {
+						roundString = "ROUND TWO";
+						turnRoom.roundNum = 2;
+					} else if (roundNumber == 3) {
+						roundString = "ROUND THREE";
+						turnRoom.roundNum = 3;
+					} else if (roundNumber == 4) {
+						roundString = "ROUND FOUR";
+						turnRoom.roundNum = 4;
+					}
+
+					status.roundNumber.text = roundString;
+
+				}
 			} 
 		}
 
@@ -742,233 +815,7 @@ public class RoomManager : MonoBehaviour {
 		statusLoad.SetActive (false);
 
 	}
-
-	//Instantiate status objs, match their status to rooms, create array of room Id #s
-//	public void UpdateTurnRooms(){
-//		cameFromTurnBased = false;
-//		CurtainsOut ();
-//		if (statusHolder == null) {
-//			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
-//		}
-//
-//		int children = roomHolder.childCount;
-//
-//		for (int i = 0; i < children; ++i) {
-////			GameObject roomStatus = Instantiate (statusPrefab);
-////			roomStatus.transform.SetParent (statusHolder.transform, false);
-//			TurnRoomScript turnRoom = roomHolder.GetChild (i).GetComponent<TurnRoomScript> ();
-////			TurnGameStatus status = roomStatus.GetComponent<TurnGameStatus> ();
-////			status.roomId = turnRoom.roomID;
-////			status.categoryName.text = turnRoom.roomType;
-////			status.gameStatus.text = turnRoom.status;
-////		
-////			if (turnRoom.statusNum == 0) {
-////				status.PhaseOneReady ();
-////			} else if (turnRoom.statusNum == 1) {
-////				status.PhaseOneDone ();
-////			} else if (turnRoom.statusNum == 2) {
-////				status.PhaseTwoReady ();
-////			} else if (turnRoom.statusNum == 3) {
-////				status.PhaseTwoDone ();
-////			} else if (turnRoom.statusNum == 4) {
-////				status.PhaseThreeReady ();
-////			} 
-//
-//			//rooms [i] = turnRoom.roomID;
-//
-//			string stringId = "|[ID]" + turnRoom.roomID.ToString ();
-//
-//			StartCoroutine (getRoomData (stringId));
-//
-//		}
-//
-//		Debug.Log ("This happened");
-//
-//		for (int i = 0; i < children; i++) {
-//
-//			Destroy(roomHolder.GetChild (i).gameObject);
-//
-//		}
-//
-//		//Invoke ("StatusUpdate", 1.0f);
-//
-//	}
-
-	//send room IDs to server
-//	public void StatusUpdate(){
-//
-//		string roomID1;
-//		string roomID2;
-//		string roomID3;
-//		string roomID4;
-//		string roomID5;
-//
-//		roomID1 = "|[ID]" + rooms [0].ToString();
-//		roomID2 = "|[ID]" + rooms [1].ToString();
-//		roomID3 = "|[ID]" + rooms [2].ToString();
-//		roomID4 = "|[ID]" + rooms [3].ToString();
-//		roomID5 = "|[ID]" + rooms [4].ToString();
-//
-//		Debug.Log ("ROOM 1: " + roomID1);
-//
-//		StartCoroutine (statusUpdateCheck(roomID1,roomID2, roomID3, roomID4, roomID5));
-//	
-//	}
-
-	//returns ids with players checked in and drawings.
-//	IEnumerator statusUpdateCheck (string roomID1, string roomID2, string roomID3, string roomID4, string roomID5){
-//
-//		IEnumerator e = DCP.RunCS ("turnRooms", "UpdateStatus", new string[5] {roomID1,roomID2,roomID3,roomID4,roomID5});
-//
-//		while (e.MoveNext ()) {
-//			yield return e.Current;
-//		}
-//
-//		string returnText = e.Current as string;
-//
-//		returnText = returnText.TrimStart ('|');
-//
-//		Debug.Log ("Returned Status:" + returnText);
-//
-//		if (returnText != "Error") {
-//		
-//			BreakDownStatus (returnText);
-//
-//		} 
-//
-//	}
-
-	//checks status
-//	void BreakDownStatus (string returned){
-//	
-//		string[] roomsData = returned.Split ('|');
-//
-//		foreach (string roomData in roomsData) {
-//
-//			string[] roomPiece = roomData.Split('/');
-//
-//			string idString = roomPiece[0].Substring (ID_SYM.Length);
-//			string playersReadyString = roomPiece[1].Substring (PLAYERSREADY_SYM.Length);
-//			string drawingString = roomPiece [2];
-//			drawingString = drawingString.TrimEnd('$');
-//
-//			UpdateRoom (idString, playersReadyString, drawingString);
-//
-//		}
-//
-//		Invoke ("UpdateStatusObjects", 1.0f);
-//
-//	}
-
-//	void UpdateRoom (string roomId, string status, string drawing){
-//	
-//		int roomInt = int.Parse(roomId);
-//		int children = roomHolder.childCount;
-//		string myColorNumNow;
-//
-//
-//		for (int i = 0; i < children; ++i){
-//			
-//			TurnRoomScript turnRoom = roomHolder.GetChild (i).GetComponent<TurnRoomScript>();
-//
-//			if (turnRoom.roomID == roomInt) {
-//				turnRoom.drawings = drawing;
-//				myColorNumNow = turnRoom.myColor.ToString ();
-//
-//				string stringIdLetter;
-//
-//				if (turnRoom.myColor == 1) {
-//					stringIdLetter = "a";
-//				} else if (turnRoom.myColor == 2) {
-//					stringIdLetter = "b";
-//				} else if (turnRoom.myColor == 3) {
-//					stringIdLetter = "c";
-//				} else if (turnRoom.myColor == 4) {
-//					stringIdLetter = "d";
-//				} else {
-//					stringIdLetter = "z";
-//				}
-//
-//				Debug.Log ("myID: " + stringIdLetter + " myColor: " + myColorNumNow + " status: " + status + " RoomId: " + roomInt);
-//
-//
-//				if (status.Contains ("a") && status.Contains ("b") && status.Contains ("c") && status.Contains ("d")) {
-//
-//					turnRoom.statusNum = 4;
-//
-//				} else if (status.Contains(stringIdLetter)){
-//
-//					Debug.Log ("MAKE IT 3");
-//					turnRoom.statusNum = 3;
-//
-//				} else if (status.Contains ("1") && status.Contains ("2") && status.Contains ("3") && status.Contains ("4")) {
-//					
-//					Debug.Log ("MAKE IT 2");
-//					turnRoom.statusNum = 2;
-//
-//				} else if (status.Contains(myColorNumNow)){
-//
-//					turnRoom.statusNum = 1;
-//
-//				}
-//
-//			}
-//
-//		}
-//
-//		UpdateStatusObjects ();
-//	
-//	}
-//
-//	//Updates status objects to their room's status
-//	void UpdateStatusObjects (){
-//
-//		Debug.Log ("it was done");
-//
-//		if (statusHolder == null) {
-//			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
-//		}
-//
-//		for (int i = 0; i < statusHolder.transform.childCount; ++i){
-//
-//			Destroy (statusHolder.transform.GetChild (i).gameObject);
-//
-//		}
-//			
-//		int children = roomHolder.childCount;
-//
-//		for (int i = 0; i < children; ++i){
-//			
-//			TurnRoomScript turnRoom = roomHolder.GetChild (i).GetComponent<TurnRoomScript>();
-//			GameObject roomStatus = Instantiate (statusPrefab);
-//			roomStatus.transform.SetParent (statusHolder.transform, false);
-//			TurnGameStatus status = roomStatus.GetComponent<TurnGameStatus> ();
-//			status.roomId = turnRoom.roomID;
-//			status.categoryName.text = turnRoom.roomType;
-//			status.gameStatus.text = turnRoom.status;
-//
-//			if (turnRoom.statusNum == 0) {
-//				status.PhaseOneReady ();
-//			} else if (turnRoom.statusNum == 1) {
-//				status.PhaseOneDone ();
-//			} else if (turnRoom.statusNum == 2) {
-//				status.PhaseTwoReady ();
-//			} else if (turnRoom.statusNum == 3) {
-//				status.PhaseTwoDone ();
-//			} else if (turnRoom.statusNum == 4) {
-//				status.PhaseThreeReady ();
-//			} 
-//
-//		}
-//
-//		if (statusLoad == null) {
-//			statusLoad = GameObject.FindGameObjectWithTag ("Status Load");
-//		}
-//
-//		statusLoad.SetActive (false);
-//
-//	}
-
+		
 	public void SendTheScore (int pointsToAdd, int playerColor, string roomIDstring, string currentRooms){
 	
 		string points = pointsToAdd.ToString ();
@@ -976,14 +823,6 @@ public class RoomManager : MonoBehaviour {
 		int children = roomHolder.childCount;
 		tempColor = playerColor;
 		tempID = roomIDstring;
-		//tempPoints = pointsToAdd.ToString ();
-
-//		for (int i = 0; i < children; ++i){
-//
-//			TurnRoomScript turnRoom = roomHolder.GetChild (i).GetComponent<TurnRoomScript>();
-//			currentRooms = currentRooms + turnRoom.roomID.ToString () + "/";
-//
-//		}
 
 		if (username == null) {
 			userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
@@ -1219,32 +1058,6 @@ public class RoomManager : MonoBehaviour {
 		}
 	}
 
-//	public void TakeButtonsWith(){
-//
-//		roomsReady = false;
-//
-//		int childCount = categoryButtons.Count;
-//
-//		for (int i = 0; i < childCount; i++) {
-//
-//			categoryButtons [i].transform.SetParent (buttonHolder, false);
-//
-//		}
-//	
-//	}
-
-//	public void DropOffButtons(){
-//
-//		int childCount = categoryButtons.Count;
-//
-//		for (int i = 0; i < childCount; i++) {
-//
-//			categoryButtons [i].transform.SetParent(null,false);
-//
-//		}
-//
-//	}
-
 	public void StartingNewRoom(){
 	
 		startingNew = true;
@@ -1263,11 +1076,23 @@ public class RoomManager : MonoBehaviour {
 
 		Vector2 rightPos = new Vector2 (1300, 0);
 		Vector2 leftPos = new Vector2 (-1300, 0);
-		Vector2 centerPos = new Vector2 (0, 700);
+		Vector2 centerPos = new Vector2 (0, 1400);
 
 		rightCurtain.GetComponent<RectTransform> ().DOAnchorPos (rightPos, 1.0f).SetEase (Ease.InExpo);
 		leftCurtain.GetComponent<RectTransform> ().DOAnchorPos (leftPos, 1.0f).SetEase (Ease.InExpo);
 		centerCurtain.GetComponent<RectTransform> ().DOAnchorPos (centerPos, 1.0f).SetEase (Ease.InExpo);
+
+	}
+
+	public void TurnOffSign(){
+	
+		sign.SetActive (false);
+	
+	}
+
+	public void TurnOnSign(){
+
+		sign.SetActive (true);
 
 	}
 
@@ -1326,7 +1151,7 @@ public class RoomManager : MonoBehaviour {
 
 			if (tempRoomScript.roomID == roomID) {
 
-				myColor = tempRoomScript.myColor;
+				myColor = tempRoomScript.myActualColor;
 				roomScript = tempRoomScript;
 
 			}
@@ -1409,12 +1234,37 @@ public class RoomManager : MonoBehaviour {
 
 	public void GiveMeDeath(){
 		CurtainsOut ();
-		Invoke ("Death",2.0f);
+		//Invoke ("Death",2.0f);
 	}
 
 	void Death(){
-
 		//Destroy(gameObject);
+	}
+
+	public void StartNewPrivateGame(){
+	
+		//PlayerPrefs.SetInt (currentRoundLoc, 1);
+		categoryName.text = privateCat [0].roomTypeString;
+		privateCat [0].TurnRoomClicked ();
 
 	}
+		
+	public void StartNextPrivateRound(string lastRoom){
+
+		int lastRound = 0;
+
+		for (int i = 0; i < catNames.Length; i++) {
+
+			if (lastRoom == catNames [i]) {
+				lastRound = i;
+			}
+
+		}
+
+		sign.SetActive (true);
+		categoryName.text = privateCat [lastRound + 1].roomTypeString;
+		privateCat [lastRound + 1].NextPrivatePainting();
+
+	}
+
 }

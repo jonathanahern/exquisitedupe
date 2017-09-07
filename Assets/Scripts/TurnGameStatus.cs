@@ -10,6 +10,7 @@ public class TurnGameStatus : MonoBehaviour {
 
 	public Text categoryName;
 	public Text gameStatus;
+	public Text roundNumber;
 	public Image button;
 
 	public Color wait;
@@ -24,10 +25,11 @@ public class TurnGameStatus : MonoBehaviour {
 	bool phaseOneReady;
 	bool phaseTwoReady;
 	bool phaseThreeReady;
+	bool readyForPrivate;
 
 	GameObject roomMan;
 	RoomManager roomManScript;
-	LobbyMenu lobby;
+//	LobbyMenu lobby;
 
 	Transform roomHolder;
 
@@ -41,7 +43,7 @@ public class TurnGameStatus : MonoBehaviour {
 
 		roomHolder = GameObject.FindGameObjectWithTag ("Room Holder").transform;
 
-		lobby = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
+		//lobby = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
 
 	}
 
@@ -147,6 +149,8 @@ public class TurnGameStatus : MonoBehaviour {
 			//lobby.DetachButtons ();
 			//roomManScript.TakeButtonsWith ();
 		} else if (phaseOneReady == true) {
+			roomManScript.TurnOnSign ();
+			GameObject.FindGameObjectWithTag ("Category Name").GetComponent<Text> ().text = categoryName.text;
 			roomManScript.CurtainsIn ();
 			roomManScript.StartingNewRoom ();
 			Invoke ("StartAfterDelay", 1.5f);
@@ -238,5 +242,15 @@ public class TurnGameStatus : MonoBehaviour {
 		SceneManager.LoadScene ("Turn Based Room");
 
 	}
+
+//	public void SetupFakeStatus (string catName, string roundNum){
+//	
+//		doneDrawing.SetActive (true);
+//		gameStatus.text = "DRAW!";
+//		button.color = ready;
+//		categoryName.text = catName;
+//		roundNumber.text = roundNum;
+//		readyForPrivate = true;
+//	}
 
 }

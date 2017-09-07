@@ -197,7 +197,7 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 	}
 
-	void RetryTurnRoom(string tempRoomType, string tempPlayerName, string tempFate){
+	void RetryTurnRoomNothingFound(string tempRoomType, string tempPlayerName, string tempFate){
 
 		StartCoroutine (turnRoom(tempRoomType, tempPlayerName, tempFate));
 
@@ -252,9 +252,59 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 	}
 
+	void RetryTurnRoom(string tempRoomType, string tempPlayerName, string tempFate){
+
+		StartCoroutine (blankSearch(tempRoomType, tempPlayerName, tempFate));
+
+	}
+
+	IEnumerator blankSearch (string roomType, string playerName, string fate){
+
+		IEnumerator e = DCP.RunCS ("turnRooms", "BlankSearch", new string[3] { roomType, playerName, fate});
+
+		while (e.MoveNext ()) {
+			yield return e.Current;
+		}
+
+		string returnText = e.Current as string;
+
+		if (returnText == "") {
+
+			Debug.Log ("Retrying new room again");
+			RetryTurnRoom (roomType, playerName, fate);
+
+			yield break;
+
+		} else if (returnText == "Nothing Found"){
+			RetryTurnRoomNothingFound (roomType, playerName, fate);
+
+		}
+
+		Debug.Log ("Found this: " + returnText);
+
+		string[] fates = returnText.Split ('|');
+
+		foreach (string data in fates) {
+
+			if (data.StartsWith ("[ID]")){
+
+				roomId = data.Substring ("[ID]".Length);
+				roomId = roomId + "/";
+
+			}
+
+		}
+
+		Debug.Log ("UserName: " + LoggedIn_Username);
+		Debug.Log ("roomId: " + roomId);
+
+		RoomManager.instance.CreateRoom (roomType, returnText, -2);
+
+	}
+
 	public void StoreRoom (string roomId){
 	
-		StartCoroutine (storeRoomId(LoggedIn_Username, roomId));
+		StartCoroutine (storeRoomId (LoggedIn_Username, roomId));
 	
 	}
 
@@ -272,6 +322,28 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 		Debug.Log ("Stored: " + returnText);
 	
+	}
+
+	public void StoreEditedRooms (string roomId){
+
+		StartCoroutine (storeEditedRoomIds(LoggedIn_Username, roomId));
+
+	}
+
+	IEnumerator storeEditedRoomIds (string username, string roomId){
+
+		IEnumerator e = DCP.RunCS ("accounts", "ReplaceRoomData", new string[2] { username, roomId });
+
+		while (e.MoveNext ()) {
+			yield return e.Current;
+		}
+
+		string returnText = e.Current as string;
+
+		//activeRooms = returnText; 	
+
+		Debug.Log ("Stored: " + returnText);
+
 	}
 
 	void BackToLobbyError() {

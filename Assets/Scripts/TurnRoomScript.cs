@@ -28,6 +28,11 @@ public class TurnRoomScript : MonoBehaviour {
 	public bool activeScoreRoom;
 
 	public string dupeCaught;
+	public bool privateRoom;
+	public int roundNum;
+	public int colorMod;
+	public int myActualColor;
+	public string statusServer;
 
 	// Use this for initialization
 	void Start () {

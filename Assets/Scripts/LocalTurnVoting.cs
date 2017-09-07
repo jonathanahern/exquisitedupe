@@ -181,13 +181,13 @@ public class LocalTurnVoting : MonoBehaviour {
 			dupePos = camPos4;
 		}
 
-		if (myRoom.dupeNum == myRoom.myColor) {
+		if (myRoom.dupeNum == myRoom.myActualColor) {
 			dupeGuessTitle.text = "What was everyone else drawing?";
 		} else {
 			dupeGuessTitle.text = "What was the dupe drawing?";
 		}
 
-		voteScript.SetupDupeVote (myRoom.myColor);
+		voteScript.SetupDupeVote (myRoom.myActualColor);
 
 		Invoke ("OpenCurtains", 1.0f);
 		Invoke ("MoveUpPedestal" , 3.0f);
@@ -446,7 +446,7 @@ public class LocalTurnVoting : MonoBehaviour {
 			dupeVotePos = pos;
 			string dupeStatus;
 
-			if (myRoom.myColor != myRoom.dupeNum) {
+			if (myRoom.myActualColor != myRoom.dupeNum) {
 
 				if (myRoom.dupeNum == artistNum) {
 					dupeStatus = "o";
@@ -636,7 +636,7 @@ public class LocalTurnVoting : MonoBehaviour {
 		pedestal.SetActive (true);
 		sign.SetActive (true);
 		int dupeNum = myRoom.dupeNum;
-		int colorNum = myRoom.myColor;
+		int colorNum = myRoom.myActualColor;
 
 		if (myRoom.awardNum == 1) {
 
@@ -678,7 +678,7 @@ public class LocalTurnVoting : MonoBehaviour {
 		voteScript.localTurn = this;
 		currentVote = 2;
 
-		voteScript.SetupSecondVote (myRoom.myColor,myRoom.awardNum,myRoom.dupeNum);
+		voteScript.SetupSecondVote (myRoom.myActualColor,myRoom.awardNum,myRoom.dupeNum);
 		MoveUpPedestal ();
 
 	}
@@ -714,7 +714,7 @@ public class LocalTurnVoting : MonoBehaviour {
 		voteScript.localTurn = this;
 		currentVote = 3;
 
-		voteScript.SetupThirdVote (myRoom.myColor, myRoom.dupeCaught,myRoom.dupeNum);
+		voteScript.SetupThirdVote (myRoom.myActualColor, myRoom.dupeCaught,myRoom.dupeNum);
 		MoveUpPedestal ();
 
 	}
@@ -761,7 +761,7 @@ public class LocalTurnVoting : MonoBehaviour {
 
 	public void GuessSubmitted (string subject) {
 
-		if (myRoom.myColor == myRoom.dupeNum) {
+		if (myRoom.myActualColor == myRoom.dupeNum) {
 
 			string roomId = "|[ID]" + myRoom.roomID.ToString ();
 
@@ -775,13 +775,13 @@ public class LocalTurnVoting : MonoBehaviour {
 
 			string myColor;
 
-			if (myRoom.myColor == 1) {
+			if (myRoom.myActualColor == 1) {
 				myColor = "a";
-			} else if (myRoom.myColor == 2) {
+			} else if (myRoom.myActualColor == 2) {
 				myColor = "b";
-			} else if (myRoom.myColor == 3) {
+			} else if (myRoom.myActualColor == 3) {
 				myColor = "c";
-			} else if (myRoom.myColor == 4) {
+			} else if (myRoom.myActualColor == 4) {
 				myColor = "d";
 			} else {
 				myColor = "poop";
@@ -843,18 +843,18 @@ public class LocalTurnVoting : MonoBehaviour {
 			voteThree = voteThree.Replace(character, string.Empty);
 		}
 
-		string colorString = myRoom.myColor.ToString();
+		string colorString = myRoom.myActualColor.ToString();
 		string votingPositions = colorString + "$" + voteOne + "$" + voteTwo + "$" + voteThree + "$" + myDupeSubjectGuess + "@";
 
 		string roomId = "|[ID]" + myRoom.roomID.ToString();
 
-		if (myRoom.myColor == 1) {
+		if (myRoom.myActualColor == 1) {
 			myColor = "a";
-		} else if (myRoom.myColor == 2) {
+		} else if (myRoom.myActualColor == 2) {
 			myColor = "b";
-		} else if (myRoom.myColor == 3) {
+		} else if (myRoom.myActualColor == 3) {
 			myColor = "c";
-		} else if (myRoom.myColor == 4) {
+		} else if (myRoom.myActualColor == 4) {
 			myColor = "d";
 		}
 

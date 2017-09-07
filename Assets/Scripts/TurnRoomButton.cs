@@ -14,6 +14,8 @@ public class TurnRoomButton : MonoBehaviour {
 	private string fate;
 	bool alreadyClicked;
 
+	public bool privateRoom;
+
 	// Use this for initialization
 	void Start () {
 
@@ -27,7 +29,13 @@ public class TurnRoomButton : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		
+
+//				if (Input.GetKeyDown (KeyCode.S)) {
+//
+//			TurnRoomClicked ();
+//
+//				}
+
 	}
 
 	public void TurnRoomClicked(){
@@ -38,23 +46,18 @@ public class TurnRoomButton : MonoBehaviour {
 		roomManScript.StartingNewRoom ();
 
 		if (roomManScript.refreshing == true) {
-
 			Debug.Log ("No Start");
 			Invoke ("TurnRoomClicked", 1.0f);
 		} else {
 			StartThePainting ();
 		}
-		
-
 	}
 
 	public void PopulateButton(string roomTypeString, string wordsString, string brushesString, string groundingString){
-	
 		roomType.text = roomTypeString;
 		words = wordsString;
 		brushes = brushesString;
 		grounding = groundingString;
-	
 	}
 
 	void StartThePainting (){
@@ -68,6 +71,8 @@ public class TurnRoomButton : MonoBehaviour {
 		int dupeNum = Random.Range (1, 5);
 		int rightWord = Random.Range (1, 11);
 		int wrongWord = Random.Range (1, 11);
+		int colorMod = Random.Range (0, 4);
+		Debug.Log ("From colMod: " + colorMod);
 
 		while(rightWord == wrongWord)
 		{
@@ -87,11 +92,17 @@ public class TurnRoomButton : MonoBehaviour {
 
 		newWords = newWords.TrimEnd ('/');
 
-		fate = "|[WORDS]" + newWords + "|[BRUSHES]" + brushes + "|" + grounding + "|[FATE]" + dupeNum + "/" + rightWord + "/" + wrongWord + "/" + awardNum;
+		fate = "|[WORDS]" + newWords + "|[BRUSHES]" + brushes + "|" + grounding + "|[FATE]" + dupeNum + "/" + rightWord + "/" + wrongWord + "/" + awardNum + "/" + colorMod;
 
-		Debug.Log ("From butt: " + fate + words);
+		Debug.Log ("From butt: " + fate);
 
-		UserAccountManagerScript.instance.TurnRoomSearch(roomType.text, fate, gameObject);
+		string roomToSend = roomType.text;
+
+		if (privateRoom == true) {
+			roomToSend = "abcde" + roomToSend;
+		}
+
+		UserAccountManagerScript.instance.TurnRoomSearch(roomToSend, fate, gameObject);
 
 		LobbyMenu.instance.LoadingScreenFromNewCats ();
 	
@@ -100,5 +111,45 @@ public class TurnRoomButton : MonoBehaviour {
 	void BackToFalse () {
 		alreadyClicked = false;
 	}
+
+	public void NextPrivatePainting(){
+	
+		int dupeNum = Random.Range (1, 5);
+		int rightWord = Random.Range (1, 11);
+		int wrongWord = Random.Range (1, 11);
+		int colorMod = Random.Range (0, 4);
+
+		while(rightWord == wrongWord)
+		{
+			wrongWord = Random.Range (1, 11);
+		}
+
+		int awardNum = Random.Range (1, 3);
+
+		string[] wordsSplit = words.Split ('/');
+		string newWords = "";
+
+		for (int i = 0; i < 10; i++) {
+
+			newWords = newWords + wordsSplit [i] + "/";
+
+		}
+
+		newWords = newWords.TrimEnd ('/');
+
+		fate = "|[WORDS]" + newWords + "|[BRUSHES]" + brushes + "|" + grounding + "|[FATE]" + dupeNum + "/" + rightWord + "/" + wrongWord + "/" + awardNum + "/" + colorMod;
+
+		Debug.Log ("From butt: " + fate + words);
+
+		string roomToSend = roomType.text;
+
+		if (privateRoom == true) {
+			roomToSend = "abcde" + roomToSend;
+		}
+
+		UserAccountManagerScript.instance.TurnRoomSearch(roomToSend, fate, gameObject);
+	
+	}
+
 
 }

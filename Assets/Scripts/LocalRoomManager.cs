@@ -91,30 +91,30 @@ public class LocalRoomManager : MonoBehaviour {
 
 		DrawGrounding ();
 
-		Camera.main.GetComponent<CameraScript> ().ZoomIn (myRoom.myColor);
+		Camera.main.GetComponent<CameraScript> ().ZoomIn (myRoom.myActualColor);
 
-		if (myRoom.dupeNum == myRoom.myColor) {
+		if (myRoom.dupeNum == myRoom.myActualColor) {
 			subject.text = myRoom.wrongword;
 		} else {
 			subject.text = myRoom.rightword;
 		}
 
-		if (myRoom.myColor == 1) {
+		if (myRoom.myActualColor == 1) {
 
 			doneButton.sprite = redDone;
 			undoButton.sprite = redUndo;
 
-		} else if (myRoom.myColor == 2) {
+		} else if (myRoom.myActualColor == 2) {
 
 			doneButton.sprite = blueDone;
 			undoButton.sprite = blueUndo;
 
-		} else if (myRoom.myColor == 3) {
+		} else if (myRoom.myActualColor == 3) {
 
 			doneButton.sprite = greenDone;
 			undoButton.sprite = greenUndo;
 
-		} else if (myRoom.myColor == 4) {
+		} else if (myRoom.myActualColor == 4) {
 
 			doneButton.sprite = orangeDone;
 			undoButton.sprite = orangeUndo;
@@ -158,7 +158,7 @@ public class LocalRoomManager : MonoBehaviour {
 		} else {
 			Debug.Log ("Already logged room");
 		}
-
+			
 		Invoke ("MoveToSection", 4.0f);
 
 	}
@@ -190,7 +190,7 @@ public class LocalRoomManager : MonoBehaviour {
 		bottomPanel.DOAnchorPos (panelScreen, 1.0f);
 
 		Invoke ("LoadBrushes", .7f);
-		lineSpawn.GetColor (myRoom.myColor);
+		lineSpawn.GetColor (myRoom.myActualColor);
 
 
 	}
@@ -237,7 +237,7 @@ public class LocalRoomManager : MonoBehaviour {
 
 	void LoadBrushes (){
 	
-		int myColor = myRoom.myColor;
+		int myColor = myRoom.myActualColor;
 		Invoke ("OkayToClick", 1.5f);
 
 		for (int i = 0; i < myRoom.brushes.Length; i++) {
@@ -287,7 +287,7 @@ public class LocalRoomManager : MonoBehaviour {
 
 		readyToAdvance = true;
 		int brushCount = brushHolder.transform.childCount;
-		int myColor = myRoom.myColor;
+		int myColor = myRoom.myActualColor;
 
 		float xMax;
 		float xMin;
@@ -360,12 +360,13 @@ public class LocalRoomManager : MonoBehaviour {
 	}
 
 	void CollectYourLineData () {
-
+		
+		roomMan.GetComponent<RoomManager> ().TurnOffSign ();
 		roomMan.GetComponent<RoomManager> ().CurtainsIn ();
-
+	
 		GameObject[] lines = GameObject.FindGameObjectsWithTag ("Line");
 
-		myLineString = "[MYCOLOR]" + myRoom.myColor.ToString () + ":";
+		myLineString = "[MYCOLOR]" + myRoom.myActualColor.ToString () + ":";
 
 		foreach (GameObject line in lines) {
 
@@ -453,7 +454,7 @@ public class LocalRoomManager : MonoBehaviour {
 
 		string roomIdString = roomID.ToString();
 
-		IEnumerator e = DCP.RunCS ("turnRooms", "AddDrawing", new string[3] { roomIdString, drawingArray, myRoom.myColor.ToString()});
+		IEnumerator e = DCP.RunCS ("turnRooms", "AddDrawing", new string[3] { roomIdString, drawingArray, myRoom.myActualColor.ToString()});
 
 		while (e.MoveNext ()) {
 			yield return e.Current;
@@ -463,7 +464,7 @@ public class LocalRoomManager : MonoBehaviour {
 
 		Debug.Log ("Returned:" + returnText);
 
-		string drawingID = "[MYCOLOR]" + myRoom.myColor.ToString ();
+		string drawingID = "[MYCOLOR]" + myRoom.myActualColor.ToString ();
 
 		if (returnText.Contains(drawingID) == false){
 

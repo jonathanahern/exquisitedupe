@@ -84,6 +84,8 @@ public class LobbyMenu : MonoBehaviour {
 			//roomMan.DropOffButtons ();
 		}
 
+
+
 		UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
 		string roomsString = userAccount.activeRooms;
 
@@ -94,24 +96,26 @@ public class LobbyMenu : MonoBehaviour {
 		if (roomMan.cameFromScoring == false) {
 			highScores.gameObject.GetComponent<HighScoreScript> ().UpdateTheScore ();
 		} else {
-			GoToHighScores ();
-			roomMan.cameFromScoring = false;
-
-			if (roomsString.Length < 5) {
-				roomMan.noRooms = true;
-				if (frameText == null) {
-
-					frameText = GameObject.FindGameObjectWithTag ("Frame Text");
-
+			
+				if (roomsString.Length < 5) {
+					roomMan.noRooms = true;
+					if (frameText == null) {
+						frameText = GameObject.FindGameObjectWithTag ("Frame Text");
+					}
+					frameText.GetComponent<Text> ().text = "Nothin happenin";
 				}
 
-				frameText.GetComponent<Text> ().text = "Nothin happenin";
+				GoToHighScores ();
 
-			} else {
-				
-			}
+
+			roomMan.cameFromScoring = false;
 
 		}
+
+//		if (roomMan.cameFromPrivateScoring == true) {
+//			roomMan.cameFromPrivateScoring = false;
+//			StartNextPrivateRound ();
+//		}
 
 			InvokeRepeating ("AutoUpdateRooms", 20.0f, 20.0f);
 
@@ -408,19 +412,29 @@ public class LobbyMenu : MonoBehaviour {
 		SceneManager.LoadScene ("Tutorial Lobby Menu");
 	}
 
-//	public void DetachButtons(){
+	public void StartPrivateGame (){
+	
+		UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
+		string roomsString = userAccount.activeRooms;
+
+		if (roomsString.Length > 3) {
+			return;
+		}
+
+		roomMan = GameObject.FindGameObjectWithTag ("Room Manager").GetComponent<RoomManager> ();
+		roomMan.StartNewPrivateGame ();
+		roomMan.TurnOnSign ();
+	
+	}
+
+//	public void StartNextPrivateRound (){
 //
-//		loadingText.SetActive (true);
+//		roomMan = GameObject.FindGameObjectWithTag ("Room Manager").GetComponent<RoomManager> ();
+//		roomMan.StartNextPrivateRound ();
+//		roomMan.TurnOnSign ();
 //
-//		int childCount = turnHolder.childCount;
-//
-//		for (int i = 0; i < childCount; i++) {
-//
-//			turnHolder.GetChild (0).transform.SetParent(null,false);
-//
-//		}
-//
-//		roomMan.TakeButtonsWith ();
 //	}
+
+
 
 }
