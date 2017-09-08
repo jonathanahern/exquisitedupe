@@ -140,6 +140,8 @@ public class LocalTurnScoring : MonoBehaviour {
 		myColor = myRoom.myActualColor;
 		myRoomID = myRoom.roomID;
 
+	
+
 		for (int i = 0; i < players.Length; i++) {
 
 			players [i].text = myRoom.players [i];
@@ -168,11 +170,16 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		if (myRoom.privateRoom == true && myRoom.roundNum != 1) {
 
+			string myUsername = players [myRoom.myActualColor - 1].text;
+
 			for (int i = 0; i < players.Length; i++) {
 
-				int curScore = PlayerPrefs.GetInt (players [i].text + "abcde");
-				scores [i].text = curScore.ToString();
+				string location = myUsername + players [i].text + "abcde";
 
+				int curScore = PlayerPrefs.GetInt (location);
+				scores [i].text = curScore.ToString();
+				Debug.Log (location);
+				Debug.Log ("Player " + myUsername + " scores " + curScore.ToString());
 				if (i == 0) {
 					redScore = curScore;
 				} else if (i == 1) {
@@ -187,6 +194,11 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		}
 
+
+		if (myRoom.privateRoom == true && myRoom.roundNum == 1) {
+			ClearPlayerPrefs ();
+		}
+
 	}
 	
 	// Update is called once per frame
@@ -194,7 +206,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		if (Input.GetKeyDown (KeyCode.T)) {
 			
-			//GivePointsEveryoneBut (3, -1);
+			award2Winner = AwardWinner (FindWinner (1));
 
 		}
 
@@ -417,18 +429,19 @@ public class LocalTurnScoring : MonoBehaviour {
 
 	}
 
-	int DupeWinner (int[]players){
+	int DupeWinner (int[]playersWhoWin){
 	
-		if (players.Length == 1) {
-			return players [0];
-		} else if (players.Length == 2) {
+		if (playersWhoWin.Length == 1) {
+			Debug.Log ("Dupe Winner: " + playersWhoWin [0]);
+			return playersWhoWin [0];
+		} else if (playersWhoWin.Length == 2) {
 
-			if (players [0] == myRoom.dupeNum) {
+			if (playersWhoWin [0] == myRoom.dupeNum) {
 				dupeTie = true;
-				return players [1];
+				return playersWhoWin [1];
 			} else {
 				dupeTie = true;
-				return players [0];
+				return playersWhoWin [0];
 			}
 
 		} else {
@@ -438,10 +451,13 @@ public class LocalTurnScoring : MonoBehaviour {
 	
 	}
 
-	int AwardWinner (int[]players){
+	int AwardWinner (int[]playersWhoWin){
 
-		if (players.Length == 1) {
-			return players [0];
+		if (playersWhoWin.Length == 1) {
+
+			Debug.Log ("Award Winner: " + playersWhoWin [0]);
+
+			return playersWhoWin [0];
 		} else {
 			return 0;
 		
@@ -855,7 +871,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			
 			if (award2Winner != 0) {
 				GivePointsEveryoneButAndDupe (award2Winner, 1);
-				AddSplatterToOne (1, 2);
+				AddSplatterToOne(1,1);
 			} else {
 				AddSplatterToAll (myRoom.awardNum);
 			}
@@ -921,6 +937,9 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		int dupeNum = myRoom.dupeNum;
 		int splatterWinner = AwardWinner (FindWinner (awardPhase));
+
+		Debug.Log("SplatterWinner: " + splatterWinner);
+		Debug.Log("awardPhase: " + awardPhase);
 
 		if (dupeNum != 1) {
 			GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [0]);
@@ -1266,23 +1285,33 @@ public class LocalTurnScoring : MonoBehaviour {
 	
 		//string roundNum = myRoom.roundNum.ToString();
 
-		string roundLoc = myRoom.roundNum + "check" + "abcde";
-		string doneString = PlayerPrefs.GetString (roundLoc);
 
-		if (doneString == "Done") {
-			return;
-		}
+//		string roundNumString = myRoom.roundNum.ToString ();
+//
+//
+//		string roundLoc = roundNumString + "check" + "abcde";
+//		Debug.Log ("What is done loc" + roundLoc);
+//
+//		string doneString = PlayerPrefs.GetString (roundLoc);
+//		Debug.Log ("Does it say done?" + doneString);
+//
+//		if (doneString == "Done") {
+//			return;
+//		}
+
+		string myUsername = players [myRoom.myActualColor - 1].text;
 
 		for (int i = 0; i < players.Length; i++) {
 
-			string location = players [i].text + "abcde";
+			string location = myUsername + players [i].text + "abcde";
 			int currentScore = PlayerPrefs.GetInt (location);
 			int newScore = currentScore + int.Parse (scores [i].text);
+			Debug.Log (location + ": " + newScore);
 			PlayerPrefs.SetInt (location, newScore);
 
 		}
 
-		PlayerPrefs.SetString (roundLoc, "Done");
+//		PlayerPrefs.SetString (roundLoc, "Done");
 
 	}
 
@@ -1390,8 +1419,9 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		gameWinnerName.text = players [winnerNumber].text;
 
-		finale.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce);
-		trueArtist.transform.DOLocalMoveX (1000, 1.0f).SetEase (Ease.OutBounce);
+		finale.transform.DOLocalMoveX (1000, 1.0f).SetEase (Ease.OutBounce);
+		dupeStatusObj.transform.DOLocalMoveX (1000, 1.0f).SetEase (Ease.OutBounce);
+		trueArtist.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce);
 		Invoke ("BringInWinner", 3.5f);
 
 	}
@@ -1436,23 +1466,19 @@ public class LocalTurnScoring : MonoBehaviour {
 	}
 
 	void ClearPlayerPrefs (){
+		
+		string myUsername = players [myRoom.myActualColor - 1].text;
 
 		for (int i = 0; i < players.Length; i++) {
 
-			string location = players [i].text + "abcde";
+			string location = myUsername + players [i].text + "abcde";
+
+			Debug.Log ("Clearing: " + location);
 
 			PlayerPrefs.DeleteKey (location);
 
 		}
 			
-		for (int i = 0; i < 3; i++) {
-		
-			string roundLoc = i+1.ToString() + "check" + "abcde";
-		
-			PlayerPrefs.DeleteKey (roundLoc);
-
-		}
-
 	}
 
 	//play animation = 1

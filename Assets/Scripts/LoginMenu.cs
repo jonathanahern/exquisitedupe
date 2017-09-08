@@ -99,6 +99,11 @@ public class LoginMenu : MonoBehaviour {
 
 	void Update () {
 
+		if (Input.GetKeyDown (KeyCode.D)) {
+			//PlayerPrefs.DeleteAll ();
+			Debug.Log(PlayerPrefs.GetInt("jonathanjonathanabcde"));
+		}
+
 		if (isDatabaseSetup == true) {
 
 			//enables and disables the defferent objects to show correct part

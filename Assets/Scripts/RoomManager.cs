@@ -132,9 +132,9 @@ public class RoomManager : MonoBehaviour {
 
 	void Update () {
 
-//		if (Input.GetKeyDown (KeyCode.R)) {
-//			CreateRoom ("ACTRESSES", testString, -2);
-//		}
+		if (Input.GetKeyDown (KeyCode.R)) {
+			
+		}
 //
 //		if (Input.GetKeyDown (KeyCode.S)) {
 //			CurtainsOut ();
@@ -621,11 +621,6 @@ public class RoomManager : MonoBehaviour {
 		}
 
 
-
-
-
-
-
 		if (roomType.StartsWith ("abcde")) {
 
 			roomScript.privateRoom = true;
@@ -775,7 +770,7 @@ public class RoomManager : MonoBehaviour {
 				}
 
 				if (turnRoom.privateRoom == true) {
-					int roundNumber = 0;	
+					int roundNumber = 1;	
 					for (int t = 0; t < privateCat.Length; t++) {
 
 
@@ -1254,11 +1249,9 @@ public class RoomManager : MonoBehaviour {
 		int lastRound = 0;
 
 		for (int i = 0; i < catNames.Length; i++) {
-
 			if (lastRoom == catNames [i]) {
 				lastRound = i;
 			}
-
 		}
 
 		sign.SetActive (true);

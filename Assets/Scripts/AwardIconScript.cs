@@ -177,14 +177,17 @@ public class AwardIconScript : MonoBehaviour {
 	
 		pointsIcon.sprite = star;
 		pointsIcon.color = yellow;
-		pointsText.text = "2";
+
 
 		if (awardNum == 1) {
 			awardIcon.sprite = monkeySprite;
+			pointsText.text = "1";
 		} else if (awardNum == 2) {
 			awardIcon.sprite = vagueSprite;
+			pointsText.text = "2";
 		} else if (awardNum == 3) {
 			awardIcon.sprite = obviousSprite;
+			pointsText.text = "2";
 		}
 	
 	}

@@ -117,7 +117,7 @@ public class LobbyMenu : MonoBehaviour {
 //			StartNextPrivateRound ();
 //		}
 
-			InvokeRepeating ("AutoUpdateRooms", 20.0f, 20.0f);
+			InvokeRepeating ("AutoUpdateRooms", 8.0f, 8.0f);
 
 	}
 	
@@ -172,10 +172,10 @@ public class LobbyMenu : MonoBehaviour {
 			Invoke ("OkToClickAgain", 1.0f);
 
 			if (roomMan.refreshing == true) {
-				InvokeRepeating ("AutoUpdateRooms", 12.0f, 20.0f);
+				InvokeRepeating ("AutoUpdateRooms", 8.0f, 8.0f);
 				//Invoke ("SendLate", 5.0f);
 			} else {
-				InvokeRepeating ("AutoUpdateRooms", 2.0f, 20.0f);
+				InvokeRepeating ("AutoUpdateRooms", 2.0f, 8.0f);
 			}
 		}
 
@@ -425,6 +425,17 @@ public class LobbyMenu : MonoBehaviour {
 		roomMan.StartNewPrivateGame ();
 		roomMan.TurnOnSign ();
 	
+	}
+
+	public void SignOut(){
+		GameObject roomManagerObj = GameObject.FindGameObjectWithTag ("Room Manager");
+		Destroy (roomManagerObj);
+		UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
+		userAccount.activeRooms = string.Empty;
+		userAccount.loggedInUsername = string.Empty;
+
+		SceneManager.LoadScene ("Login");
+
 	}
 
 //	public void StartNextPrivateRound (){
