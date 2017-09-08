@@ -102,7 +102,7 @@ public class LobbyMenu : MonoBehaviour {
 					if (frameText == null) {
 						frameText = GameObject.FindGameObjectWithTag ("Frame Text");
 					}
-					frameText.GetComponent<Text> ().text = "Nothin happenin";
+				frameText.GetComponent<Text> ().text = "You are not apart\nof any paintings";
 				}
 
 				GoToHighScores ();

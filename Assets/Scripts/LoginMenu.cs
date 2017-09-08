@@ -237,8 +237,12 @@ public class LoginMenu : MonoBehaviour {
 				
 			if (returnText == "UserError") {
 				//Account with username not found in database
-				login_error.text = "Username not found";
-				part = 0; //back to login UI
+				login_error.text = "Username not found. Register this username?";
+				blankErrors();
+				part = 1; //back to register UI
+				register_error.text = "Username not found. Register this username?";
+				input_register_username.text = username; //blank password field
+				input_register_password.text = password;
 				}
 			if (returnText == "PassError") {
 				//Account with username found, but password incorrect
@@ -267,7 +271,7 @@ public class LoginMenu : MonoBehaviour {
 		if (isDatabaseSetup == true) {
 		
 			//check fields aren't blank
-			if ((input_register_username.text != "") && (input_register_password.text != "") && (input_register_confirmPassword.text != "")) {
+			if ((input_register_username.text != "") && (input_register_password.text != "")) {// && (input_register_confirmPassword.text != "")) {
 			
 				//check username is longer than 4 characters
 				if (input_register_username.text.Length > 4) {
@@ -275,15 +279,15 @@ public class LoginMenu : MonoBehaviour {
 					//check password is longer than 6 characters
 					if (input_register_password.text.Length > 3) {
 					
-						//check passwords are the same
-						if (input_register_password.text == input_register_confirmPassword.text) {
+						//check passwords are the same jonathan changed this so so confirm needed
+						if (input_register_password.text == input_register_password.text) {
 						
-							if ((input_register_username.text.Contains ("-")) || (input_register_password.text.Contains ("-")) || (input_register_confirmPassword.text.Contains ("-"))) {
+							if ((input_register_username.text.Contains ("-")) || (input_register_password.text.Contains ("|")) || (input_register_confirmPassword.text.Contains ("/"))|| (input_register_confirmPassword.text.Contains ("$"))|| (input_register_confirmPassword.text.Contains ("^"))|| (input_register_confirmPassword.text.Contains ("@"))) {
 							
 								//string contains "-" so return error
-								register_error.text = "Unsupported Symbol '-'";
+								register_error.text = "Unsupported Symbol";
 								input_login_password.text = ""; //blank password field
-								input_register_confirmPassword.text = "";
+								//input_register_confirmPassword.text = "";
 							
 							} else {
 							
@@ -296,28 +300,28 @@ public class LoginMenu : MonoBehaviour {
 							//return passwords don't match error
 							register_error.text = "Passwords don't match!";
 							input_register_password.text = ""; //blank password fields
-							input_register_confirmPassword.text = "";
+							//input_register_confirmPassword.text = "";
 						}
 					
 					} else {
 						//return password too short error
 						register_error.text = "Password too Short";
 						input_register_password.text = ""; //blank password fields
-						input_register_confirmPassword.text = "";
+						//input_register_confirmPassword.text = "";
 					}
 				
 				} else {
 					//return username too short error
 					register_error.text = "Username too Short";
 					input_register_password.text = ""; //blank password fields
-					input_register_confirmPassword.text = "";
+					//input_register_confirmPassword.text = "";
 				}
 			
 			} else {
 				//one of the fields is blank so return error
 				register_error.text = "Field Blank!";
 				input_register_password.text = ""; //blank password fields
-				input_register_confirmPassword.text = "";
+				//input_register_confirmPassword.text = "";
 			}
 
 		}

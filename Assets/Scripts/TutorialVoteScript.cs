@@ -272,6 +272,7 @@ public class TutorialVoteScript : MonoBehaviour {
 			dupeText.text = intro2Words7;
 			Invoke ("CloseCurtains", 3.0f);
 			roomMan.cameFromTurnBased = true;
+			roomMan.tutorialMode = false;
 		} 
 
 	}

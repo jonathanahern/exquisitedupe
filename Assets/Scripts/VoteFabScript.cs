@@ -67,10 +67,14 @@ public class VoteFabScript : MonoBehaviour {
 	public LocalTurnVoting localTurn;
 
 	int badNum;
+	public bool tutorialMode = false;
 
 	void Start() {
 
-
+		if (tutorialMode == true) {
+			outerLayer.sprite = stampSprite;
+			rightSprite = stampSprite;
+		}
 
 	}
 

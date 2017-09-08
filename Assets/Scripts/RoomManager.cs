@@ -187,7 +187,7 @@ public class RoomManager : MonoBehaviour {
 
 			}
 			noRooms = true;
-			frameText.GetComponent<Text> ().text = "Nothin happenin";
+			frameText.GetComponent<Text> ().text = "You are not apart\nof any paintings";
 			GameObject loadAnimation = GameObject.FindGameObjectWithTag ("Load Animation");
 			loadAnimation.SetActive (false);
 			roomTotal = 0;
