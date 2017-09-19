@@ -1304,8 +1304,8 @@ public class LocalTurnScoring : MonoBehaviour {
 		for (int i = 0; i < players.Length; i++) {
 
 			string location = myUsername + players [i].text + "abcde";
-			int currentScore = PlayerPrefs.GetInt (location);
-			int newScore = currentScore + int.Parse (scores [i].text);
+			//int currentScore = PlayerPrefs.GetInt (location);
+			int newScore = int.Parse (scores [i].text);
 			Debug.Log (location + ": " + newScore);
 			PlayerPrefs.SetInt (location, newScore);
 

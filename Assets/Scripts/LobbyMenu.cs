@@ -48,6 +48,8 @@ public class LobbyMenu : MonoBehaviour {
 
 	public bool tutorialMode = false;
 	int roomCount;
+	public AnimationCurve moveItOut;
+	public AnimationCurve moveItIn;
 
 	// Use this for initialization
 	void Awake () {
@@ -202,15 +204,15 @@ public class LobbyMenu : MonoBehaviour {
 			return;
 		}
 	
-		newCats.DOLocalMoveX (0, 2.0f).SetEase(Ease.OutBounce);
-		centerTurnButts.DOLocalMoveX (startPos * -1.0f, 2.0f).SetEase(Ease.OutBounce);
+		newCats.DOLocalMoveX (0, 1.5f).SetEase(moveItIn);
+		centerTurnButts.DOLocalMoveX (startPos * -1.0f, 1.5f).SetEase(moveItOut);
 
 	}
 
 	public void NewCatsOffScreen(){
 	
-		newCats.DOLocalMoveX (startPos, 2.0f);
-		centerTurnButts.DOLocalMoveX (0, 2.0f).SetEase(Ease.OutBounce);
+		newCats.DOLocalMoveX (startPos, 1.5f).SetEase(moveItOut);
+		centerTurnButts.DOLocalMoveX (0, 1.5f).SetEase(moveItIn);
 	
 	}
 

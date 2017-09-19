@@ -67,9 +67,9 @@ public class RoomManager : MonoBehaviour {
 	public GameObject frameText;
 
 	HighScoreScript highscore;
-	public GameObject leftCurtain;
-	public GameObject rightCurtain;
-	public GameObject centerCurtain;
+	public RectTransform leftCurtain;
+	public RectTransform rightCurtain;
+	public RectTransform centerCurtain;
 	public Transform roomHolder;
 	public Transform buttonHolder;
 	int tempColor;
@@ -96,9 +96,14 @@ public class RoomManager : MonoBehaviour {
 	string testString;
 
 	public TurnRoomButton[] privateCat;
+	public TurnRoomButton[] afterDarkCats;
 	private string[] catNames;
 	public GameObject sign;
 	public Text categoryName;
+
+	public AnimationCurve bigJitter;
+
+	public bool afterDark = false;
 
 	void Start (){
 
@@ -133,12 +138,40 @@ public class RoomManager : MonoBehaviour {
 	void Update () {
 
 		if (Input.GetKeyDown (KeyCode.R)) {
-			
-		}
+
+			CurtainsIn ();
+//			Vector2 newStretch = new Vector2 (leftCurtain.sizeDelta.x + 5, leftCurtain.sizeDelta.y);
+//			leftCurtain.DOSizeDelta (newStretch, 1.0f).SetEase(bigJitter);
+//			leftCurtain.DOShakeRotation (1.0f, 5, 10, 90);
 //
-//		if (Input.GetKeyDown (KeyCode.S)) {
-//			CurtainsOut ();
-//		}
+//			Vector2 newStretchRight = new Vector2 (rightCurtain.sizeDelta.x + 5, rightCurtain.sizeDelta.y);
+//			rightCurtain.DOSizeDelta (newStretchRight, 1.0f).SetEase(bigJitter);
+//			rightCurtain.DOShakeRotation (1.0f, 5, 10, 90);
+
+
+		}
+
+		if (Input.GetKeyDown (KeyCode.S)) {
+			CurtainsOut ();
+		}
+
+	}
+
+	public void AfterDarkMode (){
+	
+		afterDark = true;
+
+		Camera.main.backgroundColor = Color.black;
+
+		catNames = new string[afterDarkCats.Length];
+
+		for (int i = 0; i < catNames.Length; i++) {
+
+			catNames [i] = afterDarkCats [i].roomTypeString;
+
+		}
+
+		
 
 	}
 
@@ -187,7 +220,7 @@ public class RoomManager : MonoBehaviour {
 
 			}
 			noRooms = true;
-			frameText.GetComponent<Text> ().text = "You are not apart\nof any paintings";
+			frameText.GetComponent<Text> ().text = "YOU ART NOT APART\nOF ANY PAINTINGS";
 			GameObject loadAnimation = GameObject.FindGameObjectWithTag ("Load Animation");
 			loadAnimation.SetActive (false);
 			roomTotal = 0;
@@ -747,8 +780,6 @@ public class RoomManager : MonoBehaviour {
 
 			if (turnRoom.roomID == statusRoomId) {
 				
-
-
 				GameObject roomStatus = Instantiate (statusPrefab);
 				roomStatus.transform.SetParent (statusHolder.transform, false);
 				//Debug.Log ("Found: " + statusRoomId);
@@ -770,17 +801,32 @@ public class RoomManager : MonoBehaviour {
 				}
 
 				if (turnRoom.privateRoom == true) {
-					int roundNumber = 1;	
-					for (int t = 0; t < privateCat.Length; t++) {
+					int roundNumber = 1;
 
 
-						if (privateCat[t].roomTypeString == turnRoom.roomType) {
-							roundNumber = t + 1;
+					if (afterDark == false) {
+						for (int t = 0; t < privateCat.Length; t++) {
+
+
+							if (privateCat [t].roomTypeString == turnRoom.roomType) {
+								roundNumber = t + 1;
+
+							}
 
 						}
+					} else {
+						
+						for (int t = 0; t < afterDarkCats.Length; t++) {
 
+
+							if (afterDarkCats [t].roomTypeString == turnRoom.roomType) {
+								roundNumber = t + 1;
+
+							}
+
+						}
+					
 					}
-
 					string roundString = "";
 
 					if (roundNumber == 1) {
@@ -1060,10 +1106,10 @@ public class RoomManager : MonoBehaviour {
 	}
 
 	public void CurtainsIn(){
-
-		rightCurtain.GetComponent<RectTransform> ().DOAnchorPos (Vector2.zero, 1.0f).SetEase (Ease.OutExpo);
-		leftCurtain.GetComponent<RectTransform> ().DOAnchorPos (Vector2.zero, 1.0f).SetEase (Ease.OutExpo);
-		centerCurtain.GetComponent<RectTransform> ().DOAnchorPos (Vector2.zero, 1.0f).SetEase (Ease.OutExpo);
+		Invoke ("ShakeCurtains", .7f);
+		rightCurtain.DOAnchorPos (Vector2.zero, 1.0f).SetEase (Ease.InCubic);
+		leftCurtain.DOAnchorPos (Vector2.zero, 1.0f).SetEase (Ease.InCubic);
+		centerCurtain.DOAnchorPos (Vector2.zero, 1.0f).SetEase (Ease.InCubic);
 	
 	}
 
@@ -1073,10 +1119,35 @@ public class RoomManager : MonoBehaviour {
 		Vector2 leftPos = new Vector2 (-1300, 0);
 		Vector2 centerPos = new Vector2 (0, 1400);
 
-		rightCurtain.GetComponent<RectTransform> ().DOAnchorPos (rightPos, 1.0f).SetEase (Ease.InExpo);
-		leftCurtain.GetComponent<RectTransform> ().DOAnchorPos (leftPos, 1.0f).SetEase (Ease.InExpo);
-		centerCurtain.GetComponent<RectTransform> ().DOAnchorPos (centerPos, 1.0f).SetEase (Ease.InExpo);
+		rightCurtain.DOAnchorPos (rightPos, 1.0f).SetEase (Ease.InExpo);
+		leftCurtain.DOAnchorPos (leftPos, 1.0f).SetEase (Ease.InExpo);
+		centerCurtain.DOAnchorPos (centerPos, 1.0f).SetEase (Ease.InExpo).OnComplete(BackToNormalCurtains);
 
+	}
+
+	void ShakeCurtains() {
+
+		Vector2 newStretch = new Vector2 (leftCurtain.sizeDelta.x + 2, leftCurtain.sizeDelta.y);
+		leftCurtain.DOSizeDelta (newStretch, 1.0f).SetEase(bigJitter);
+		//leftCurtain.DOShakeRotation (1.0f, 5, 10, 90);
+
+		Vector2 newStretchRight = new Vector2 (rightCurtain.sizeDelta.x + 2, rightCurtain.sizeDelta.y);
+		rightCurtain.DOSizeDelta (newStretchRight, 1.0f).SetEase(bigJitter);
+		//rightCurtain.DOShakeRotation (1.0f, 5, 10, 90);
+
+		Vector2 newStretchCenter = new Vector2 (centerCurtain.sizeDelta.x, centerCurtain.sizeDelta.y +1);
+		centerCurtain.DOSizeDelta (newStretchCenter, .8f).SetEase(bigJitter);
+
+	}
+
+	void BackToNormalCurtains(){
+
+		Vector2 oldStretch = new Vector2 (leftCurtain.sizeDelta.x - 2, leftCurtain.sizeDelta.y);
+		Vector2 oldStretchRight = new Vector2 (rightCurtain.sizeDelta.x - 2, rightCurtain.sizeDelta.y);
+
+		leftCurtain.sizeDelta = oldStretch;
+		rightCurtain.sizeDelta = oldStretchRight;
+	
 	}
 
 	public void TurnOffSign(){
@@ -1239,8 +1310,14 @@ public class RoomManager : MonoBehaviour {
 	public void StartNewPrivateGame(){
 	
 		//PlayerPrefs.SetInt (currentRoundLoc, 1);
-		categoryName.text = privateCat [0].roomTypeString;
-		privateCat [0].TurnRoomClicked ();
+		if (afterDark == false) {
+			categoryName.text = privateCat [0].roomTypeString;
+			privateCat [0].TurnRoomClicked ();
+		} else {
+			categoryName.text = afterDarkCats [0].roomTypeString;
+			afterDarkCats [0].TurnRoomClicked ();
+
+		}
 
 	}
 		
@@ -1255,9 +1332,14 @@ public class RoomManager : MonoBehaviour {
 		}
 
 		sign.SetActive (true);
-		categoryName.text = privateCat [lastRound + 1].roomTypeString;
-		privateCat [lastRound + 1].NextPrivatePainting();
 
+		if (afterDark == false) {
+			categoryName.text = privateCat [lastRound + 1].roomTypeString;
+			privateCat [lastRound + 1].NextPrivatePainting ();
+		} else {
+			categoryName.text = afterDarkCats [lastRound + 1].roomTypeString;
+			afterDarkCats [lastRound + 1].NextPrivatePainting ();
+		}
 	}
 
 }
