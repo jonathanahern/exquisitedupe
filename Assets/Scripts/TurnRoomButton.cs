@@ -43,6 +43,7 @@ public class TurnRoomButton : MonoBehaviour {
 		GameObject roomMan = GameObject.FindGameObjectWithTag ("Room Manager");
 		RoomManager roomManScript = roomMan.GetComponent<RoomManager> ();
 		roomManScript.CurtainsIn();
+		Debug.Log ("Curtains shake from button");
 		roomManScript.StartingNewRoom ();
 
 		if (roomManScript.refreshing == true) {

@@ -6,6 +6,7 @@ using System; //allows string.Split to be used with SplitStringOptions.none
 using System.Collections;
 using DatabaseControl;//This line is always needed for any C# script using the database control requests. See PDF documentation for more information
 //use 'import DatabaseControl;' if you are using JS
+using DG.Tweening;
 
 
 public class LoginMenu : MonoBehaviour {
@@ -33,6 +34,11 @@ public class LoginMenu : MonoBehaviour {
 	string passwordLocation = "passwordLocation";
 
 	string databaseName = "";
+	public GameObject notEnough;
+	public GameObject noFunnies;
+	public GameObject notEnoughReg;
+	public GameObject noFunniesReg;
+	public GameObject enterButton;
 	//bool canRunSequences = false;
 
 	////These variables cannot be set in the Inspector:
@@ -99,10 +105,9 @@ public class LoginMenu : MonoBehaviour {
 
 	void Update () {
 
-		if (Input.GetKeyDown (KeyCode.D)) {
-			//PlayerPrefs.DeleteAll ();
-			Debug.Log(PlayerPrefs.GetInt("jonathanjonathanabcde"));
-		}
+//		if (Input.GetKeyDown (KeyCode.D)) {
+//
+//		}
 
 		if (isDatabaseSetup == true) {
 
@@ -160,13 +165,20 @@ public class LoginMenu : MonoBehaviour {
 		if (isDatabaseSetup == true) {
 		
 			//check fields aren't blank
-			if ((input_login_username.text != "") && (input_login_password.text != "")) {
+			if (input_login_username.text != ""){// && (input_login_password.text != "")) {
 			
 				//check fields don't contain '-' (if they do, login request will return with error and take longer)
-				if ((input_login_username.text.Contains ("-")) || (input_login_password.text.Contains ("-"))) {
+				if ((input_login_username.text.Contains ("-")) || (input_login_username.text.Contains ("|")) || (input_login_username.text.Contains ("/")) || (input_login_username.text.Contains (",")) || (input_login_username.text.Contains ("$")) || (input_login_username.text.Contains ("@")) || (input_login_username.text.Contains ("^")) || (input_login_username.text.Contains ("&"))) {
 					//string contains "-" so return error
-					login_error.text = "Unsupported Symbol '-'";
+					//login_error.text = "Unsupported Symbol '-'";
+					noFunnies.SetActive(true);
+					Vector3 fullRotation = new Vector3 (0, 0, 360);
+					enterButton.transform.DOLocalRotate (fullRotation, 1.5f,RotateMode.FastBeyond360).SetEase (Ease.InOutFlash);
 					input_login_password.text = ""; //blank password field
+				} else if (input_login_username.text.Length < 5){
+					notEnough.SetActive (true);
+					Vector3 fullRotation = new Vector3 (0, 0, 360);
+					enterButton.transform.DOLocalRotate (fullRotation, 1.5f,RotateMode.FastBeyond360).SetEase (Ease.InOutFlash);
 				} else {
 					//ready to send request
 					StartCoroutine (sendLoginRequest (input_login_username.text, input_login_password.text)); //calls function to send login request
@@ -206,10 +218,8 @@ public class LoginMenu : MonoBehaviour {
 			Debug.Log (returnText);
 
 			if (returnText == "") {
-			
 				RetryLoginRequest (username, password);
 				yield break;
-
 			}
 
 			string[] returnBroken = returnText.Split ('|');
@@ -237,10 +247,10 @@ public class LoginMenu : MonoBehaviour {
 				
 			if (returnText == "UserError") {
 				//Account with username not found in database
-				login_error.text = "Username not found. Register this username?";
+				login_error.text = "Name not found. Register this username?";
 				blankErrors();
 				part = 1; //back to register UI
-				register_error.text = "Username not found. Register this username?";
+				register_error.text = "Name not found. Register this username?";
 				input_register_username.text = username; //blank password field
 				input_register_password.text = password;
 				}
@@ -271,23 +281,25 @@ public class LoginMenu : MonoBehaviour {
 		if (isDatabaseSetup == true) {
 		
 			//check fields aren't blank
-			if ((input_register_username.text != "") && (input_register_password.text != "")) {// && (input_register_confirmPassword.text != "")) {
+			if ((input_register_username.text != "")){// && (input_register_password.text != "")) {// && (input_register_confirmPassword.text != "")) {
 			
 				//check username is longer than 4 characters
 				if (input_register_username.text.Length > 4) {
 				
 					//check password is longer than 6 characters
-					if (input_register_password.text.Length > 3) {
+					if (input_register_password.text.Length > -1) {
 					
 						//check passwords are the same jonathan changed this so so confirm needed
 						if (input_register_password.text == input_register_password.text) {
 						
-							if ((input_register_username.text.Contains ("-")) || (input_register_password.text.Contains ("|")) || (input_register_confirmPassword.text.Contains ("/"))|| (input_register_confirmPassword.text.Contains ("$"))|| (input_register_confirmPassword.text.Contains ("^"))|| (input_register_confirmPassword.text.Contains ("@"))) {
+							if ((input_register_username.text.Contains ("-")) || (input_register_username.text.Contains ("|")) || (input_register_username.text.Contains ("/"))|| (input_register_username.text.Contains ("$"))|| (input_register_username.text.Contains ("^"))|| (input_register_username.text.Contains ("@"))) {
 							
+								noFunniesReg.SetActive (true);
 								//string contains "-" so return error
-								register_error.text = "Unsupported Symbol";
+								//register_error.text = "Unsupported Symbol";
 								input_login_password.text = ""; //blank password field
 								//input_register_confirmPassword.text = "";
+								register_error.text = "";
 							
 							} else {
 							
@@ -312,9 +324,11 @@ public class LoginMenu : MonoBehaviour {
 				
 				} else {
 					//return username too short error
-					register_error.text = "Username too Short";
+					//register_error.text = "Username too Short";
+					notEnoughReg.SetActive (true);
 					input_register_password.text = ""; //blank password fields
 					//input_register_confirmPassword.text = "";
+					register_error.text = "";
 				}
 			
 			} else {

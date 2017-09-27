@@ -8,6 +8,9 @@ using UnityEngine.SceneManagement;
 
 public class LocalTurnScoring : MonoBehaviour {
 
+	float speed;
+	bool fastForward = false;
+
 	GameObject roomMan;
 	TurnRoomScript myRoom;
 	string dupeGuess;
@@ -86,6 +89,8 @@ public class LocalTurnScoring : MonoBehaviour {
 	Vector2[] guessOffScreen;
 	public Text dupesWord;
 	public GameObject dupeDrew;
+	public GameObject[] dupeHats;
+	public Image[] bars;
 
 	Vector2 dupeDrewScreenPos;
 
@@ -104,11 +109,19 @@ public class LocalTurnScoring : MonoBehaviour {
 
 	private static string MYCOLOR_SYM = "[MYCOLOR]";
 
+	public GameObject signOne;
+	public GameObject signTwo;
+	public Image nextImage;
+	public Sprite exitSprite;
+
+	int stepNum = 0;
 	//bool privateScoring = false;
 
 	// Use this for initialization
 	void Start () {
-		
+
+		speed = 1.0f;
+
 		redPos = new Vector3[3];
 		bluePos = new Vector3[3];
 		greenPos = new Vector3[3];
@@ -120,7 +133,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		if (roomMan == null) {
 			Debug.Log ("not logged in");
-			//return;
+			return;
 		}
 
 		TurnRoomScript[] rooms = roomHolder.GetComponentsInChildren<TurnRoomScript> ();
@@ -168,6 +181,8 @@ public class LocalTurnScoring : MonoBehaviour {
 		Vector2 offScreenDupe = new Vector2 (dupeDrewScreenPos.x - 1500,dupeDrewScreenPos.y);
 		dupeDrew.GetComponent<RectTransform> ().anchoredPosition = offScreenDupe;
 
+		dupeHats [myRoom.dupeNum - 1].SetActive (true);
+
 		if (myRoom.privateRoom == true && myRoom.roundNum != 1) {
 
 			string myUsername = players [myRoom.myActualColor - 1].text;
@@ -206,7 +221,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		if (Input.GetKeyDown (KeyCode.T)) {
 			
-			award2Winner = AwardWinner (FindWinner (1));
+//			LockHimUp (2);
 
 		}
 
@@ -351,8 +366,8 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		dupeGuessed = DupeWinner (FindWinner (0));
 
-		Invoke ("OpenCurtains", 1.5f);
-		Invoke ("BeginDupeReveal", 4);
+		Invoke ("OpenCurtains", 1.5f * speed);
+		Invoke ("BeginDupeReveal", 4 * speed);
 
 	}
 
@@ -624,16 +639,12 @@ public class LocalTurnScoring : MonoBehaviour {
 	}
 
 	void BeginDupeReveal () {
-	
-		intro.transform.DOLocalMoveX (-1000, 1.0f).SetEase (Ease.OutBounce);
-		questionObj.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce);
-		Invoke ("RevealDupeVotes", 2.0f);
-		Invoke ("RevealDupeGuess", 4.0f);
-		Invoke ("RevealDupeStatus", 5.0f);
-//		Invoke ("WhoVotedCorrect", 10.0f);
-//		Invoke ("GiveDupeGuessPoints", 13.0f);
+		stepNum = 1;
+		intro.transform.DOLocalMoveX (-1000, 1.0f * speed).SetEase (Ease.OutBounce);
+		questionObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
+		Invoke ("RevealDupeVotes", 2.0f * speed);
 
-//
+
 	
 	}
 
@@ -664,8 +675,8 @@ public class LocalTurnScoring : MonoBehaviour {
 		}
 
 		//Vector3 neg90 = new Vector3 (0, 0, -90);
-		nameObj.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce);
-
+		nameObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
+		Invoke ("RevealDupeGuess", 2.0f * speed);
 	}
 
 //	void WhoVotedCorrect (){
@@ -703,12 +714,13 @@ public class LocalTurnScoring : MonoBehaviour {
 			nameText.text = "Noboby!? It's a TIE!!!";
 		} else {
 			nameText.text = players[dupeGuessed - 1].text;
+			LockHimUp (dupeGuessed - 1);
 		}
 
 		//Vector3 neg90 = new Vector3 (0, 0, -90);
 		//questionRotation.transform.DORotate (neg90, 1.0f).SetEase (Ease.OutBounce);
-		nameObj.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce);
-	
+		nameObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
+		Invoke ("RevealDupeStatus", 1.5f * speed);
 	}
 
 	void RevealDupeStatus (){
@@ -730,11 +742,20 @@ public class LocalTurnScoring : MonoBehaviour {
 			dupeStatusText.text = escapeString;
 		}
 
-		Invoke ("GiveOutDupePoints", 1.0f);
+
+		Invoke ("GiveOutDupePoints", 1.0f * speed);
 		//Vector3 pos90 = new Vector3 (0, 0, 90);
-		dupeStatusObj.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce);
-		questionObj.transform.DOLocalMoveX (1000, 1.0f);
-		nameObj.transform.DOLocalMoveX (1000, 1.0f);
+		dupeStatusObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
+		questionObj.transform.DOLocalMoveX (1000, 1.0f * speed);
+		nameObj.transform.DOLocalMoveX (1000, 1.0f * speed);
+
+	}
+
+	void LockHimUp (int personCaught){
+	
+		Debug.Log ("Lock: " + personCaught);
+
+		DOTween.To (() => bars [personCaught].fillAmount, x => bars [personCaught].fillAmount = x, 1, 1.1f * speed).SetEase (Ease.OutBounce);
 
 	}
 
@@ -754,8 +775,14 @@ public class LocalTurnScoring : MonoBehaviour {
 			CreateDupeCapturedAwardIcon ();
 		}
 
-		Invoke ("StartSecondAward", 2.0f);
-	
+		stepNum = 2;
+
+		if (fastForward == false) {
+			Invoke ("FlipSignTwoToNext", 1.5f * speed);
+		} else {
+			Invoke ("StartSecondAward", 2.5f * speed);
+		}
+			
 	}
 
 	void CreateDupeEscapeAwardIcon () {
@@ -809,7 +836,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 			award2Winner = AwardWinner (FindWinner (1));
 
-			questionText.text = "THE MONKEY ARTIST GOES TO...";
+			questionText.text = "WHO GOT THE MOST MONKEY VOTES?";
 			if (award2Winner == 0) {
 				nameText.text = "Noboby!? It's a TIE!!!";
 			} else {
@@ -824,9 +851,9 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		}
 
-		questionObj.transform.DOLocalMoveX (0, 1.0f).SetEase(Ease.InBounce);
-		dupeStatusObj.transform.DOLocalMoveX (-1000, 1.0f);
-		Invoke ("RevealSecondVotes", 2.0f);
+		questionObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase(Ease.InBounce);
+		dupeStatusObj.transform.DOLocalMoveX (-1000, 1.0f * speed);
+		Invoke ("RevealSecondVotes", 2.0f * speed);
 			
 	}
 
@@ -861,7 +888,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 
 		//Vector3 neg90 = new Vector3 (0, 0, -90);
-		nameObj.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce).OnComplete(GiveOutAward2Points);
+		nameObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce).OnComplete(GiveOutAward2Points);
 
 	}
 
@@ -894,11 +921,17 @@ public class LocalTurnScoring : MonoBehaviour {
 
 				lastNum = pointers [i];
 			}
+			GiveMonaAwardIcons ();
 
 		} 
 
-		GiveMonaAwardIcons ();
-		Invoke ("StartThirdAward", 3.0f);
+		stepNum = 3;
+
+		if (fastForward == false) {
+			Invoke ("FlipSignTwoToNext", 1.5f * speed);
+		} else {
+			Invoke ("StartThirdAward", 2.5f * speed);
+		}
 
 	}
 
@@ -938,8 +971,6 @@ public class LocalTurnScoring : MonoBehaviour {
 		int dupeNum = myRoom.dupeNum;
 		int splatterWinner = AwardWinner (FindWinner (awardPhase));
 
-		Debug.Log("SplatterWinner: " + splatterWinner);
-		Debug.Log("awardPhase: " + awardPhase);
 
 		if (dupeNum != 1) {
 			GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [0]);
@@ -998,7 +1029,6 @@ public class LocalTurnScoring : MonoBehaviour {
 			
 			}
 
-
 		}
 	
 	}
@@ -1009,26 +1039,27 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		award3Winner = AwardWinner (FindWinner (2));
 
+		if (myRoom.dupeCaught == "o") {
+			award3QText.text = "WHO GOT THE MOST CAPT OBVIOUS VOTES?";
+		} else {
+			award3QText.text = "WHO GOT THE MOST VAGUE PANTS VOTES?";
+		}
+
+		award3Q.transform.DOLocalMoveX (0, 1.0f * speed).SetEase(Ease.InBounce);
+		questionObj.transform.DOLocalMoveX (-1000, 1.0f * speed);
+		nameObj.transform.DOLocalMoveX (-1000, 1.0f * speed);
+
+		Invoke ("RevealThirdVotes", 2.0f * speed);
+
+	}
+
+	void RevealThirdVotes(){
+
 		if (award3Winner == 0) {
 			nameText.text = "Noboby!? It's a TIE!!!";
 		} else {
 			nameText.text = myRoom.players [award3Winner - 1];
 		}
-
-		if (myRoom.dupeCaught == "o") {
-			award3QText.text = "WHO HERE WON CAPTAIN OBVIOUS?";
-		} else {
-			award3QText.text = "WHO HERE DREW TOO VAGUE?";
-		}
-
-		award3Q.transform.DOLocalMoveX (0, 1.0f).SetEase(Ease.InBounce);
-		questionObj.transform.DOLocalMoveX (-1000, 1.0f);
-		nameObj.transform.DOLocalMoveX (-1000, 1.0f);
-		Invoke ("RevealThirdVotes", 2.0f);
-
-	}
-
-	void RevealThirdVotes(){
 
 		string awardNum = myRoom.dupeCaught;
 		int dupeNum = myRoom.dupeNum;
@@ -1059,7 +1090,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		Vector3 farLeft = new Vector3 (-1000, nameObj.transform.position.y, nameObj.transform.position.z);
 		nameObj.transform.position = farLeft;
-		nameObj.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce).OnComplete(GiveOutAward3Points);
+		nameObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce).OnComplete(GiveOutAward3Points);
 
 	}
 
@@ -1083,7 +1114,13 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		}
 
-		Invoke ("StartNonDupeGuessReveal", 1.5f);
+		stepNum = 4;
+
+		if (fastForward == false) {
+			Invoke ("FlipSignTwoToNext", 1.5f * speed);
+		} else {
+			Invoke ("StartNonDupeGuessReveal", 2.5f * speed);
+		}
 
 	}
 
@@ -1093,34 +1130,34 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		finale.GetComponent<Text> ().text = "WHAT DID Y'ALL THINK THE DUPE DREW?";
 
-		finale.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce);
-		award3Q.transform.DOLocalMoveX (-1000, 1.0f);
-		nameObj.transform.DOLocalMoveX (-1000, 1.0f);
-		Invoke ("MoveFinaleOver", 3.5f);
+		finale.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
+		award3Q.transform.DOLocalMoveX (-1000, 1.0f * speed);
+		nameObj.transform.DOLocalMoveX (-1000, 1.0f * speed);
+		Invoke ("MoveFinaleOver", 3.5f * speed);
 
 	}
 
 	void MoveFinaleOver(){
 
-		finale.transform.DOLocalMoveX (1000, 1.0f).SetEase (Ease.OutBounce).OnComplete(MoveInGuesses);
+		finale.transform.DOLocalMoveX (1000, 1.0f * speed).SetEase (Ease.OutBounce).OnComplete(MoveInGuesses);
 
 	}
 
 	void MoveInGuesses(){
 	
 		for (int i = 0; i < guessObjs.Length; i++) {
-			guessObjs [i].GetComponent<RectTransform> ().DOAnchorPos(guessOnScreen[i], .5f).SetEase(Ease.OutBounce);
+			guessObjs [i].GetComponent<RectTransform> ().DOAnchorPos(guessOnScreen[i], .5f * speed).SetEase(Ease.OutBounce);
 		}
 
-		Invoke ("MoveInDupeWord", 2.5f);
+		Invoke ("MoveInDupeWord", 2.5f * speed);
 	
 	}
 
 	void MoveInDupeWord(){
 
-		dupeDrew.GetComponent<RectTransform>().DOAnchorPos (dupeDrewScreenPos, 1.0f).SetEase (Ease.OutBounce);
+		dupeDrew.GetComponent<RectTransform>().DOAnchorPos (dupeDrewScreenPos, 1.0f * speed).SetEase (Ease.OutBounce);
 
-		Invoke ("ScoreGuesses", 2.5f);
+		Invoke ("ScoreGuesses", 2.5f * speed);
 
 	}
 
@@ -1167,8 +1204,14 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		}
 
-		Invoke ("MoveOutGuesses", 3.5f);
-			
+		stepNum = 5;
+
+		if (fastForward == false) {
+			Invoke ("FlipSignTwoToNext", 1.5f * speed);
+		} else {
+			Invoke ("MoveOutGuesses", 2.5f * speed);
+		}
+
 	}
 
 	void SetupGuessIcon (int playerNum, int points){
@@ -1182,11 +1225,12 @@ public class LocalTurnScoring : MonoBehaviour {
 	void MoveOutGuesses(){
 	
 		for (int i = 0; i < guessObjs.Length; i++) {
-			guessObjs [i].GetComponent<RectTransform> ().DOAnchorPos(guessOffScreen[i], 1.0f);
+			guessObjs [i].GetComponent<RectTransform> ().DOAnchorPos(guessOffScreen[i], 1.0f * speed);
 		}
 	
-		dupeDrew.transform.DOLocalMoveX (-1000, 1.0f).SetEase (Ease.OutBounce);
-		Invoke ("StartDupeGuessReveal", 1.0f);
+		dupeDrew.transform.DOLocalMoveX (-1000, 1.0f * speed).SetEase (Ease.OutBounce);
+
+		Invoke ("StartDupeGuessReveal", 1.0f * speed);
 	}
 
 	void StartDupeGuessReveal(){
@@ -1194,16 +1238,16 @@ public class LocalTurnScoring : MonoBehaviour {
 		finale.GetComponent<Text> ().text = "AND FINALLY... WHAT'D THE DUPE GUESS???";
 		guess.GetComponent<Text> ().text = dupeGuess;
 
-		finale.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce);
-		Invoke ("RevealDupeSubjectGuess", 3.5f);
+		finale.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
+		Invoke ("RevealDupeSubjectGuess", 3.5f * speed);
 
 	}
 
 	void RevealDupeSubjectGuess (){
 
-		guess.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce);
-		finale.transform.DOLocalMoveX (1000, 1.0f);
-		Invoke ("RevealResult", 2.5f);
+		guess.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
+		finale.transform.DOLocalMoveX (1000, 1.0f * speed);
+		Invoke ("RevealResult", 2.5f * speed);
 	}
 
 	void RevealResult (){
@@ -1216,9 +1260,9 @@ public class LocalTurnScoring : MonoBehaviour {
 			finale.GetComponent<Text> ().text = "WRONG!";
 		}
 	
-		finale.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce);
-		guess.transform.DOLocalMoveX (-1000, 1.0f);
-		Invoke ("GiveFinalePoints", 2.5f);
+		finale.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
+		guess.transform.DOLocalMoveX (-1000, 1.0f * speed);
+		Invoke ("GiveFinalePoints", 2.5f * speed);
 	}
 
 	void GiveFinalePoints (){
@@ -1231,12 +1275,16 @@ public class LocalTurnScoring : MonoBehaviour {
 			WrongDupeGuess ();
 			GivePointsEveryoneBut (myRoom.dupeNum, 2);
 			dupeStatusText.text = "THE TRUE SUBJECT WAS " + myRoom.rightword; 
-			finale.transform.DOLocalMoveX (1000, 1.0f);
-			dupeStatusObj.transform.DOLocalMoveX (0, 1.0f);
+			finale.transform.DOLocalMoveX (1000, 1.0f * speed);
+			dupeStatusObj.transform.DOLocalMoveX (0, 1.0f * speed);
 
 		}
 
-		Invoke ("EndTheRound", 6.5f);
+		//endRoundText.SetActive (true);
+
+		stepNum = 6;
+		nextImage.sprite = exitSprite;
+		Invoke ("FlipSignTwoToNext", 1.5f * speed);
 
 	}
 
@@ -1282,22 +1330,6 @@ public class LocalTurnScoring : MonoBehaviour {
 	}
 
 	void StoreScore (){
-	
-		//string roundNum = myRoom.roundNum.ToString();
-
-
-//		string roundNumString = myRoom.roundNum.ToString ();
-//
-//
-//		string roundLoc = roundNumString + "check" + "abcde";
-//		Debug.Log ("What is done loc" + roundLoc);
-//
-//		string doneString = PlayerPrefs.GetString (roundLoc);
-//		Debug.Log ("Does it say done?" + doneString);
-//
-//		if (doneString == "Done") {
-//			return;
-//		}
 
 		string myUsername = players [myRoom.myActualColor - 1].text;
 
@@ -1311,11 +1343,9 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		}
 
-//		PlayerPrefs.SetString (roundLoc, "Done");
-
 	}
 
-	void EndTheRound (){
+	public void EndTheRound (){
 
 		RoomManager roomManScript = roomMan.GetComponent<RoomManager> ();
 
@@ -1348,7 +1378,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		} else {
 			roomManScript.cameFromScoring = true;
-			Invoke ("ReallyEndRoundPublic", 1.0f);
+			Invoke ("ReallyEndRoundPublic", 1.0f * speed);
 		}
 
 		Destroy(myRoom.gameObject);
@@ -1419,17 +1449,17 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		gameWinnerName.text = players [winnerNumber].text;
 
-		finale.transform.DOLocalMoveX (1000, 1.0f).SetEase (Ease.OutBounce);
-		dupeStatusObj.transform.DOLocalMoveX (1000, 1.0f).SetEase (Ease.OutBounce);
-		trueArtist.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce);
-		Invoke ("BringInWinner", 3.5f);
+		finale.transform.DOLocalMoveX (1000, 1.0f * speed).SetEase (Ease.OutBounce);
+		dupeStatusObj.transform.DOLocalMoveX (1000, 1.0f * speed).SetEase (Ease.OutBounce);
+		trueArtist.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
+		Invoke ("BringInWinner", 3.5f * speed);
 
 	}
 
 	void BringInWinner(){
 		
-		trueArtist.transform.DOLocalMoveX (-1000, 1.0f).SetEase (Ease.OutBounce);
-		congrats.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce);
+		trueArtist.transform.DOLocalMoveX (-1000, 1.0f * speed).SetEase (Ease.OutBounce);
+		congrats.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
 		exitSign.SetActive (true);
 
 	}
@@ -1454,7 +1484,7 @@ public class LocalTurnScoring : MonoBehaviour {
 		Destroy(myRoom.gameObject);
 		roomManScript.CurtainsIn ();
 
-		Invoke ("LeavePrivateGame", 2.0f);
+		Invoke ("LeavePrivateGame", 2.0f * speed);
 
 	}
 
@@ -1490,7 +1520,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			if (animation == 1) {
 				if (points > 0) {
 					redFlash.SetActive (true);
-					Invoke ("TurnOffRed", 1.5f);
+					Invoke ("TurnOffRed", 1.5f * speed);
 				} else if (points < 0) {
 					MinusPointsAnimation (1);
 				}
@@ -1501,7 +1531,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			if (animation == 1) {
 				if (points > 0) {
 					blueFlash.SetActive (true);
-					Invoke ("TurnOffBlue", 1.5f);
+					Invoke ("TurnOffBlue", 1.5f * speed);
 				} else if (points < 0) {
 					MinusPointsAnimation (2);
 				}
@@ -1512,7 +1542,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			if (animation == 1) {
 				if (points > 0) {
 					greenFlash.SetActive (true);
-					Invoke ("TurnOffGreen", 1.5f);
+					Invoke ("TurnOffGreen", 1.5f * speed);
 				} else if (points < 0) {
 					MinusPointsAnimation (3);
 				}
@@ -1523,7 +1553,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			if (animation == 1) {
 				if (points > 0) {
 					orangeFlash.SetActive (true);
-					Invoke ("TurnOffOrange", 1.5f);
+					Invoke ("TurnOffOrange", 1.5f * speed);
 				} else if (points < 0) {
 					MinusPointsAnimation (4);
 				}
@@ -1539,7 +1569,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			blueScoreText.text = blueScore.ToString ();
 			if (points > 0) {
 				blueFlash.SetActive (true);
-				Invoke ("TurnOffBlue", 1.5f);
+				Invoke ("TurnOffBlue", 1.5f * speed);
 			} else if (points < 0) {
 				MinusPointsAnimation (2);
 			}
@@ -1547,7 +1577,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			greenScoreText.text = greenScore.ToString ();
 			if (points > 0) {
 				greenFlash.SetActive (true);
-				Invoke ("TurnOffGreen", 1.5f);
+				Invoke ("TurnOffGreen", 1.5f * speed);
 			} else if (points < 0) {
 				MinusPointsAnimation (3);
 			}
@@ -1555,7 +1585,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			orangeScoreText.text = orangeScore.ToString ();
 			if (points > 0) {
 				orangeFlash.SetActive (true);
-				Invoke ("TurnOffOrange", 1.5f);
+				Invoke ("TurnOffOrange", 1.5f * speed);
 			} else if (points < 0) {
 				MinusPointsAnimation (4);
 			}
@@ -1564,7 +1594,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			redScoreText.text = redScore.ToString ();
 			if (points > 0) {
 				redFlash.SetActive (true);
-				Invoke ("TurnOffRed", 1.5f);
+				Invoke ("TurnOffRed", 1.5f * speed);
 			} else if (points < 0) {
 				MinusPointsAnimation (1);
 			}
@@ -1572,7 +1602,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			greenScoreText.text = greenScore.ToString ();
 			if (points > 0) {
 				greenFlash.SetActive (true);
-				Invoke ("TurnOffGreen", 1.5f);
+				Invoke ("TurnOffGreen", 1.5f * speed);
 			} else if (points < 0) {
 				MinusPointsAnimation (3);
 			}
@@ -1580,7 +1610,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			orangeScoreText.text = orangeScore.ToString ();
 			if (points > 0) {
 				orangeFlash.SetActive (true);
-				Invoke ("TurnOffOrange", 1.5f);
+				Invoke ("TurnOffOrange", 1.5f * speed);
 			} else if (points < 0) {
 				MinusPointsAnimation (4);
 			}
@@ -1589,7 +1619,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			redScoreText.text = redScore.ToString ();
 			if (points > 0) {
 				redFlash.SetActive (true);
-				Invoke ("TurnOffRed", 1.5f);
+				Invoke ("TurnOffRed", 1.5f * speed);
 			} else if (points < 0) {
 				MinusPointsAnimation (1);
 			}
@@ -1597,7 +1627,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			blueScoreText.text = blueScore.ToString ();
 			if (points > 0) {
 				blueFlash.SetActive (true);
-				Invoke ("TurnOffBlue", 1.5f);
+				Invoke ("TurnOffBlue", 1.5f * speed);
 			} else if (points < 0) {
 				MinusPointsAnimation (2);
 			}
@@ -1605,7 +1635,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			orangeScoreText.text = orangeScore.ToString ();
 			if (points > 0) {
 				orangeFlash.SetActive (true);
-				Invoke ("TurnOffOrange", 1.5f);
+				Invoke ("TurnOffOrange", 1.5f * speed);
 			} else if (points < 0) {
 				MinusPointsAnimation (4);
 			}
@@ -1614,7 +1644,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			redScoreText.text = redScore.ToString ();
 			if (points > 0) {
 				redFlash.SetActive (true);
-				Invoke ("TurnOffRed", 1.5f);
+				Invoke ("TurnOffRed", 1.5f * speed);
 			} else if (points < 0) {
 				MinusPointsAnimation (1);
 			}
@@ -1622,7 +1652,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			blueScoreText.text = blueScore.ToString ();
 			if (points > 0) {
 				blueFlash.SetActive (true);
-				Invoke ("TurnOffBlue", 1.5f);
+				Invoke ("TurnOffBlue", 1.5f * speed);
 			} else if (points < 0) {
 				MinusPointsAnimation (2);
 			}
@@ -1630,7 +1660,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			greenScoreText.text = greenScore.ToString ();
 			if (points > 0) {
 				greenFlash.SetActive (true);
-				Invoke ("TurnOffGreen", 1.5f);
+				Invoke ("TurnOffGreen", 1.5f * speed);
 			} else if (points < 0) {
 				MinusPointsAnimation (3);
 			}
@@ -1650,7 +1680,7 @@ public class LocalTurnScoring : MonoBehaviour {
 				blueScoreText.text = blueScore.ToString ();
 				if (points > 0) {
 					blueFlash.SetActive (true);
-					Invoke ("TurnOffBlue", 1.5f);
+					Invoke ("TurnOffBlue", 1.5f * speed);
 				} else if (points < 0) {
 					MinusPointsAnimation (2);
 				}
@@ -1660,7 +1690,7 @@ public class LocalTurnScoring : MonoBehaviour {
 				greenScoreText.text = greenScore.ToString ();
 				if (points > 0) {
 					greenFlash.SetActive (true);
-					Invoke ("TurnOffGreen", 1.5f);
+					Invoke ("TurnOffGreen", 1.5f * speed);
 				} else if (points < 0) {
 					MinusPointsAnimation (3);
 				}
@@ -1670,7 +1700,7 @@ public class LocalTurnScoring : MonoBehaviour {
 				orangeScoreText.text = orangeScore.ToString ();
 				if (points > 0) {
 					orangeFlash.SetActive (true);
-					Invoke ("TurnOffOrange", 1.5f);
+					Invoke ("TurnOffOrange", 1.5f * speed);
 				} else if (points < 0) {
 					MinusPointsAnimation (4);
 				}
@@ -1681,7 +1711,7 @@ public class LocalTurnScoring : MonoBehaviour {
 				redScoreText.text = redScore.ToString ();
 				if (points > 0) {
 					redFlash.SetActive (true);
-					Invoke ("TurnOffRed", 1.5f);
+					Invoke ("TurnOffRed", 1.5f * speed);
 				} else if (points < 0) {
 					MinusPointsAnimation (1);
 				}
@@ -1691,7 +1721,7 @@ public class LocalTurnScoring : MonoBehaviour {
 				greenScoreText.text = greenScore.ToString ();
 				if (points > 0) {
 					greenFlash.SetActive (true);
-					Invoke ("TurnOffGreen", 1.5f);
+					Invoke ("TurnOffGreen", 1.5f * speed);
 				} else if (points < 0) {
 					MinusPointsAnimation (3);
 				}
@@ -1701,7 +1731,7 @@ public class LocalTurnScoring : MonoBehaviour {
 				orangeScoreText.text = orangeScore.ToString ();
 				if (points > 0) {
 					orangeFlash.SetActive (true);
-					Invoke ("TurnOffOrange", 1.5f);
+					Invoke ("TurnOffOrange", 1.5f * speed);
 				} else if (points < 0) {
 					MinusPointsAnimation (4);
 				}
@@ -1712,7 +1742,7 @@ public class LocalTurnScoring : MonoBehaviour {
 				redScoreText.text = redScore.ToString ();
 				if (points > 0) {
 					redFlash.SetActive (true);
-					Invoke ("TurnOffRed", 1.5f);
+					Invoke ("TurnOffRed", 1.5f * speed);
 				} else if (points < 0) {
 					MinusPointsAnimation (1);
 				}
@@ -1722,7 +1752,7 @@ public class LocalTurnScoring : MonoBehaviour {
 				blueScoreText.text = blueScore.ToString ();
 				if (points > 0) {
 					blueFlash.SetActive (true);
-					Invoke ("TurnOffBlue", 1.5f);
+					Invoke ("TurnOffBlue", 1.5f * speed);
 				} else if (points < 0) {
 					MinusPointsAnimation (2);
 				}
@@ -1732,7 +1762,7 @@ public class LocalTurnScoring : MonoBehaviour {
 				orangeScoreText.text = orangeScore.ToString ();
 				if (points > 0) {
 					orangeFlash.SetActive (true);
-					Invoke ("TurnOffOrange", 1.5f);
+					Invoke ("TurnOffOrange", 1.5f * speed);
 				} else if (points < 0) {
 					MinusPointsAnimation (4);
 				}
@@ -1743,7 +1773,7 @@ public class LocalTurnScoring : MonoBehaviour {
 				redScoreText.text = redScore.ToString ();
 				if (points > 0) {
 					redFlash.SetActive (true);
-					Invoke ("TurnOffRed", 1.5f);
+					Invoke ("TurnOffRed", 1.5f * speed);
 				} else if (points < 0) {
 					MinusPointsAnimation (1);
 				}
@@ -1753,7 +1783,7 @@ public class LocalTurnScoring : MonoBehaviour {
 				blueScoreText.text = blueScore.ToString ();
 				if (points > 0) {
 					blueFlash.SetActive (true);
-					Invoke ("TurnOffBlue", 1.5f);
+					Invoke ("TurnOffBlue", 1.5f * speed);
 				} else if (points < 0) {
 					MinusPointsAnimation (2);
 				}
@@ -1763,7 +1793,7 @@ public class LocalTurnScoring : MonoBehaviour {
 				greenScoreText.text = greenScore.ToString ();
 				if (points > 0) {
 					greenFlash.SetActive (true);
-					Invoke ("TurnOffGreen", 1.5f);
+					Invoke ("TurnOffGreen", 1.5f * speed);
 				} else if (points < 0) {
 					MinusPointsAnimation (3);
 				}
@@ -1775,21 +1805,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 	void MinusPointsAnimation (int playerNum){
 		Vector3 threesixty = new Vector3 (0f, 0f, 1080f);
-		scoreObj [playerNum - 1].transform.DOLocalRotate (threesixty, 1.5f,RotateMode.FastBeyond360).SetEase (Ease.InOutFlash);
-
-//		Sequence mySequence = DOTween.Sequence();
-//		// Add a movement tween at the beginning
-//		mySequence.Append(SpriteRenderer.DOColor (redColor, .75f).SetEase (Ease.InOutBounce);
-//		// Add a rotation tween as soon as the previous one is finished
-//		mySequence.Append(transform.DORotate(new Vector3(0,180,0), 1));
-//		
-//		
-//
-//
-//		Color current = scoreObj [playerNum - 1].GetComponent<SpriteRenderer> ().color;
-//		Color redColor = Color.red;
-//
-//		scoreObj [playerNum - 1].GetComponent<SpriteRenderer> ().DOColor (redColor, .75f).SetEase (Ease.InOutBounce);
+		scoreObj [playerNum - 1].transform.DOLocalRotate (threesixty, 1.5f * speed,RotateMode.FastBeyond360).SetEase (Ease.InOutFlash);
 
 	}
 
@@ -1815,4 +1831,59 @@ public class LocalTurnScoring : MonoBehaviour {
 	
 	}
 		
+	void FlipSignTwoToNext () {
+		Vector3 oneEighty = new Vector3 (0, 180, 0);
+		signTwo.transform.DORotate (oneEighty, 1.0f * speed);
+	}
+
+	void FlipSignTwoToWait () {
+		signTwo.transform.DORotate (Vector3.zero, 1.0f * speed);
+	}
+
+	void FlipSignOneToPlay () {
+		Vector3 oneEighty = new Vector3 (0, 180, 0);
+		signOne.transform.DORotate (oneEighty, 1.0f * speed);
+	}
+
+	void FlipSignOneToFastForward () {
+		signOne.transform.DORotate (Vector3.zero, 1.0f * speed);
+	}
+		
+	public void FastForward () {
+	
+		fastForward = true;
+		speed = .4f;
+		FlipSignOneToPlay ();
+
+	}
+
+	public void PlayButton (){
+		
+		fastForward = false;
+		speed = 1.0f;
+		FlipSignOneToFastForward();
+
+	}
+
+	public void NextButton (){
+		
+		if (stepNum == 2) {
+			StartSecondAward ();
+			FlipSignTwoToWait ();
+		} else if (stepNum == 3) {
+			StartThirdAward ();
+			FlipSignTwoToWait ();
+		} else if (stepNum == 4) {
+			StartNonDupeGuessReveal ();
+			FlipSignTwoToWait ();
+		} else if (stepNum == 5) {
+			MoveOutGuesses ();
+			FlipSignTwoToWait ();
+		} else if (stepNum == 6) {
+			EndTheRound ();
+		}
+
+	}
+		
+
 }

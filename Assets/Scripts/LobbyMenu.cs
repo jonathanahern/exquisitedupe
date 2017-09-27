@@ -104,7 +104,7 @@ public class LobbyMenu : MonoBehaviour {
 					if (frameText == null) {
 						frameText = GameObject.FindGameObjectWithTag ("Frame Text");
 					}
-				frameText.GetComponent<Text> ().text = "You are not apart\nof any paintings";
+				frameText.GetComponent<Text> ().text = "YOU ART NOT APART\nOF ANY PAINTINGS";
 				}
 
 				GoToHighScores ();
@@ -119,7 +119,7 @@ public class LobbyMenu : MonoBehaviour {
 //			StartNextPrivateRound ();
 //		}
 
-			InvokeRepeating ("AutoUpdateRooms", 8.0f, 8.0f);
+			InvokeRepeating ("AutoUpdateRooms", 10.0f, 10.0f);
 
 	}
 	
@@ -174,10 +174,10 @@ public class LobbyMenu : MonoBehaviour {
 			Invoke ("OkToClickAgain", 1.0f);
 
 			if (roomMan.refreshing == true) {
-				InvokeRepeating ("AutoUpdateRooms", 8.0f, 8.0f);
+				InvokeRepeating ("AutoUpdateRooms", 10.0f, 10.0f);
 				//Invoke ("SendLate", 5.0f);
 			} else {
-				InvokeRepeating ("AutoUpdateRooms", 2.0f, 8.0f);
+				InvokeRepeating ("AutoUpdateRooms", 2.0f, 10.0f);
 			}
 		}
 
@@ -241,8 +241,8 @@ public class LobbyMenu : MonoBehaviour {
 
 		Invoke ("OkToClickAgain", 2.5f);
 
-		highScores.DOLocalMoveX (0, 2.0f).SetEase(Ease.OutBounce);
-		centerTurnButts.DOLocalMoveX (startPos, 2.0f);
+		highScores.DOLocalMoveX (0, 1.5f).SetEase(moveItIn);
+		centerTurnButts.DOLocalMoveX (startPos, 1.5f).SetEase (moveItOut);
 
 
 	}
@@ -257,8 +257,8 @@ public class LobbyMenu : MonoBehaviour {
 
 	public void BackToMainTurnMenu(){
 
-		highScores.DOLocalMoveX (startPos * -1, 2.0f);
-		centerTurnButts.DOLocalMoveX (0, 2.0f).SetEase(Ease.OutBounce);
+		highScores.DOLocalMoveX (startPos * -1, 1.5f).SetEase(moveItOut);
+		centerTurnButts.DOLocalMoveX (0, 1.5f).SetEase(moveItIn);
 
 
 	}

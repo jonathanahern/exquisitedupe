@@ -12,6 +12,8 @@ public class ServerManagement : MonoBehaviour {
 	public Text roomIDtoDelete;
 	public Text roomIDs;
 	public Text username;
+	public Text catName;
+	public Text inOut;
 
 //	public Text roomList;
 //	public Text usernameAlterList;
@@ -120,7 +122,7 @@ public class ServerManagement : MonoBehaviour {
 			yield break;
 		}
 
-		string drawingString = returnText.Substring (DRAWING_SYM.Length);
+		//string drawingString = returnText.Substring (DRAWING_SYM.Length);
 
 		shrinkString = returnText;
 
@@ -377,6 +379,31 @@ public class ServerManagement : MonoBehaviour {
 		string returnText = e.Current as string;
 
 		Debug.Log ("Deleted?:" + returnText);
+
+	}
+
+	public void ChangeInOut () {
+
+		StartCoroutine (changeInOut());
+
+	}
+
+	IEnumerator changeInOut (){
+
+		string catString = "[ROOMTYPE]" + catName.text;
+		string intOutString = inOut.text;
+
+		Debug.Log ("sent: " + catString);
+
+		IEnumerator e = DCP.RunCS ("categories", "AddInOutStat", new string[2] {catString, intOutString});
+
+		while (e.MoveNext ()) {
+			yield return e.Current;
+		}
+
+		string returnText = e.Current as string;
+
+		Debug.Log ("Changed?:" + returnText);
 
 	}
 

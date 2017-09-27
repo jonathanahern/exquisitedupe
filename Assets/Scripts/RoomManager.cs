@@ -521,12 +521,12 @@ public class RoomManager : MonoBehaviour {
 				roomScript.awardNum = int.Parse(fate [3]);
 
 				roomScript.colorMod = int.Parse(fate [4]);
-				Debug.Log ("colormod3: " + roomScript.colorMod.ToString());
+				//Debug.Log ("colormod3: " + roomScript.colorMod.ToString());
 
 			} else if (piece.StartsWith (PLAYERS_SYM)) {
 				
 				string playersWhole = piece.Substring (PLAYERS_SYM.Length);
-				Debug.Log (playersWhole + " SDFSDF");
+				//Debug.Log (playersWhole + " SDFSDF");
 				string[] players = playersWhole.Split('/');
 
 				roomScript.players = new string[players.Length];
@@ -536,7 +536,7 @@ public class RoomManager : MonoBehaviour {
 				for (int i = 0; i < players.Length; i++) {
 
 					if (players[i] == username) {
-						Debug.Log ("colormod: " + roomScript.colorMod.ToString());
+						//Debug.Log ("colormod: " + roomScript.colorMod.ToString());
 						roomScript.myColor = i + 1;
 					}
 
@@ -674,7 +674,7 @@ public class RoomManager : MonoBehaviour {
 			StartCoroutine (doubleCheckRoom(roomIDstring, serverSlot.ToString(), username, roomType));
 			roomScript.activeRoom = true;
 			roomScript.roomType = roomType;
-			CurtainsIn ();
+			//CurtainsIn ();
 			//SceneManager.LoadScene ("Turn Based Room");
 
 		} else {
@@ -830,21 +830,26 @@ public class RoomManager : MonoBehaviour {
 					string roundString = "";
 
 					if (roundNumber == 1) {
-						roundString = "ROUND ONE";
+						roundString = "1";
 						turnRoom.roundNum = 1;
 					} else if (roundNumber == 2) {
-						roundString = "ROUND TWO";
+						roundString = "2";
 						turnRoom.roundNum = 2;
 					} else if (roundNumber == 3) {
-						roundString = "ROUND THREE";
+						roundString = "3";
 						turnRoom.roundNum = 3;
 					} else if (roundNumber == 4) {
-						roundString = "ROUND FOUR";
+						roundString = "4";
 						turnRoom.roundNum = 4;
 					}
 
 					status.roundNumber.text = roundString;
 
+				} else {
+					
+					status.roundNumber.text = "";
+					status.MakeItSolo();
+				
 				}
 			} 
 		}
@@ -1106,6 +1111,8 @@ public class RoomManager : MonoBehaviour {
 	}
 
 	public void CurtainsIn(){
+		Debug.Log ("CURTAINS IN");
+
 		Invoke ("ShakeCurtains", .7f);
 		rightCurtain.DOAnchorPos (Vector2.zero, 1.0f).SetEase (Ease.InCubic);
 		leftCurtain.DOAnchorPos (Vector2.zero, 1.0f).SetEase (Ease.InCubic);
@@ -1126,6 +1133,8 @@ public class RoomManager : MonoBehaviour {
 	}
 
 	void ShakeCurtains() {
+
+		Debug.Log ("SHAKIN IN");
 
 		Vector2 newStretch = new Vector2 (leftCurtain.sizeDelta.x + 2, leftCurtain.sizeDelta.y);
 		leftCurtain.DOSizeDelta (newStretch, 1.0f).SetEase(bigJitter);

@@ -50,6 +50,8 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 		IsLoggedIn = false;
 
+
+
 		Debug.Log ("User out");
 		SceneManager.LoadScene (loggedOutSceneName);
 	
