@@ -91,6 +91,8 @@ public class LocalTurnScoring : MonoBehaviour {
 	public GameObject dupeDrew;
 	public GameObject[] dupeHats;
 	public Image[] bars;
+	public GameObject[] splatterOne;
+	public GameObject[] splatterTwo;
 
 	Vector2 dupeDrewScreenPos;
 
@@ -115,12 +117,36 @@ public class LocalTurnScoring : MonoBehaviour {
 	public Sprite exitSprite;
 
 	int stepNum = 0;
+
+	public GameObject[] playerIcons;
+	public GameObject starPrefab;
+	GameObject[] starPoints;
+	public Transform[] starPos;
+	public GameObject starHolder;
+	float abovePainting;
+	float behindPainting;
+
+	bool alreadyDupeGuessedIcon = false;
+	bool alreadyDupeGivenIcon = false;
+
+	List<int> starPeeps = new List<int>();
+	List<int> monasAlready = new List<int>();
+
+	public AnimationCurve splatterCurve;
+	public AnimationCurve starEnd;
 	//bool privateScoring = false;
 
 	// Use this for initialization
 	void Start () {
 
-		speed = 1.0f;
+		starPoints = new GameObject[3];
+		abovePainting = starHolder.transform.position.y;
+		behindPainting = starHolder.transform.position.y - 1;
+		starHolder.transform.DOMoveY (behindPainting, .1f);
+
+		monasAlready = new List<int>();
+
+		speed = .9f;
 
 		redPos = new Vector3[3];
 		bluePos = new Vector3[3];
@@ -153,7 +179,6 @@ public class LocalTurnScoring : MonoBehaviour {
 		myColor = myRoom.myActualColor;
 		myRoomID = myRoom.roomID;
 
-	
 
 		for (int i = 0; i < players.Length; i++) {
 
@@ -183,6 +208,26 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		dupeHats [myRoom.dupeNum - 1].SetActive (true);
 
+		starPeeps = new List<int> ();
+	
+		if (myRoom.dupeNum == 1) {
+			starPeeps.Add (3);
+			starPeeps.Add (2);
+			starPeeps.Add (1);
+		} else if (myRoom.dupeNum == 2) {
+			starPeeps.Add (0);
+			starPeeps.Add (3);
+			starPeeps.Add (2);
+		} else if (myRoom.dupeNum == 3) {
+			starPeeps.Add (0);
+			starPeeps.Add (3);
+			starPeeps.Add (1);
+		} else if (myRoom.dupeNum == 4) {
+			starPeeps.Add (0);
+			starPeeps.Add (2);
+			starPeeps.Add (1);
+		} 
+
 		if (myRoom.privateRoom == true && myRoom.roundNum != 1) {
 
 			string myUsername = players [myRoom.myActualColor - 1].text;
@@ -209,7 +254,6 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		}
 
-
 		if (myRoom.privateRoom == true && myRoom.roundNum == 1) {
 			ClearPlayerPrefs ();
 		}
@@ -220,15 +264,99 @@ public class LocalTurnScoring : MonoBehaviour {
 	void Update () {
 
 		if (Input.GetKeyDown (KeyCode.T)) {
-			
-//			LockHimUp (2);
+
+			for (int i = 0; i < 3; i++) {
+
+				starPoints[i] = Instantiate (starPrefab, starPos [i].position, Quaternion.identity, starPos[i]);
+
+			}
+
+			starHolder.transform.DOMoveY (abovePainting, .8f * speed).SetEase(Ease.OutBounce);
+
+		}
+
+		if (Input.GetKeyDown (KeyCode.Y)) {
 
 		}
 
 	}
 
-	//3 $ 1.76, 3.07$-1.60, -1.84$2.00, -1.29 @ 4$1.22, -2.28$-1.23, -2.17$-0.99, 2.59 @ 1$1.18, 2.12$-1.22, -1.68$1.18, -1.73
+	void MoveStarsUp(int starCount){
 
+		for (int i = 0; i < 3; i++) {
+
+			starPoints[i] = Instantiate (starPrefab, starPos [i].position, Quaternion.identity, starPos[i]);
+
+		}
+
+		starHolder.transform.DOMoveY (abovePainting, 1.2f * speed).SetEase(Ease.OutBounce);
+
+	}
+
+
+	//-1=mona 1=monkey, 2=vague, 3=obvious, 4=dupeCaught, 5=dupeEscape, 6=dupeGuessedRight, 7=dupeGuessedWrong
+	//start with zero
+	//0 don't score
+	//1 score it
+	void MoveTheStar(int playerNum, int starNum, float startTime, int scoreOrNot, int points, int awardNum){
+
+		//Debug.Log (playerNum + " " + starNum);
+
+		starPoints [starNum].GetComponent<SpriteRenderer> ().sortingOrder = 3;
+		Vector3 fullRotation = new Vector3 (0,0,720);
+//		Vector3 offscreen;
+		Vector3 playerPos = playerIcons[playerNum].transform.position;
+
+//		if (playerPos.x > 0) {
+//			offscreen = new Vector3 (playerPos.x + 2.5f, playerPos.y + 2.5f, playerPos.z);
+//		} else {
+//			offscreen = new Vector3 (playerPos.x - 2.5f, playerPos.y + 2.5f, playerPos.z);
+//		}
+
+		int awardPhase;
+		if (awardNum < 2) {
+			awardPhase = 1;
+		} else if (awardNum > 3) {
+			awardPhase = 3;
+		} else {
+			awardPhase = 2;
+		}
+
+		starPoints [starNum].transform.DOMove (playerIcons [playerNum].transform.position, .7f * speed).SetDelay(startTime*speed).SetEase(Ease.InCirc).OnComplete(()=>ShrinkStar(starPoints[starNum]));
+		starPoints [starNum].transform.DORotate (fullRotation, .7f * speed, RotateMode.FastBeyond360).SetDelay(startTime*speed).OnComplete(()=>GivePointsAndSplatter(playerNum,points,1,awardPhase,awardNum));
+
+		//Sequence mySequence = DOTween.Sequence();
+		//mySequence.Append(starPoints [starNum].transform.DOMove (playerIcons [playerNum].transform.position, .7f * speed)).SetEase(Ease.InCirc);
+		//mySequence.Insert (0, starPoints [starNum].transform.DORotate (fullRotation, .7f * speed, RotateMode.FastBeyond360)).OnComplete(()=>GivePointsAndSplatter(playerNum,points,1,awardPhase,awardNum));
+		//mySequence.Append (starPoints [starNum].transform.DOScale (Vector3.zero, .5f * speed).SetEase (starEnd));
+//		if (scoreOrNot == 1) {
+//			mySequence.Append (starPoints [starNum].transform.DOScale (Vector3.zero, .5f * speed).SetEase (starEnd));
+//		} else {
+//			mySequence.Append (starPoints [starNum].transform.DOMove (offscreen, .5f * speed).SetEase(Ease.OutCirc));
+//			mySequence.Insert(0, starPoints[starNum].transform.DORotate (fullRotation, .5f * speed, RotateMode.FastBeyond360));
+//		}
+		//mySequence.PrependInterval(startTime * speed);
+
+	}
+
+	void ShrinkStar(GameObject star){
+	
+		star.transform.DOScale (Vector3.zero, .5f * speed).SetEase (starEnd);
+	
+	}
+
+	void GivePointsAndSplatter (int playerNum, int points, int animation, int awardPhase, int awardNum){
+	
+		GivePoints(playerNum+1,points,1);
+		if (awardNum == -1) {
+			AddAwardIconToOne (awardNum, playerNum);
+		} else if (awardPhase < 3) {
+			AddSplatterToOne (awardNum, awardPhase, playerNum);
+		} else {
+			AddAwardIconToOne (awardNum, playerNum);
+		}
+
+	}
 
 	void GetVoteData (){
 	
@@ -470,7 +598,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		if (playersWhoWin.Length == 1) {
 
-			Debug.Log ("Award Winner: " + playersWhoWin [0]);
+			//Debug.Log ("Award Winner: " + playersWhoWin [0]);
 
 			return playersWhoWin [0];
 		} else {
@@ -546,7 +674,7 @@ public class LocalTurnScoring : MonoBehaviour {
 		drawing = drawing.TrimEnd ('$');
 		string[] drawingInfos = drawing.Split ('$');
 
-		Debug.Log ("drawing: " + drawing);
+		//Debug.Log ("drawing: " + drawing);
 
 		foreach (string drawingInfo in drawingInfos) {
 
@@ -642,8 +770,9 @@ public class LocalTurnScoring : MonoBehaviour {
 		stepNum = 1;
 		intro.transform.DOLocalMoveX (-1000, 1.0f * speed).SetEase (Ease.OutBounce);
 		questionObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
-		Invoke ("RevealDupeVotes", 2.0f * speed);
+		MoveStarsUp (3);
 
+		Invoke ("RevealDupeVotes", 2.0f * speed);
 
 	
 	}
@@ -669,7 +798,7 @@ public class LocalTurnScoring : MonoBehaviour {
 		dupeVoteOrange.GetComponent<VoteFabScript> ().CheckColor();
 
 		if (dupeTie == true) {
-			nameText.text = "Noboby!? It's a TIE!!!";
+			nameText.text = "IT'S A TIE!!!";
 		} else {
 			nameText.text = players[dupeGuessed - 1].text;
 		}
@@ -678,32 +807,36 @@ public class LocalTurnScoring : MonoBehaviour {
 		nameObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
 		Invoke ("RevealDupeGuess", 2.0f * speed);
 	}
-
-//	void WhoVotedCorrect (){
-//	
-//		questionText.text = "WHO GUESSED WHO THE DUPE WAS?";
-//		questionObj.transform.DOLocalMoveX(0, 1.0f).SetEase (Ease.OutBounce);
-//		dupeStatusObj.transform.DOLocalMoveX (-1000, 1.0f);
-//
-//	
-//	}
+		
 
 	void GiveDupeGuessPoints (){
 	
 		if (WhoYouVoted (redPos [0]) == myRoom.dupeNum) {
 			GivePoints (1, 1, 0);
+			GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [0]);
+			AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
+			awardScript.SetupDupeFound ();
 		}
 
 		if (WhoYouVoted (bluePos [0]) == myRoom.dupeNum) {
 			GivePoints (2, 1, 0);
+			GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [1]);
+			AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
+			awardScript.SetupDupeFound ();
 		}
 
 		if (WhoYouVoted (greenPos [0]) == myRoom.dupeNum) {
 			GivePoints (3, 1, 0);
+			GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [2]);
+			AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
+			awardScript.SetupDupeFound ();
 		}
 
 		if (WhoYouVoted (orangePos [0]) == myRoom.dupeNum) {
 			GivePoints (4, 1, 0);
+			GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [3]);
+			AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
+			awardScript.SetupDupeFound ();
 		}
 	
 	}
@@ -711,7 +844,7 @@ public class LocalTurnScoring : MonoBehaviour {
 	void RevealDupeGuess(){
 	
 		if (dupeTie == true) {
-			nameText.text = "Noboby!? It's a TIE!!!";
+			nameText.text = "IT'S A TIE!!!";
 		} else {
 			nameText.text = players[dupeGuessed - 1].text;
 			LockHimUp (dupeGuessed - 1);
@@ -743,11 +876,49 @@ public class LocalTurnScoring : MonoBehaviour {
 		}
 
 
-		Invoke ("GiveOutDupePoints", 1.0f * speed);
+		//Invoke ("GiveOutDupePoints", 1.0f * speed);
+		Invoke ("SendOutDupeStars", 1.0f * speed);
 		//Vector3 pos90 = new Vector3 (0, 0, 90);
 		dupeStatusObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
 		questionObj.transform.DOLocalMoveX (1000, 1.0f * speed);
 		nameObj.transform.DOLocalMoveX (1000, 1.0f * speed);
+
+	}
+
+	//4 dupeCaught 5 dupeEscape
+	void SendOutDupeStars (){
+	
+		int dupeNum = myRoom.dupeNum;
+		float startTime = 0;
+		//Debug.Log ("STARPEEP: " + starPeeps.Count);
+		if (dupeGuessed == dupeNum) {
+
+			for (int i = 0; i < 3; i++) {
+
+				MoveTheStar (starPeeps [i], i, startTime, 1, 2, 4);
+				startTime = startTime + .5f;
+
+			}
+
+		} else {
+		
+			for (int i = 0; i < 3; i++) {
+
+				MoveTheStar (dupeNum-1, i, startTime, 1, 1, 5);
+				startTime = startTime + .5f;
+
+			}
+
+
+		}
+
+		stepNum = 2;
+
+		if (fastForward == false) {
+			Invoke ("CheckIfStillSlow", 3.5f * speed);
+		} else {
+			Invoke ("StartSecondAward", 4.5f * speed);
+		}
 
 	}
 
@@ -759,41 +930,41 @@ public class LocalTurnScoring : MonoBehaviour {
 
 	}
 
-	void GiveOutDupePoints (){
-		
-		if (dupeTie == true) {
-			GivePoints (myRoom.dupeNum, 3, 1);
-			CreateDupeEscapeAwardIcon ();
-		} else if (dupeGuessed == myRoom.dupeNum) {
-			GivePointsEveryoneBut (myRoom.dupeNum, 2);
-			CreateDupeCapturedAwardIcon ();
-		} else if (dupeGuessed != myRoom.dupeNum) {
-			GivePoints (myRoom.dupeNum, 3, 1);
-			CreateDupeEscapeAwardIcon ();
-		} else  {
-			GivePointsEveryoneBut (myRoom.dupeNum, 1);
-			CreateDupeCapturedAwardIcon ();
-		}
+//	void GiveOutDupePoints (){
+//		
+//		if (dupeTie == true) {
+//			GivePoints (myRoom.dupeNum, 3, 1);
+//			CreateDupeEscapeAwardIcon ();
+//		} else if (dupeGuessed == myRoom.dupeNum) {
+//			GivePointsEveryoneBut (myRoom.dupeNum, 2);
+//			CreateDupeCapturedAwardIcon ();
+//		} else if (dupeGuessed != myRoom.dupeNum) {
+//			GivePoints (myRoom.dupeNum, 3, 1);
+//			CreateDupeEscapeAwardIcon ();
+//		} else  {
+//			GivePointsEveryoneBut (myRoom.dupeNum, 1);
+//			CreateDupeCapturedAwardIcon ();
+//		}
+//
+//		stepNum = 2;
+//
+//		if (fastForward == false) {
+//			Invoke ("FlipSignTwoToNext", 1.5f * speed);
+//		} else {
+//			Invoke ("StartSecondAward", 2.5f * speed);
+//		}
+//			
+//	}
 
-		stepNum = 2;
-
-		if (fastForward == false) {
-			Invoke ("FlipSignTwoToNext", 1.5f * speed);
-		} else {
-			Invoke ("StartSecondAward", 2.5f * speed);
-		}
-			
-	}
-
-	void CreateDupeEscapeAwardIcon () {
-	
-		int dupeNum = myRoom.dupeNum;
-
-		GameObject newIcon = Instantiate(awardPrefab,Vector3.zero,Quaternion.identity, awardHolder[dupeNum -1]);
-		AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
-		awardScript.SetupEscaped (dupeNum);
-	
-	}
+//	void CreateDupeEscapeAwardIcon () {
+//	
+//		int dupeNum = myRoom.dupeNum;
+//
+//		GameObject newIcon = Instantiate(awardPrefab,Vector3.zero,Quaternion.identity, awardHolder[dupeNum -1]);
+//		AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
+//		awardScript.SetupEscaped (dupeNum);
+//	
+//	}
 
 	void CreateDupeCapturedAwardIcon(){
 
@@ -826,7 +997,7 @@ public class LocalTurnScoring : MonoBehaviour {
 	}
 
 	void StartSecondAward(){
-	
+		starHolder.transform.DOMoveY (behindPainting, 0.0f);
 		DestroyVotes ();
 
 		//award2Winner = AwardWinner (FindWinner (1));
@@ -838,7 +1009,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 			questionText.text = "WHO GOT THE MOST MONKEY VOTES?";
 			if (award2Winner == 0) {
-				nameText.text = "Noboby!? It's a TIE!!!";
+				nameText.text = "IT'S A TIE!!!";
 			} else {
 				nameText.text = myRoom.players [award2Winner - 1];
 			}
@@ -850,6 +1021,8 @@ public class LocalTurnScoring : MonoBehaviour {
 			nameText.text = awardWinners;
 
 		}
+
+		MoveStarsUp (3);
 
 		questionObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase(Ease.InBounce);
 		dupeStatusObj.transform.DOLocalMoveX (-1000, 1.0f * speed);
@@ -886,51 +1059,157 @@ public class LocalTurnScoring : MonoBehaviour {
 			awardVoteOrange.GetComponent<VoteFabScript> ().CheckColor ();
 		}
 
+		if (awardNum == 1) {
+			if (award2Winner != 0) {
+				SplatterIcon (award2Winner, 1);
+			} else {
+				AddSplatterToAllIcons (myRoom.awardNum);
+			}
+		}
 
-		//Vector3 neg90 = new Vector3 (0, 0, -90);
-		nameObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce).OnComplete(GiveOutAward2Points);
+		nameObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce).OnComplete(SendOutStarsAward2);
 
 	}
 
-	void GiveOutAward2Points (){
+	void SendOutStarsAward2(){
+	
+		//int dupeNum = myRoom.dupeNum;
+		float startTime = 0;
+		int secondAwardNum;
 
-		if (myRoom.awardNum == 1) {
-			
-			if (award2Winner != 0) {
-				GivePointsEveryoneButAndDupe (award2Winner, 1);
-				AddSplatterToOne(1,1);
-			} else {
-				AddSplatterToAll (myRoom.awardNum);
-			}
+		if (myRoom.awardNum == 1){
+			secondAwardNum = 1;
 
-		} else if (myRoom.awardNum > 1) {
+			if (award2Winner == 0) {
 
-			int lastNum = 100;
-			int animate;
+				for (int i = 0; i < 3; i++) {
 
-			for (int i = 0; i < pointers.Length; i++) {
-				if (lastNum == pointers [i]) {
-					animate = 0;
-				} else {
-					animate = 1;
+					MoveTheStar (starPeeps [i], i, startTime, 1, 0, secondAwardNum);
+					startTime = startTime + .5f;
+
 				}
 
-				monaPoints [pointers[i] - 1] = monaPoints [pointers[i] - 1] + 1;
+			} else {
 
-				GivePoints (pointers [i], 1, animate);
+				for (int i = 0; i < 3; i++) {
 
-				lastNum = pointers [i];
+					int scoreOrNot = 1;
+					int points = 1;
+
+					//Debug.Log(award2Winner + starPeeps[i] - 1
+
+					if (award2Winner == starPeeps [i] + 1) {
+						scoreOrNot = 0;
+						points = 0;
+					}
+
+					MoveTheStar (starPeeps [i], i, startTime, scoreOrNot, points, secondAwardNum);
+					startTime = startTime + .5f;
+
+				}
+
 			}
-			GiveMonaAwardIcons ();
 
-		} 
+		} else {
+			//mona
+			secondAwardNum = -1;
+			for (int i = 0; i < pointers.Length; i++) {
 
+				MoveTheStar (pointers [i] - 1, i, startTime, 1, 1, -1);
+				startTime = startTime + .5f;
+
+			}
+
+		}
+			
 		stepNum = 3;
 
 		if (fastForward == false) {
-			Invoke ("FlipSignTwoToNext", 1.5f * speed);
+			Invoke ("CheckIfStillSlow", 3.0f * speed);
 		} else {
-			Invoke ("StartThirdAward", 2.5f * speed);
+			Invoke ("StartThirdAward", 4.0f * speed);
+		}
+	
+	}
+
+//	void GiveOutAward2Points (){
+//
+//		if (myRoom.awardNum == 1) {
+//			
+//			if (award2Winner != 0) {
+//				//GivePointsEveryoneButAndDupe (award2Winner, 1);
+//				//AddSplatterToOne(1,1);
+//				//SplatterIcon (award2Winner, 1);
+//			} else {
+//				AddSplatterToAll (myRoom.awardNum);
+//			}
+//
+//		} else if (myRoom.awardNum > 1) {
+//
+//			int lastNum = 100;
+//			int animate;
+//
+//			for (int i = 0; i < pointers.Length; i++) {
+//				if (lastNum == pointers [i]) {
+//					animate = 0;
+//				} else {
+//					animate = 1;
+//				}
+//
+//				monaPoints [pointers[i] - 1] = monaPoints [pointers[i] - 1] + 1;
+//				GivePoints (pointers [i], 1, animate);
+//				lastNum = pointers [i];
+//			}
+//			GiveMonaAwardIcons ();
+//
+//		} 
+//
+//		stepNum = 3;
+//
+//		if (fastForward == false) {
+//			Invoke ("FlipSignTwoToNext", 1.5f * speed);
+//		} else {
+//			Invoke ("StartThirdAward", 2.5f * speed);
+//		}
+//
+//	}
+
+	void SplatterIcon(int playerNum, int awardNum) {
+
+		Vector3 fullSize = new Vector3 (4.0f, 4.0f, 4.0f);
+		if (awardNum == 1) {
+			splatterOne [playerNum - 1].SetActive (true);
+			splatterOne [playerNum - 1].transform.DOScale (fullSize, .8f * speed).SetEase (splatterCurve);
+		} else {
+			splatterTwo [playerNum - 1].SetActive (true);
+			splatterTwo [playerNum - 1].transform.DOScale (fullSize, .8f * speed).SetEase (splatterCurve);
+		}
+
+	}
+
+	void AddSplatterToAllIcons(int awardNum){
+		
+		int dupeNum = myRoom.dupeNum;
+
+		int awardPhase;
+
+		if (awardNum == 1) {
+			awardPhase = 1;
+		} else {
+			awardPhase = 2;
+		}
+
+		if (dupeNum != 1) {
+			SplatterIcon (1,awardPhase);
+		}
+		if (dupeNum != 2) {
+			SplatterIcon (2,awardPhase);
+		}
+		if (dupeNum != 3) {
+			SplatterIcon (3,awardPhase);
+		}
+		if (dupeNum != 4) {
+			SplatterIcon (4,awardPhase);
 		}
 
 	}
@@ -943,78 +1222,111 @@ public class LocalTurnScoring : MonoBehaviour {
 			GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [0]);
 			AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
 			awardScript.SetupSplatter (1, awardNum);
+
 		}
 
 		if (dupeNum != 2) {
 			GameObject newIcon2 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [1]);
 			AwardIconScript awardScript2 = newIcon2.GetComponent<AwardIconScript> ();
 			awardScript2.SetupSplatter (2, awardNum);
+
 		}
 
 		if (dupeNum != 3) {
 			GameObject newIcon3 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [2]);
 			AwardIconScript awardScript3 = newIcon3.GetComponent<AwardIconScript> ();
 			awardScript3.SetupSplatter (3, awardNum);
+
 		}
 
 		if (dupeNum != 4) {
 			GameObject newIcon4 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [3]);
 			AwardIconScript awardScript4 = newIcon4.GetComponent<AwardIconScript> ();
 			awardScript4.SetupSplatter (4, awardNum);
+
 		}
 				
 	}
 
 	//1=monkey, 2=vague, 3=obvious
-	void AddSplatterToOne(int awardNum, int awardPhase){
-
-		int dupeNum = myRoom.dupeNum;
+	void AddSplatterToOne(int awardNum, int awardPhase, int playerNum){
+		//Debug.Log ("SPLAT: " + playerNum);
+		//int dupeNum = myRoom.dupeNum;
 		int splatterWinner = AwardWinner (FindWinner (awardPhase));
 
+		GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [playerNum]);
+		AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
+		if (splatterWinner == playerNum + 1 || splatterWinner == 0) {
+			
+			awardScript.SetupSplatter (playerNum+1, awardNum);
 
-		if (dupeNum != 1) {
-			GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [0]);
+			if (awardPhase == 1) {
+				Vector3 smallSize = new Vector3 (2.0f, 2.0f, 2.0f);
+				splatterOne [playerNum].transform.DOScale (smallSize, .5f * speed).SetEase (splatterCurve);
+			} else {
+				Vector3 smallSize = new Vector3 (2.0f, 2.0f, 2.0f);
+				splatterTwo [playerNum].transform.DOScale (smallSize, .5f * speed).SetEase (splatterCurve);
+			}
+
+		} else {
+			awardScript.SetupSplatterAvoider (awardNum);
+		}
+
+	}
+
+	void AddAwardIconToOne(int awardNum, int playerNum){
+
+		if (awardNum == 4 && (myRoom.dupeNum == dupeGuessed)) {
+			GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [playerNum]);
 			AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
-			if (splatterWinner == 1) {
-				awardScript.SetupSplatter (1, awardNum);
+			awardScript.SetupCaptured (myRoom.dupeNum);
+		} else if (awardNum == 4 && (myRoom.dupeNum != dupeGuessed)) {
+			GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [playerNum]);
+			AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
+			awardScript.SetupCaptured (myRoom.dupeNum);
+		} else if (awardNum == 6 && alreadyDupeGuessedIcon == false) {
+			alreadyDupeGuessedIcon = true;
+			int dupeNum = myRoom.dupeNum;
+			GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [dupeNum -1]);
+			AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
+			awardScript.SetupDupeGuess (3,dupeNum);
+		} else if (awardNum == 5 && alreadyDupeGivenIcon == false) {
+			alreadyDupeGivenIcon = true;
+			int dupeNum = myRoom.dupeNum;
+			GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [dupeNum -1]);
+			AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
+			awardScript.SetupEscaped (dupeNum);
+		} else if (awardNum == 7) {
+			GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [playerNum]);
+			AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
+			awardScript.SetupDupeGuess (2,myRoom.dupeNum);
+		} else if (awardNum == -1) {
+			bool monaFound = false;
+			//Debug.Log ("playersent: " + playerNum);
+			for (int i = 0; i < monasAlready.Count; i++) {
+				//Debug.Log ("monasalready: " + monasAlready[i]);
+				if (monasAlready [i] == playerNum) {
+					monaFound = true;
+				}
+			}
+			if (monaFound == false) {
+				GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [playerNum]);
+				AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
+				awardScript.SetupMona (1);
+				monasAlready.Add (playerNum);
 			} else {
-				awardScript.SetupSplatterAvoider (awardNum);
+				//Debug.Log ("MONA TRUE");
+				AddToMonaAwardIcon (playerNum);
 			}
 		}
 
-		if (dupeNum != 2) {
-			GameObject newIcon2 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [1]);
-			AwardIconScript awardScript2 = newIcon2.GetComponent<AwardIconScript> ();
-			if (splatterWinner == 2) {
-				awardScript2.SetupSplatter (2,awardNum);
-			} else {
-				awardScript2.SetupSplatterAvoider (awardNum);
-			}
-		}
+	}
 
-		if (dupeNum != 3) {
-			GameObject newIcon3 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [2]);
-			AwardIconScript awardScript3 = newIcon3.GetComponent<AwardIconScript> ();
-			if (splatterWinner == 3) {
-				awardScript3.SetupSplatter (3,awardNum);
-			} else {
-				awardScript3.SetupSplatterAvoider (awardNum);
-			}
-		}
-
-		if (dupeNum != 4) {
-			GameObject newIcon4 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [3]);
-			AwardIconScript awardScript4 = newIcon4.GetComponent<AwardIconScript> ();
-			awardScript4.SetupMonkey (4);
-			if (splatterWinner == 4) {
-				awardScript4.SetupSplatter (4,awardNum);
-			} else {
-				awardScript4.SetupSplatterAvoider (awardNum);
-			}
-		}
-
-
-
+	void AddToMonaAwardIcon (int playerNum){
+		Debug.Log ("MONA TRUE: " + playerNum);
+		int awardCount = awardHolder[playerNum].transform.childCount;
+		Debug.Log ("CHILDS: " + awardCount);
+		awardHolder [playerNum].transform.GetChild(awardCount-1).GetComponent<AwardIconScript> ().AddAPointToMona ();
 
 	}
 
@@ -1034,8 +1346,12 @@ public class LocalTurnScoring : MonoBehaviour {
 	}
 
 	void StartThirdAward(){
+		
+		starHolder.transform.DOMoveY (behindPainting, 0.0f);
+		MoveStarsUp (3);
 
 		DestroyVotes ();
+
 
 		award3Winner = AwardWinner (FindWinner (2));
 
@@ -1056,7 +1372,7 @@ public class LocalTurnScoring : MonoBehaviour {
 	void RevealThirdVotes(){
 
 		if (award3Winner == 0) {
-			nameText.text = "Noboby!? It's a TIE!!!";
+			nameText.text = "IT'S A TIE!!!";
 		} else {
 			nameText.text = myRoom.players [award3Winner - 1];
 		}
@@ -1106,20 +1422,67 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		if (award3Winner != 0) {
 			
-			GivePointsEveryoneButAndDupe (award3Winner, 2);
-			AddSplatterToOne (awardNum, 2);
+			//GivePointsEveryoneButAndDupe (award3Winner, 2);
+			SplatterIcon(award3Winner,awardNum);
+			//AddSplatterToOne (awardNum, 2);
 
 		} else {
-			AddSplatterToAll (awardNum);
+
+			AddSplatterToAllIcons (awardNum);
+			//AddSplatterToAll (awardNum);
+
+		}
+
+		Invoke ("SendOutAward3Stars", 2.5f * speed);
+
+//		stepNum = 4;
+//
+//		if (fastForward == false) {
+//			Invoke ("FlipSignTwoToNext", 1.5f * speed);
+//		} else {
+//			Invoke ("StartNonDupeGuessReveal", 2.5f * speed);
+//		}
+
+	}
+
+	void SendOutAward3Stars (){
+		
+		//int dupeNum = myRoom.dupeNum;
+		float startTime = 0;
+		int thirdAwardNum;
+
+		if (myRoom.dupeCaught == "o") {
+			thirdAwardNum = 3;
+		} else {
+			thirdAwardNum = 2;
+		}
+
+		for (int i = 0; i < 3; i++) {
+
+			int scoreOrNot = 1;
+			int points = 2;
+
+			//Debug.Log(award2Winner + starPeeps[i] - 1
+
+			if (award3Winner == starPeeps [i] + 1) {
+				scoreOrNot = 0;
+				points = 0;
+			} else if (award3Winner == 0) {
+				scoreOrNot = 0;
+				points = 0;
+			}
+
+			MoveTheStar (starPeeps[i], i, startTime, scoreOrNot, points, thirdAwardNum);
+			startTime = startTime + .5f;
 
 		}
 
 		stepNum = 4;
 
 		if (fastForward == false) {
-			Invoke ("FlipSignTwoToNext", 1.5f * speed);
+			Invoke ("CheckIfStillSlow", 3.5f * speed);
 		} else {
-			Invoke ("StartNonDupeGuessReveal", 2.5f * speed);
+			Invoke ("StartNonDupeGuessReveal", 5.0f * speed);
 		}
 
 	}
@@ -1127,6 +1490,7 @@ public class LocalTurnScoring : MonoBehaviour {
 	void StartNonDupeGuessReveal(){
 
 		DestroyVotes ();
+		starHolder.transform.DOMoveY (behindPainting, 0.0f);
 
 		finale.GetComponent<Text> ().text = "WHAT DID Y'ALL THINK THE DUPE DREW?";
 
@@ -1207,7 +1571,7 @@ public class LocalTurnScoring : MonoBehaviour {
 		stepNum = 5;
 
 		if (fastForward == false) {
-			Invoke ("FlipSignTwoToNext", 1.5f * speed);
+			Invoke ("CheckIfStillSlow", 1.5f * speed);
 		} else {
 			Invoke ("MoveOutGuesses", 2.5f * speed);
 		}
@@ -1224,6 +1588,8 @@ public class LocalTurnScoring : MonoBehaviour {
 
 	void MoveOutGuesses(){
 	
+		starHolder.transform.DOMoveY (behindPainting, 0.0f);
+
 		for (int i = 0; i < guessObjs.Length; i++) {
 			guessObjs [i].GetComponent<RectTransform> ().DOAnchorPos(guessOffScreen[i], 1.0f * speed);
 		}
@@ -1234,6 +1600,8 @@ public class LocalTurnScoring : MonoBehaviour {
 	}
 
 	void StartDupeGuessReveal(){
+
+		MoveStarsUp (3);
 
 		finale.GetComponent<Text> ().text = "AND FINALLY... WHAT'D THE DUPE GUESS???";
 		guess.GetComponent<Text> ().text = dupeGuess;
@@ -1265,67 +1633,99 @@ public class LocalTurnScoring : MonoBehaviour {
 		Invoke ("GiveFinalePoints", 2.5f * speed);
 	}
 
+
+
 	void GiveFinalePoints (){
 
 		if (dupeGuess == myRoom.rightword) {
-			RightDupeGuess ();
-			GivePoints (myRoom.dupeNum, 3, 1);
+//			RightDupeGuess ();
+//			GivePoints (myRoom.dupeNum, 3, 1);
+
+			float startTime = 0;
+
+			for (int i = 0; i < 3; i++) {
+
+				MoveTheStar (myRoom.dupeNum - 1, i, startTime, 1, 1, 6);
+				startTime = startTime + .5f;
+
+			}
+
+//			stepNum = 6;
+//			nextImage.sprite = exitSprite;
+			Invoke ("EndGameSequence", 2.5f * speed);
+
+
 
 		} else {
-			WrongDupeGuess ();
-			GivePointsEveryoneBut (myRoom.dupeNum, 2);
+			
+			//GivePointsEveryoneBut (myRoom.dupeNum, 2);
 			dupeStatusText.text = "THE TRUE SUBJECT WAS " + myRoom.rightword; 
 			finale.transform.DOLocalMoveX (1000, 1.0f * speed);
 			dupeStatusObj.transform.DOLocalMoveX (0, 1.0f * speed);
+
+			Invoke ("WrongDupeGuess", 2.5f * speed);
 
 		}
 
 		//endRoundText.SetActive (true);
 
-		stepNum = 6;
-		nextImage.sprite = exitSprite;
-		Invoke ("FlipSignTwoToNext", 1.5f * speed);
+
 
 	}
 
-	void RightDupeGuess(){
-	
-		int dupeNum = myRoom.dupeNum;
-
-		GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [dupeNum -1]);
-		AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
-		awardScript.SetupDupeGuess (3,dupeNum);
-
-	
-	}
+//	void RightDupeGuess(){
+//	
+//		int dupeNum = myRoom.dupeNum;
+//
+//		GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [dupeNum -1]);
+//		AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
+//		awardScript.SetupDupeGuess (3,dupeNum);
+//
+//	
+//	}
 
 	void WrongDupeGuess(){
 	
-		int dupeNum = myRoom.dupeNum;
+		float startTime = 0;
 
-		if (dupeNum != 1) {
-			GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [0]);
-			AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
-			awardScript.SetupDupeGuess (2,dupeNum);
+		for (int i = 0; i < 3; i++) {
+
+			MoveTheStar (starPeeps[i], i, startTime, 1, 2, 7);
+			startTime = startTime + .5f;
+
 		}
 
-		if (dupeNum != 2) {
-			GameObject newIcon2 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [1]);
-			AwardIconScript awardScript2 = newIcon2.GetComponent<AwardIconScript> ();
-			awardScript2.SetupDupeGuess (2,dupeNum);
-		}
 
-		if (dupeNum != 3) {
-			GameObject newIcon3 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [2]);
-			AwardIconScript awardScript3 = newIcon3.GetComponent<AwardIconScript> ();
-			awardScript3.SetupDupeGuess (2,dupeNum);
-		}
 
-		if (dupeNum != 4) {
-			GameObject newIcon4 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [3]);
-			AwardIconScript awardScript4 = newIcon4.GetComponent<AwardIconScript> ();
-			awardScript4.SetupDupeGuess (2,dupeNum);
-		}
+	//	stepNum = 6;
+//		nextImage.sprite = exitSprite;
+		Invoke ("EndGameSequence", 2.5f * speed);
+
+//		int dupeNum = myRoom.dupeNum;
+//
+//		if (dupeNum != 1) {
+//			GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [0]);
+//			AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
+//			awardScript.SetupDupeGuess (2,dupeNum);
+//		}
+//
+//		if (dupeNum != 2) {
+//			GameObject newIcon2 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [1]);
+//			AwardIconScript awardScript2 = newIcon2.GetComponent<AwardIconScript> ();
+//			awardScript2.SetupDupeGuess (2,dupeNum);
+//		}
+//
+//		if (dupeNum != 3) {
+//			GameObject newIcon3 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [2]);
+//			AwardIconScript awardScript3 = newIcon3.GetComponent<AwardIconScript> ();
+//			awardScript3.SetupDupeGuess (2,dupeNum);
+//		}
+//
+//		if (dupeNum != 4) {
+//			GameObject newIcon4 = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [3]);
+//			AwardIconScript awardScript4 = newIcon4.GetComponent<AwardIconScript> ();
+//			awardScript4.SetupDupeGuess (2,dupeNum);
+//		}
 
 	}
 
@@ -1426,8 +1826,10 @@ public class LocalTurnScoring : MonoBehaviour {
 
 	void EndGameSequence(){
 	
-		ClearPlayerPrefs ();
-
+		//ClearPlayerPrefs ();
+		string loserText= "YOU'RE LAST. QUITE PATHETIC!";
+		string midText = "YOU DIDN'T WIN, HOW MEDIOCRE OF YOU";
+		string winText = "SOMETHING MUST BE WRONG, YOU WON!";
 		winnersGame = new List<int>();
 
 		for (int i = 0; i < players.Length; i++) {
@@ -1437,22 +1839,37 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		winnersGame.Sort ();
 
-		string winnersScore = winnersGame [winnersGame.Count - 1].ToString ();
+		int myScore = int.Parse(scores[myRoom.myActualColor - 1].text);
 
-		for (int i = 0; i < scores.Length; i++) {
-		
-			if (scores [i].text == winnersScore) {
-				winnerNumber = i;
-			}
-		
+		if (myScore == winnersGame [winnersGame.Count - 1]) {
+			trueArtist.GetComponent<Text> ().text = winText;
+		} else if (myScore == winnersGame [0]) {
+			trueArtist.GetComponent<Text> ().text = loserText;
+		} else {
+			trueArtist.GetComponent<Text> ().text = midText;
 		}
 
-		gameWinnerName.text = players [winnerNumber].text;
+//		string winnersScore = winnersGame [winnersGame.Count - 1].ToString ();
+//
+//		for (int i = 0; i < scores.Length; i++) {
+//		
+//			if (scores [i].text == winnersScore) {
+//				winnerNumber = i;
+//			}
+//		
+//		}
+
+//		gameWinnerName.text = players [winnerNumber].text;
 
 		finale.transform.DOLocalMoveX (1000, 1.0f * speed).SetEase (Ease.OutBounce);
 		dupeStatusObj.transform.DOLocalMoveX (1000, 1.0f * speed).SetEase (Ease.OutBounce);
 		trueArtist.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
-		Invoke ("BringInWinner", 3.5f * speed);
+		//Invoke ("BringInWinner", 3.5f * speed);
+
+		stepNum = 6;
+		nextImage.sprite = exitSprite;
+		Invoke ("FlipSignTwoToNext", 1.5f * speed);
+
 
 	}
 
@@ -1521,7 +1938,7 @@ public class LocalTurnScoring : MonoBehaviour {
 				if (points > 0) {
 					redFlash.SetActive (true);
 					Invoke ("TurnOffRed", 1.5f * speed);
-				} else if (points < 0) {
+				} else if (points < 1) {
 					MinusPointsAnimation (1);
 				}
 			}
@@ -1532,7 +1949,7 @@ public class LocalTurnScoring : MonoBehaviour {
 				if (points > 0) {
 					blueFlash.SetActive (true);
 					Invoke ("TurnOffBlue", 1.5f * speed);
-				} else if (points < 0) {
+				} else if (points < 1) {
 					MinusPointsAnimation (2);
 				}
 			}
@@ -1543,7 +1960,7 @@ public class LocalTurnScoring : MonoBehaviour {
 				if (points > 0) {
 					greenFlash.SetActive (true);
 					Invoke ("TurnOffGreen", 1.5f * speed);
-				} else if (points < 0) {
+				} else if (points < 1) {
 					MinusPointsAnimation (3);
 				}
 			}
@@ -1554,7 +1971,7 @@ public class LocalTurnScoring : MonoBehaviour {
 				if (points > 0) {
 					orangeFlash.SetActive (true);
 					Invoke ("TurnOffOrange", 1.5f * speed);
-				} else if (points < 0) {
+				} else if (points < 1) {
 					MinusPointsAnimation (4);
 				}
 			}
@@ -1562,250 +1979,250 @@ public class LocalTurnScoring : MonoBehaviour {
 	
 	}
 
-	void GivePointsEveryoneBut (int playerNum, int points) {
+//	void GivePointsEveryoneBut (int playerNum, int points) {
+//
+//		if (playerNum == 1) {
+//			blueScore = blueScore + points;
+//			blueScoreText.text = blueScore.ToString ();
+//			if (points > 0) {
+//				blueFlash.SetActive (true);
+//				Invoke ("TurnOffBlue", 1.5f * speed);
+//			} else if (points < 0) {
+//				MinusPointsAnimation (2);
+//			}
+//			greenScore = greenScore + points;
+//			greenScoreText.text = greenScore.ToString ();
+//			if (points > 0) {
+//				greenFlash.SetActive (true);
+//				Invoke ("TurnOffGreen", 1.5f * speed);
+//			} else if (points < 0) {
+//				MinusPointsAnimation (3);
+//			}
+//			orangeScore = orangeScore + points;
+//			orangeScoreText.text = orangeScore.ToString ();
+//			if (points > 0) {
+//				orangeFlash.SetActive (true);
+//				Invoke ("TurnOffOrange", 1.5f * speed);
+//			} else if (points < 0) {
+//				MinusPointsAnimation (4);
+//			}
+//		} else if (playerNum == 2) {
+//			redScore = redScore + points;
+//			redScoreText.text = redScore.ToString ();
+//			if (points > 0) {
+//				redFlash.SetActive (true);
+//				Invoke ("TurnOffRed", 1.5f * speed);
+//			} else if (points < 0) {
+//				MinusPointsAnimation (1);
+//			}
+//			greenScore = greenScore + points;
+//			greenScoreText.text = greenScore.ToString ();
+//			if (points > 0) {
+//				greenFlash.SetActive (true);
+//				Invoke ("TurnOffGreen", 1.5f * speed);
+//			} else if (points < 0) {
+//				MinusPointsAnimation (3);
+//			}
+//			orangeScore = orangeScore + points;
+//			orangeScoreText.text = orangeScore.ToString ();
+//			if (points > 0) {
+//				orangeFlash.SetActive (true);
+//				Invoke ("TurnOffOrange", 1.5f * speed);
+//			} else if (points < 0) {
+//				MinusPointsAnimation (4);
+//			}
+//		} else if (playerNum == 3) {
+//			redScore = redScore + points;
+//			redScoreText.text = redScore.ToString ();
+//			if (points > 0) {
+//				redFlash.SetActive (true);
+//				Invoke ("TurnOffRed", 1.5f * speed);
+//			} else if (points < 0) {
+//				MinusPointsAnimation (1);
+//			}
+//			blueScore = blueScore + points;
+//			blueScoreText.text = blueScore.ToString ();
+//			if (points > 0) {
+//				blueFlash.SetActive (true);
+//				Invoke ("TurnOffBlue", 1.5f * speed);
+//			} else if (points < 0) {
+//				MinusPointsAnimation (2);
+//			}
+//			orangeScore = orangeScore + points;
+//			orangeScoreText.text = orangeScore.ToString ();
+//			if (points > 0) {
+//				orangeFlash.SetActive (true);
+//				Invoke ("TurnOffOrange", 1.5f * speed);
+//			} else if (points < 0) {
+//				MinusPointsAnimation (4);
+//			}
+//		} else if (playerNum == 4) {
+//			redScore = redScore + points;
+//			redScoreText.text = redScore.ToString ();
+//			if (points > 0) {
+//				redFlash.SetActive (true);
+//				Invoke ("TurnOffRed", 1.5f * speed);
+//			} else if (points < 0) {
+//				MinusPointsAnimation (1);
+//			}
+//			blueScore = blueScore + points;
+//			blueScoreText.text = blueScore.ToString ();
+//			if (points > 0) {
+//				blueFlash.SetActive (true);
+//				Invoke ("TurnOffBlue", 1.5f * speed);
+//			} else if (points < 0) {
+//				MinusPointsAnimation (2);
+//			}
+//			greenScore = greenScore + points;
+//			greenScoreText.text = greenScore.ToString ();
+//			if (points > 0) {
+//				greenFlash.SetActive (true);
+//				Invoke ("TurnOffGreen", 1.5f * speed);
+//			} else if (points < 0) {
+//				MinusPointsAnimation (3);
+//			}
+//
+//		}
+//
+//	}
 
-		if (playerNum == 1) {
-			blueScore = blueScore + points;
-			blueScoreText.text = blueScore.ToString ();
-			if (points > 0) {
-				blueFlash.SetActive (true);
-				Invoke ("TurnOffBlue", 1.5f * speed);
-			} else if (points < 0) {
-				MinusPointsAnimation (2);
-			}
-			greenScore = greenScore + points;
-			greenScoreText.text = greenScore.ToString ();
-			if (points > 0) {
-				greenFlash.SetActive (true);
-				Invoke ("TurnOffGreen", 1.5f * speed);
-			} else if (points < 0) {
-				MinusPointsAnimation (3);
-			}
-			orangeScore = orangeScore + points;
-			orangeScoreText.text = orangeScore.ToString ();
-			if (points > 0) {
-				orangeFlash.SetActive (true);
-				Invoke ("TurnOffOrange", 1.5f * speed);
-			} else if (points < 0) {
-				MinusPointsAnimation (4);
-			}
-		} else if (playerNum == 2) {
-			redScore = redScore + points;
-			redScoreText.text = redScore.ToString ();
-			if (points > 0) {
-				redFlash.SetActive (true);
-				Invoke ("TurnOffRed", 1.5f * speed);
-			} else if (points < 0) {
-				MinusPointsAnimation (1);
-			}
-			greenScore = greenScore + points;
-			greenScoreText.text = greenScore.ToString ();
-			if (points > 0) {
-				greenFlash.SetActive (true);
-				Invoke ("TurnOffGreen", 1.5f * speed);
-			} else if (points < 0) {
-				MinusPointsAnimation (3);
-			}
-			orangeScore = orangeScore + points;
-			orangeScoreText.text = orangeScore.ToString ();
-			if (points > 0) {
-				orangeFlash.SetActive (true);
-				Invoke ("TurnOffOrange", 1.5f * speed);
-			} else if (points < 0) {
-				MinusPointsAnimation (4);
-			}
-		} else if (playerNum == 3) {
-			redScore = redScore + points;
-			redScoreText.text = redScore.ToString ();
-			if (points > 0) {
-				redFlash.SetActive (true);
-				Invoke ("TurnOffRed", 1.5f * speed);
-			} else if (points < 0) {
-				MinusPointsAnimation (1);
-			}
-			blueScore = blueScore + points;
-			blueScoreText.text = blueScore.ToString ();
-			if (points > 0) {
-				blueFlash.SetActive (true);
-				Invoke ("TurnOffBlue", 1.5f * speed);
-			} else if (points < 0) {
-				MinusPointsAnimation (2);
-			}
-			orangeScore = orangeScore + points;
-			orangeScoreText.text = orangeScore.ToString ();
-			if (points > 0) {
-				orangeFlash.SetActive (true);
-				Invoke ("TurnOffOrange", 1.5f * speed);
-			} else if (points < 0) {
-				MinusPointsAnimation (4);
-			}
-		} else if (playerNum == 4) {
-			redScore = redScore + points;
-			redScoreText.text = redScore.ToString ();
-			if (points > 0) {
-				redFlash.SetActive (true);
-				Invoke ("TurnOffRed", 1.5f * speed);
-			} else if (points < 0) {
-				MinusPointsAnimation (1);
-			}
-			blueScore = blueScore + points;
-			blueScoreText.text = blueScore.ToString ();
-			if (points > 0) {
-				blueFlash.SetActive (true);
-				Invoke ("TurnOffBlue", 1.5f * speed);
-			} else if (points < 0) {
-				MinusPointsAnimation (2);
-			}
-			greenScore = greenScore + points;
-			greenScoreText.text = greenScore.ToString ();
-			if (points > 0) {
-				greenFlash.SetActive (true);
-				Invoke ("TurnOffGreen", 1.5f * speed);
-			} else if (points < 0) {
-				MinusPointsAnimation (3);
-			}
-
-		}
-
-	}
-
-	void GivePointsEveryoneButAndDupe (int playerNum, int points) {
-
-		int dupeNum = myRoom.dupeNum;
-
-		if (playerNum == 1) {
-
-			if (dupeNum != 2) {
-				blueScore = blueScore + points;
-				blueScoreText.text = blueScore.ToString ();
-				if (points > 0) {
-					blueFlash.SetActive (true);
-					Invoke ("TurnOffBlue", 1.5f * speed);
-				} else if (points < 0) {
-					MinusPointsAnimation (2);
-				}
-			}
-			if (dupeNum != 3) {
-				greenScore = greenScore + points;
-				greenScoreText.text = greenScore.ToString ();
-				if (points > 0) {
-					greenFlash.SetActive (true);
-					Invoke ("TurnOffGreen", 1.5f * speed);
-				} else if (points < 0) {
-					MinusPointsAnimation (3);
-				}
-			}
-			if (dupeNum != 4) {
-				orangeScore = orangeScore + points;
-				orangeScoreText.text = orangeScore.ToString ();
-				if (points > 0) {
-					orangeFlash.SetActive (true);
-					Invoke ("TurnOffOrange", 1.5f * speed);
-				} else if (points < 0) {
-					MinusPointsAnimation (4);
-				}
-			}
-		} else if (playerNum == 2) {
-			if (dupeNum != 1) {
-				redScore = redScore + points;
-				redScoreText.text = redScore.ToString ();
-				if (points > 0) {
-					redFlash.SetActive (true);
-					Invoke ("TurnOffRed", 1.5f * speed);
-				} else if (points < 0) {
-					MinusPointsAnimation (1);
-				}
-			}
-			if (dupeNum != 3) {
-				greenScore = greenScore + points;
-				greenScoreText.text = greenScore.ToString ();
-				if (points > 0) {
-					greenFlash.SetActive (true);
-					Invoke ("TurnOffGreen", 1.5f * speed);
-				} else if (points < 0) {
-					MinusPointsAnimation (3);
-				}
-			}
-			if (dupeNum != 4) {
-				orangeScore = orangeScore + points;
-				orangeScoreText.text = orangeScore.ToString ();
-				if (points > 0) {
-					orangeFlash.SetActive (true);
-					Invoke ("TurnOffOrange", 1.5f * speed);
-				} else if (points < 0) {
-					MinusPointsAnimation (4);
-				}
-			}
-		} else if (playerNum == 3) {
-			if (dupeNum != 1) {
-				redScore = redScore + points;
-				redScoreText.text = redScore.ToString ();
-				if (points > 0) {
-					redFlash.SetActive (true);
-					Invoke ("TurnOffRed", 1.5f * speed);
-				} else if (points < 0) {
-					MinusPointsAnimation (1);
-				}
-			}
-			if (dupeNum != 2) {
-				blueScore = blueScore + points;
-				blueScoreText.text = blueScore.ToString ();
-				if (points > 0) {
-					blueFlash.SetActive (true);
-					Invoke ("TurnOffBlue", 1.5f * speed);
-				} else if (points < 0) {
-					MinusPointsAnimation (2);
-				}
-			}
-			if (dupeNum != 4) {
-				orangeScore = orangeScore + points;
-				orangeScoreText.text = orangeScore.ToString ();
-				if (points > 0) {
-					orangeFlash.SetActive (true);
-					Invoke ("TurnOffOrange", 1.5f * speed);
-				} else if (points < 0) {
-					MinusPointsAnimation (4);
-				}
-			}
-		} else if (playerNum == 4) {
-			if (dupeNum != 1) {
-				redScore = redScore + points;
-				redScoreText.text = redScore.ToString ();
-				if (points > 0) {
-					redFlash.SetActive (true);
-					Invoke ("TurnOffRed", 1.5f * speed);
-				} else if (points < 0) {
-					MinusPointsAnimation (1);
-				}
-			}
-			if (dupeNum != 2) {
-				blueScore = blueScore + points;
-				blueScoreText.text = blueScore.ToString ();
-				if (points > 0) {
-					blueFlash.SetActive (true);
-					Invoke ("TurnOffBlue", 1.5f * speed);
-				} else if (points < 0) {
-					MinusPointsAnimation (2);
-				}
-			}
-			if (dupeNum != 3) {
-				greenScore = greenScore + points;
-				greenScoreText.text = greenScore.ToString ();
-				if (points > 0) {
-					greenFlash.SetActive (true);
-					Invoke ("TurnOffGreen", 1.5f * speed);
-				} else if (points < 0) {
-					MinusPointsAnimation (3);
-				}
-			}
-
-		}
-
-	}
+//	void GivePointsEveryoneButAndDupe (int playerNum, int points) {
+//
+//		int dupeNum = myRoom.dupeNum;
+//
+//		if (playerNum == 1) {
+//
+//			if (dupeNum != 2) {
+//				blueScore = blueScore + points;
+//				blueScoreText.text = blueScore.ToString ();
+//				if (points > 0) {
+//					blueFlash.SetActive (true);
+//					Invoke ("TurnOffBlue", 1.5f * speed);
+//				} else if (points < 0) {
+//					MinusPointsAnimation (2);
+//				}
+//			}
+//			if (dupeNum != 3) {
+//				greenScore = greenScore + points;
+//				greenScoreText.text = greenScore.ToString ();
+//				if (points > 0) {
+//					greenFlash.SetActive (true);
+//					Invoke ("TurnOffGreen", 1.5f * speed);
+//				} else if (points < 0) {
+//					MinusPointsAnimation (3);
+//				}
+//			}
+//			if (dupeNum != 4) {
+//				orangeScore = orangeScore + points;
+//				orangeScoreText.text = orangeScore.ToString ();
+//				if (points > 0) {
+//					orangeFlash.SetActive (true);
+//					Invoke ("TurnOffOrange", 1.5f * speed);
+//				} else if (points < 0) {
+//					MinusPointsAnimation (4);
+//				}
+//			}
+//		} else if (playerNum == 2) {
+//			if (dupeNum != 1) {
+//				redScore = redScore + points;
+//				redScoreText.text = redScore.ToString ();
+//				if (points > 0) {
+//					redFlash.SetActive (true);
+//					Invoke ("TurnOffRed", 1.5f * speed);
+//				} else if (points < 0) {
+//					MinusPointsAnimation (1);
+//				}
+//			}
+//			if (dupeNum != 3) {
+//				greenScore = greenScore + points;
+//				greenScoreText.text = greenScore.ToString ();
+//				if (points > 0) {
+//					greenFlash.SetActive (true);
+//					Invoke ("TurnOffGreen", 1.5f * speed);
+//				} else if (points < 0) {
+//					MinusPointsAnimation (3);
+//				}
+//			}
+//			if (dupeNum != 4) {
+//				orangeScore = orangeScore + points;
+//				orangeScoreText.text = orangeScore.ToString ();
+//				if (points > 0) {
+//					orangeFlash.SetActive (true);
+//					Invoke ("TurnOffOrange", 1.5f * speed);
+//				} else if (points < 0) {
+//					MinusPointsAnimation (4);
+//				}
+//			}
+//		} else if (playerNum == 3) {
+//			if (dupeNum != 1) {
+//				redScore = redScore + points;
+//				redScoreText.text = redScore.ToString ();
+//				if (points > 0) {
+//					redFlash.SetActive (true);
+//					Invoke ("TurnOffRed", 1.5f * speed);
+//				} else if (points < 0) {
+//					MinusPointsAnimation (1);
+//				}
+//			}
+//			if (dupeNum != 2) {
+//				blueScore = blueScore + points;
+//				blueScoreText.text = blueScore.ToString ();
+//				if (points > 0) {
+//					blueFlash.SetActive (true);
+//					Invoke ("TurnOffBlue", 1.5f * speed);
+//				} else if (points < 0) {
+//					MinusPointsAnimation (2);
+//				}
+//			}
+//			if (dupeNum != 4) {
+//				orangeScore = orangeScore + points;
+//				orangeScoreText.text = orangeScore.ToString ();
+//				if (points > 0) {
+//					orangeFlash.SetActive (true);
+//					Invoke ("TurnOffOrange", 1.5f * speed);
+//				} else if (points < 0) {
+//					MinusPointsAnimation (4);
+//				}
+//			}
+//		} else if (playerNum == 4) {
+//			if (dupeNum != 1) {
+//				redScore = redScore + points;
+//				redScoreText.text = redScore.ToString ();
+//				if (points > 0) {
+//					redFlash.SetActive (true);
+//					Invoke ("TurnOffRed", 1.5f * speed);
+//				} else if (points < 0) {
+//					MinusPointsAnimation (1);
+//				}
+//			}
+//			if (dupeNum != 2) {
+//				blueScore = blueScore + points;
+//				blueScoreText.text = blueScore.ToString ();
+//				if (points > 0) {
+//					blueFlash.SetActive (true);
+//					Invoke ("TurnOffBlue", 1.5f * speed);
+//				} else if (points < 0) {
+//					MinusPointsAnimation (2);
+//				}
+//			}
+//			if (dupeNum != 3) {
+//				greenScore = greenScore + points;
+//				greenScoreText.text = greenScore.ToString ();
+//				if (points > 0) {
+//					greenFlash.SetActive (true);
+//					Invoke ("TurnOffGreen", 1.5f * speed);
+//				} else if (points < 0) {
+//					MinusPointsAnimation (3);
+//				}
+//			}
+//
+//		}
+//
+//	}
 
 	void MinusPointsAnimation (int playerNum){
 		Vector3 threesixty = new Vector3 (0f, 0f, 1080f);
-		scoreObj [playerNum - 1].transform.DOLocalRotate (threesixty, 1.5f * speed,RotateMode.FastBeyond360).SetEase (Ease.InOutFlash);
+		scoreObj [playerNum - 1].transform.DOLocalRotate (threesixty, 1.5f * speed,RotateMode.FastBeyond360).SetEase (Ease.OutQuad);
 
 	}
 
@@ -1830,6 +2247,8 @@ public class LocalTurnScoring : MonoBehaviour {
 		}
 	
 	}
+
+
 		
 	void FlipSignTwoToNext () {
 		Vector3 oneEighty = new Vector3 (0, 180, 0);
@@ -1852,13 +2271,23 @@ public class LocalTurnScoring : MonoBehaviour {
 	public void FastForward () {
 	
 		fastForward = true;
-		speed = .4f;
+		speed = .2f;
 		FlipSignOneToPlay ();
+		if (signTwo.transform.rotation.y > .9f) {
+			NextButton ();
+		} else {
+			FlipSignTwoToWait ();
+		}
 
 	}
 
 	public void PlayButton (){
-		
+
+		if (stepNum == 6) {
+			EndTheRound ();
+			return;
+		}
+
 		fastForward = false;
 		speed = 1.0f;
 		FlipSignOneToFastForward();
@@ -1884,6 +2313,15 @@ public class LocalTurnScoring : MonoBehaviour {
 		}
 
 	}
-		
+
+	void CheckIfStillSlow (){
+
+		if (fastForward == false) {
+			FlipSignTwoToNext ();
+		} else {
+			NextButton ();
+		}
+
+	}
 
 }

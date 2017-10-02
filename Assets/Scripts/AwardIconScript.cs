@@ -46,6 +46,7 @@ public class AwardIconScript : MonoBehaviour {
 	public Sprite wrongSprite;
 	public Sprite rightDupeSprite;
 	public Sprite wrongDupeSprite;
+	public Sprite trophySprite;
 
 
 	// Use this for initialization
@@ -89,6 +90,15 @@ public class AwardIconScript : MonoBehaviour {
 
 		pointsIcon.sprite = star;
 		pointsText.text = "2";
+
+	}
+
+	public void SetupDupeFound (){
+
+		awardIcon.sprite = trophySprite;
+
+		pointsIcon.sprite = star;
+		pointsText.text = "1";
 
 	}
 
@@ -144,8 +154,14 @@ public class AwardIconScript : MonoBehaviour {
 		pointsText.text = points.ToString();
 		awardIcon.sprite = monaSprite;
 
+	}
 
+	public void AddAPointToMona(){
 
+		int oldNum = int.Parse (pointsText.text);
+		int newNum = oldNum + 1;
+		pointsText.text = newNum.ToString();
+	
 	}
 
 	public void SetupSplatter(int fromColor, int awardNum){

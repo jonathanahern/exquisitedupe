@@ -105,7 +105,7 @@ public class TurnRoomButton : MonoBehaviour {
 
 		UserAccountManagerScript.instance.TurnRoomSearch(roomToSend, fate, gameObject);
 
-		LobbyMenu.instance.LoadingScreenFromNewCats ();
+		//LobbyMenu.instance.LoadingScreenFromNewCats ();
 	
 	}
 

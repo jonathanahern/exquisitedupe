@@ -93,7 +93,7 @@ public class LobbyMenu : MonoBehaviour {
 
 		roomsString = roomsString.TrimEnd ('/');
 		roomCount = roomsString.Split ('/').Length;
-		Debug.Log (roomCount);
+		//Debug.Log (roomCount);
 
 		if (roomMan.cameFromScoring == false) {
 			highScores.gameObject.GetComponent<HighScoreScript> ().UpdateTheScore ();

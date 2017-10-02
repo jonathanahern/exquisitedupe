@@ -559,7 +559,7 @@ public class RoomManager : MonoBehaviour {
 
 				string category = piece.Substring (CATEGORY_SYM.Length);
 
-				Debug.Log ("It did happen! " + category);
+				//Debug.Log ("It did happen! " + category);
 
 				if (category.StartsWith ("abcde")) {
 				
@@ -1111,19 +1111,19 @@ public class RoomManager : MonoBehaviour {
 	}
 
 	public void CurtainsIn(){
-		Debug.Log ("CURTAINS IN");
+		//Debug.Log ("CURTAINS IN");
 
-		Invoke ("ShakeCurtains", .7f);
-		rightCurtain.DOAnchorPos (Vector2.zero, 1.0f).SetEase (Ease.InCubic);
-		leftCurtain.DOAnchorPos (Vector2.zero, 1.0f).SetEase (Ease.InCubic);
-		centerCurtain.DOAnchorPos (Vector2.zero, 1.0f).SetEase (Ease.InCubic);
+		Invoke ("ShakeCurtains", .5f);
+		rightCurtain.DOAnchorPos (Vector2.zero, .7f).SetEase (Ease.InQuart);
+		leftCurtain.DOAnchorPos (Vector2.zero, .7f).SetEase (Ease.InQuart);
+		centerCurtain.DOAnchorPos (Vector2.zero, .7f).SetEase (Ease.InQuart);
 	
 	}
 
 	public void CurtainsOut(){
 
-		Vector2 rightPos = new Vector2 (1300, 0);
-		Vector2 leftPos = new Vector2 (-1300, 0);
+		Vector2 rightPos = new Vector2 (950, 0);
+		Vector2 leftPos = new Vector2 (-950, 0);
 		Vector2 centerPos = new Vector2 (0, 1400);
 
 		rightCurtain.DOAnchorPos (rightPos, 1.0f).SetEase (Ease.InExpo);
@@ -1134,7 +1134,7 @@ public class RoomManager : MonoBehaviour {
 
 	void ShakeCurtains() {
 
-		Debug.Log ("SHAKIN IN");
+		//Debug.Log ("SHAKIN IN");
 
 		Vector2 newStretch = new Vector2 (leftCurtain.sizeDelta.x + 2, leftCurtain.sizeDelta.y);
 		leftCurtain.DOSizeDelta (newStretch, 1.0f).SetEase(bigJitter);
