@@ -16,6 +16,12 @@ public class LocalRoomManager : MonoBehaviour {
 	public GameObject brushHolder;
 	public Text subject;
 	public GameObject blackLine;
+	public Color[] pColors;
+	public Image backGroundDraw;
+
+	public GameObject readyButtons;
+	public GameObject drawButtons;
+	public GameObject theDrawButton;
 
 	string myLineString;
 
@@ -46,13 +52,16 @@ public class LocalRoomManager : MonoBehaviour {
 	Vector3 panelScreenOff;
 
 	public bool tutorialMode;
+	bool readyToMove;
 
 	// Use this for initialization
 	void Start () {
 
+		Invoke ("ShakeButton", 4.0f);
+
 		panelScreen = bottomPanel.anchoredPosition;
 		panelScreenOff = new Vector3 (panelScreen.x, panelScreen.y - 500, panelScreen.z);
-		bottomPanel.anchoredPosition = panelScreenOff;
+		//bottomPanel.anchoredPosition = panelScreenOff;
 
 		if (tutorialMode == true) {
 			
@@ -67,8 +76,21 @@ public class LocalRoomManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+
+		if (Input.GetKeyDown (KeyCode.K)) {
+
 		
+		}
+
 	}
+
+	void ShakeButton (){
+	
+		Vector3 punchSize = new Vector3 (.5f, .5f, .5f);
+		//Debug.Log (punchSize);
+		theDrawButton.transform.DOPunchScale (punchSize, 1.0f,10,.01f).SetDelay(3.0f).SetId("buttshake").OnComplete(ShakeButton);		
+
+	} 
 
 	void FindMyRoom (){
 	
@@ -121,6 +143,8 @@ public class LocalRoomManager : MonoBehaviour {
 
 		}
 
+		backGroundDraw.color = pColors [myRoom.myActualColor - 1];
+
 		roomMan.GetComponent<RoomManager> ().CurtainsOut();
 
 		UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
@@ -159,16 +183,34 @@ public class LocalRoomManager : MonoBehaviour {
 			Debug.Log ("Already logged room");
 		}
 			
-		Invoke ("MoveToSection", 4.0f);
+		Invoke ("ReadyToMove", 3.0f);
 
 	}
 
-	void MoveToSection () {
+	void ReadyToMove(){
+		readyToMove = true;
+	}
+
+	public void MoveDownReady(){
+		bottomPanel.DOAnchorPos (panelScreenOff, .5f);
+
+		if (readyToMove == true) {
+			MoveToSection ();
+		} else {
+			Invoke ("MoveToSection", 2.0f);
+		}
+	}
+
+	public void MoveToSection () {
 
 		cameraScript.MoveToSection ();
-		Color clear = new Color (1, 1, 1, 0);
-		blackMat.DOColor (clear, 1.0f).OnComplete (DestroyLines);
+		//Color clear = new Color (1, 1, 1, 0);
+		Invoke ("HideLines", 2.5f);
 
+	}
+
+	void HideLines (){
+		blackMat.DOColor (Color.white, 1.0f).OnComplete (DestroyLines);
 	}
 
 	void DestroyLines (){
@@ -181,12 +223,16 @@ public class LocalRoomManager : MonoBehaviour {
 
 		Color grey = new Color (.2f, .2f, .2f, 1.0f);
 		blackMat.color = grey;
-
 	
 	}
 
 	public void StartGame(){
 	
+		DOTween.Kill ("buttshake");
+
+		readyButtons.SetActive (false);
+		drawButtons.SetActive (true);
+
 		bottomPanel.DOAnchorPos (panelScreen, 1.0f);
 
 		Invoke ("LoadBrushes", .7f);

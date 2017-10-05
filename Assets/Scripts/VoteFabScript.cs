@@ -156,7 +156,8 @@ public class VoteFabScript : MonoBehaviour {
 
 
 		if (transform.parent != null) {
-
+			Debug.Log ("SHAKE STOP");
+			DOTween.Kill ("voteshake");
 			CancelInvoke ();
 			DOTween.PauseAll();
 			transform.parent = null;

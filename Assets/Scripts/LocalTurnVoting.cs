@@ -90,10 +90,13 @@ public class LocalTurnVoting : MonoBehaviour {
 	string myDupeSubjectGuess;
 
 	public Text dupeGuessTitle;
+	public GameObject confettiBlast;
+	GameObject voteItem;
 
 	private static string MYCOLOR_SYM = "[MYCOLOR]";
 
 	public bool tutorialMode;
+	public AnimationCurve inBump;
 
 	// Use this for initialization
 	void Start () {
@@ -166,6 +169,9 @@ public class LocalTurnVoting : MonoBehaviour {
 		voteScript.localTurn = this;
 		currentVote = 1;
 
+		voteItem = dupeVote;		
+		ShakeTheVote ();
+
 		camPos1 = new Vector3 (-1.28f, .7f, -10);
 		camPos2 = new Vector3 (1.28f, .7f, -10);
 		camPos3 = new Vector3 (1.28f, -3.15f, -10);
@@ -211,6 +217,13 @@ public class LocalTurnVoting : MonoBehaviour {
 
 		}
 
+	}
+
+	void ShakeTheVote(){
+	
+		Vector3 punchSize = new Vector3 (.4f, .4f, .4f);
+		voteItem.transform.DOPunchScale (punchSize, 1.0f,10,.01f).SetDelay(2.0f).SetId("voteshake").OnComplete(ShakeTheVote);
+	
 	}
 
 	void TakePicture (){
@@ -328,37 +341,37 @@ public class LocalTurnVoting : MonoBehaviour {
 
 	public void MoveUpPedestal(){
 
-		pedestal.transform.DOLocalMoveY (pedScreenPos, 1.0f).SetEase (Ease.OutBounce);
+		pedestal.transform.DOLocalMoveY (pedScreenPos, 1.0f).SetEase (inBump);
 
 	}
 
 	public void MoveDownPedestal(){
 
-		pedestal.transform.DOLocalMoveY (pedOffPos, 1.0f).SetEase (Ease.OutBounce);
+		pedestal.transform.DOLocalMoveY (pedOffPos, .6f);
 
 	}
 
 	public void MoveUpSign(){
 
-		sign.transform.DOLocalMoveY (signScreenPos, 1.0f).SetEase (Ease.OutBounce);
+		sign.transform.DOLocalMoveY (signScreenPos, 1.0f).SetEase (inBump);
 
 	}
 
 	public void MoveDownSign(){
 
-		sign.transform.DOLocalMoveY (signOffPos, 1.0f).SetEase (Ease.OutBounce);
+		sign.transform.DOLocalMoveY (signOffPos, .6f);
 
 	}
 
 	void MoveInGuesser(){
 
-		guessObject.transform.DOLocalMoveX (0, 1.0f).SetEase (Ease.OutBounce);
+		guessObject.transform.DOLocalMoveX (0, 1.0f).SetEase (inBump);
 
 	}
 
 	public void MoveOutGuesser(){
 
-		guessObject.transform.DOLocalMoveX (-1600, 1.0f).SetEase (Ease.OutBounce);
+		guessObject.transform.DOLocalMoveX (-1600, .6f);
 
 	}
 
@@ -372,13 +385,13 @@ public class LocalTurnVoting : MonoBehaviour {
 
 		signWords.sprite = nonDupeGuess;
 		MoveUpSign ();
-		guessNonDupe.transform.DOLocalMoveY (guessScreenPos, 1.0f).SetEase (Ease.OutBounce);
+		guessNonDupe.transform.DOLocalMoveY (guessScreenPos, 1.0f).SetEase (inBump);
 
 	}
 
 	void MoveDownNonDupeGuess(){
 
-		guessNonDupe.transform.DOLocalMoveY (guessOffScreenPos, 1.0f).SetEase (Ease.OutBounce);
+		guessNonDupe.transform.DOLocalMoveY (guessOffScreenPos, .6f);
 
 	}
 
@@ -467,6 +480,8 @@ public class LocalTurnVoting : MonoBehaviour {
 
 				if (myRoom.dupeNum == artistNum) {
 					signWords.sprite = dupeVotedSelf;
+					confettiBlast.SetActive (true);
+					Invoke ("TurnOffBlast", 3.5f);
 				} else {
 					signWords.sprite = dupeVotedElsewhere;
 				}
@@ -501,7 +516,8 @@ public class LocalTurnVoting : MonoBehaviour {
 		if (myRoom.dupeNum == artistNum) {
 			dupeCaught = true;
 			signWords.sprite = rightDupeGuess;
-
+			confettiBlast.SetActive (true);
+			Invoke ("TurnOffBlast", 3.5f);
 			FlipSignToWords ();
 
 			Invoke ("MoveUpPedAndSign", 1.5f);
@@ -528,6 +544,10 @@ public class LocalTurnVoting : MonoBehaviour {
 			Invoke ("MoveUpPedAndSign", 2.5f);
 		}
 
+	}
+
+	void TurnOffBlast(){
+		confettiBlast.SetActive (false);
 	}
 
 	void MoveUpPedAndSign (){
@@ -678,6 +698,9 @@ public class LocalTurnVoting : MonoBehaviour {
 		voteScript.localTurn = this;
 		currentVote = 2;
 
+		voteItem = secondVote;		
+		ShakeTheVote ();
+
 		voteScript.SetupSecondVote (myRoom.myActualColor,myRoom.awardNum,myRoom.dupeNum);
 		MoveUpPedestal ();
 
@@ -713,6 +736,9 @@ public class LocalTurnVoting : MonoBehaviour {
 		VoteFabScript voteScript = thirdVote.GetComponent<VoteFabScript> ();
 		voteScript.localTurn = this;
 		currentVote = 3;
+
+		voteItem = thirdVote;		
+		ShakeTheVote ();
 
 		voteScript.SetupThirdVote (myRoom.myActualColor, myRoom.dupeCaught,myRoom.dupeNum);
 		MoveUpPedestal ();

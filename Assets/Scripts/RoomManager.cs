@@ -1289,6 +1289,11 @@ public class RoomManager : MonoBehaviour {
 
 	void RefreshingTurnOff (){
 	
+		Scene scene = SceneManager.GetActiveScene ();
+		if (scene.name != "Lobby Menu") {
+			return;
+		}
+
 		if (lobbyMenu == null) {
 			lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
 		}

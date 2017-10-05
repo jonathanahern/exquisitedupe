@@ -222,6 +222,14 @@ public class LoginMenu : MonoBehaviour {
 				yield break;
 			}
 
+			if (returnText.Contains("#")) {
+				RetryLoginRequest (username, password);
+				Debug.Log("Weird bug happened");
+				yield break;
+
+			}
+
+
 			string[] returnBroken = returnText.Split ('|');
 			string success = returnBroken [0];
 

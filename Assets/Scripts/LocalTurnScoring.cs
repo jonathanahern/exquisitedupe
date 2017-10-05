@@ -307,11 +307,7 @@ public class LocalTurnScoring : MonoBehaviour {
 //		Vector3 offscreen;
 		Vector3 playerPos = playerIcons[playerNum].transform.position;
 
-//		if (playerPos.x > 0) {
-//			offscreen = new Vector3 (playerPos.x + 2.5f, playerPos.y + 2.5f, playerPos.z);
-//		} else {
-//			offscreen = new Vector3 (playerPos.x - 2.5f, playerPos.y + 2.5f, playerPos.z);
-//		}
+
 
 		int awardPhase;
 		if (awardNum < 2) {
@@ -322,7 +318,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			awardPhase = 2;
 		}
 
-		starPoints [starNum].transform.DOMove (playerIcons [playerNum].transform.position, .7f * speed).SetDelay(startTime*speed).SetEase(Ease.InCirc).OnComplete(()=>ShrinkStar(starPoints[starNum]));
+		starPoints [starNum].transform.DOMove (playerIcons [playerNum].transform.position, .7f * speed).SetDelay(startTime*speed).SetEase(Ease.InCirc).OnComplete(()=>ShrinkStar(starPoints[starNum], points, playerNum));
 		starPoints [starNum].transform.DORotate (fullRotation, .7f * speed, RotateMode.FastBeyond360).SetDelay(startTime*speed).OnComplete(()=>GivePointsAndSplatter(playerNum,points,1,awardPhase,awardNum));
 
 		//Sequence mySequence = DOTween.Sequence();
@@ -339,9 +335,25 @@ public class LocalTurnScoring : MonoBehaviour {
 
 	}
 
-	void ShrinkStar(GameObject star){
-	
-		star.transform.DOScale (Vector3.zero, .5f * speed).SetEase (starEnd);
+	void ShrinkStar(GameObject star, int points, int playerNum){
+		if (points > 0) {
+			star.transform.DOScale (Vector3.zero, .5f * speed).SetEase (starEnd);
+		} else {
+		
+			Vector3 offscreen;
+			Vector3 playerPos = playerIcons[playerNum].transform.position;
+			Vector3 fullRotation = new Vector3 (0,0,540);
+
+			if (playerPos.x > 0) {
+				offscreen = new Vector3 (playerPos.x + 2.5f, playerPos.y + 2.5f, playerPos.z);
+			} else {
+				offscreen = new Vector3 (playerPos.x - 2.5f, playerPos.y + 2.5f, playerPos.z);
+			}
+
+			star.transform.DOMove (offscreen, 1 * speed).SetEase(Ease.OutCirc);
+			star.transform.DORotate (fullRotation, 1 * speed, RotateMode.FastBeyond360);
+		
+		}
 	
 	}
 
@@ -1829,7 +1841,7 @@ public class LocalTurnScoring : MonoBehaviour {
 		//ClearPlayerPrefs ();
 		string loserText= "YOU'RE LAST. QUITE PATHETIC!";
 		string midText = "YOU DIDN'T WIN, HOW MEDIOCRE OF YOU";
-		string winText = "SOMETHING MUST BE WRONG, YOU WON!";
+		string winText = "SOMETHING MUST BE WRONG, YOU WON ONE!";
 		winnersGame = new List<int>();
 
 		for (int i = 0; i < players.Length; i++) {

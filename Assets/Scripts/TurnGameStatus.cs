@@ -152,8 +152,8 @@ public class TurnGameStatus : MonoBehaviour {
 			//lobby.DetachButtons ();
 			//roomManScript.TakeButtonsWith ();
 		} else if (phaseOneReady == true) {
-			roomManScript.TurnOnSign ();
-			GameObject.FindGameObjectWithTag ("Category Name").GetComponent<Text> ().text = categoryName.text;
+			//roomManScript.TurnOnSign ();
+			//GameObject.FindGameObjectWithTag ("Category Name").GetComponent<Text> ().text = categoryName.text;
 			roomManScript.CurtainsIn ();
 			roomManScript.StartingNewRoom ();
 			Invoke ("StartAfterDelay", 1.5f);
