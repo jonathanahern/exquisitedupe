@@ -1840,7 +1840,7 @@ public class LocalTurnScoring : MonoBehaviour {
 	
 		//ClearPlayerPrefs ();
 		string loserText= "YOU'RE LAST. QUITE PATHETIC!";
-		string midText = "YOU DIDN'T WIN, HOW MEDIOCRE OF YOU";
+		string midText = "YOU DIDN'T WIN OR LOSE, HOW MEDIOCRE OF YOU";
 		string winText = "SOMETHING MUST BE WRONG, YOU WON ONE!";
 		winnersGame = new List<int>();
 

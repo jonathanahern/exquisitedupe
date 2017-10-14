@@ -37,6 +37,7 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 	string roomId;
 	public string activeRooms;
+	public bool firstLogin = false;
 
 	public GameObject messageBoard;
 	LobbyMenu lobbyMenu;
@@ -59,11 +60,20 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 	void Update (){
 
-//		if (Input.GetKeyDown (KeyCode.H)) {
-//		
-//			BackToLobbyError ();
-//		
-//		}
+		if (Input.GetKeyDown (KeyCode.H)) {
+		
+//			string asdf = "<!DOCTYPSRJSDNFKjnsDF";
+//
+//			if (asdf.StartsWith ("<!ds")) {
+//				Debug.Log ("Worked");
+//			} else {
+//				Debug.Log ("Not working");
+//			}
+
+
+			//BackToLobbyError ();
+		
+		}
 
 
 	}
@@ -87,7 +97,8 @@ public class UserAccountManagerScript : MonoBehaviour {
 		Debug.Log ("User in as: " + username);
 
 		if (firstGame == 0) {
-			SceneManager.LoadScene ("Tutorial Lobby Menu");
+			firstLogin = true;
+			SceneManager.LoadScene (loggedInSceneName);
 		} else {
 			SceneManager.LoadScene (loggedInSceneName);
 		}
@@ -217,19 +228,20 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 		if (returnText == "") {
 
-//			if (lobbyMenu == null) {
-//				lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
-//			}
-
-			Debug.Log ("Retrying new room");
+			Debug.Log ("Retrying new room. Came up blank.");
 			RetryTurnRoom (roomType, playerName, fate);
-
-//			RoomManager.instance.CurtainsOut();
-//			lobbyMenu.LoadingScreenAbort ();
-//			BackToLobbyError ();
 
 			yield break;
 
+		}
+
+		if (returnText.StartsWith ("<!")) {
+		
+			Debug.Log ("Retrying new room. Gobbly gook came up.");
+			RetryTurnRoom (roomType, playerName, fate);
+
+			yield break;
+		
 		}
 
 		Debug.Log ("HERE?" + returnText);
@@ -272,14 +284,14 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 		if (returnText == "") {
 
-			Debug.Log ("Retrying new room again");
+			Debug.Log ("Retrying new room again from blank search");
 			RetryTurnRoom (roomType, playerName, fate);
 
 			yield break;
 
 		} else if (returnText == "Nothing Found"){
 			RetryTurnRoomNothingFound (roomType, playerName, fate);
-
+			yield break;
 		}
 
 		Debug.Log ("Found this: " + returnText);

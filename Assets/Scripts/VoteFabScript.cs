@@ -86,7 +86,7 @@ public class VoteFabScript : MonoBehaviour {
 
 	void WiggleVote(){
 
-		gameObject.transform.DOShakeScale (1.5f, 1f, 10, 90);
+		gameObject.transform.DOShakeScale (1.5f, 1f, 10, 90).SetId ("voteshake");
 		
 	}
 
@@ -158,8 +158,9 @@ public class VoteFabScript : MonoBehaviour {
 		if (transform.parent != null) {
 			Debug.Log ("SHAKE STOP");
 			DOTween.Kill ("voteshake");
+			gameObject.transform.DOScale (Vector3.one, 0.1f);
 			CancelInvoke ();
-			DOTween.PauseAll();
+			//DOTween.PauseAll();
 			transform.parent = null;
 		}
 			

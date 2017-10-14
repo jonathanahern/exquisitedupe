@@ -85,6 +85,7 @@ public class RoomManager : MonoBehaviour {
 	int roomTotal;
 	public bool buttonsReady = false;
 	public bool roomsReady = false;
+	public bool curtainMoving = false;
 
 	GameObject tempRoom;
 
@@ -137,9 +138,9 @@ public class RoomManager : MonoBehaviour {
 
 	void Update () {
 
-		if (Input.GetKeyDown (KeyCode.R)) {
+//		if (Input.GetKeyDown (KeyCode.R)) {
 
-			CurtainsIn ();
+//			CurtainsIn ();
 //			Vector2 newStretch = new Vector2 (leftCurtain.sizeDelta.x + 5, leftCurtain.sizeDelta.y);
 //			leftCurtain.DOSizeDelta (newStretch, 1.0f).SetEase(bigJitter);
 //			leftCurtain.DOShakeRotation (1.0f, 5, 10, 90);
@@ -148,13 +149,12 @@ public class RoomManager : MonoBehaviour {
 //			rightCurtain.DOSizeDelta (newStretchRight, 1.0f).SetEase(bigJitter);
 //			rightCurtain.DOShakeRotation (1.0f, 5, 10, 90);
 
+//		}
 
-		}
-
-		if (Input.GetKeyDown (KeyCode.S)) {
-			CurtainsOut ();
-		}
-
+//		if (Input.GetKeyDown (KeyCode.S)) {
+//			CurtainsOut ();
+//		}
+//
 	}
 
 	public void AfterDarkMode (){
@@ -170,8 +170,6 @@ public class RoomManager : MonoBehaviour {
 			catNames [i] = afterDarkCats [i].roomTypeString;
 
 		}
-
-		
 
 	}
 
@@ -253,6 +251,8 @@ public class RoomManager : MonoBehaviour {
 		}
 
 	}
+
+
 
 	void RetryRoomGrab (string roomID, int updateOrNot){
 
@@ -1089,6 +1089,7 @@ public class RoomManager : MonoBehaviour {
 			GameObject turnButton = categoryButtons [i];
 			string buttonName = turnButton.GetComponent<TurnRoomButton> ().roomTypeString;
 			if (buttonName == bestStrings [0] || buttonName == bestStrings [1] || buttonName == bestStrings [2]) {
+				//Debug.Log ("ButtonCount: " + buttCount + " I Count: " + i);
 				buttons [buttCount] = categoryButtons[i];
 				buttCount++;
 			}
@@ -1117,6 +1118,7 @@ public class RoomManager : MonoBehaviour {
 		rightCurtain.DOAnchorPos (Vector2.zero, .7f).SetEase (Ease.InQuart);
 		leftCurtain.DOAnchorPos (Vector2.zero, .7f).SetEase (Ease.InQuart);
 		centerCurtain.DOAnchorPos (Vector2.zero, .7f).SetEase (Ease.InQuart);
+		curtainMoving = true;
 	
 	}
 
@@ -1129,6 +1131,7 @@ public class RoomManager : MonoBehaviour {
 		rightCurtain.DOAnchorPos (rightPos, 1.0f).SetEase (Ease.InExpo);
 		leftCurtain.DOAnchorPos (leftPos, 1.0f).SetEase (Ease.InExpo);
 		centerCurtain.DOAnchorPos (centerPos, 1.0f).SetEase (Ease.InExpo).OnComplete(BackToNormalCurtains);
+		curtainMoving = false;
 
 	}
 

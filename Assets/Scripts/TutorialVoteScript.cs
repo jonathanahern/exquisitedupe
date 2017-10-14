@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
 using UnityEngine.SceneManagement;
-using DG.Tweening;
 
 public class TutorialVoteScript : MonoBehaviour {
 
@@ -28,23 +27,23 @@ public class TutorialVoteScript : MonoBehaviour {
 
 	RoomManager roomMan;
 
-	string intro1Words1 = "What a brilliant creature! It's a masterpiece!";
-	string intro1Words2 = "But one player has received the wrong subject";
+	//string intro1Words1 = "What a brilliant creature! It's a masterpiece!";
+	string intro1Words2 = "It's brilliant! But one player has received the wrong subject";
 	string intro1Words3 = "Who messed up my painting? Find the dupe!";
 	string intro1Words4;
 	string intro1Words5 = "If a majority voted for the dupe, the true artists will score 2 points";
-	string intro1Words6 = "We caught the dupe! 2 points for all true artists";
+	string intro1Words6 = "We caught the dupe! 2 pts for all true artists";
 	string intro1Words7 = "Let's see if the dupe can guess the right subject";
 	string intro1Words8 = "The dupe guessed right! No points for you!";
 	string intro1Words9 = "Next time, don't draw so obviously";
 
-	string intro2Words1 = "You missed the dupe!";
-	string intro2Words2 = "Could anyone else find the dupe in this ambiguous being?";
-	string intro2Words3 = "Nope! Nobody figured it out. It's one big tie";
-	string intro2Words4 = "The dupe scores big and you get nothing";
-	string intro2Words5 = "To win Exquisite Dupe you must either leave subtle clues for your fellow artists...";
+	string intro2Words1 = " You missed the dupe!";
+	string intro2Words2 = "Can anyone find the dupe in this amorphous being?";
+	string intro2Words3 = "Nope! It's one big tie";
+	string intro2Words4 = "The dupe scores big and you get nothing!";
+	string intro2Words5 = "You must leave clues for your fellow artists...";
 	string intro2Words6 = "...or misdirect the dupe with red herrings.";
-	string intro2Words7 = "That is all young artist. Go and paint me a masterpiece!";
+	string intro2Words7 = "That is all young artist. Go paint me a masterpiece!";
 
 	int artistNum;
 
@@ -62,18 +61,35 @@ public class TutorialVoteScript : MonoBehaviour {
 	public RectTransform bubbleOne;
 	public VoteFabScript myVote;
 
+	public GameObject confettiBlast;
+	public GameObject starBlast;
+
+	public GameObject finger;
+	Vector3 offScreenPos;
+	Vector3 onScreenPos;
+	Vector3 onFrameSPos;
+	bool fingerMovement = false;
+
+	void Awake (){
+		roomMan = GameObject.FindGameObjectWithTag ("Room Manager").GetComponent<RoomManager> ();
+	}
+
 	// Use this for initialization
 	void Start () {
 
 		if (drawing1 == true) {
-			dupeText.text = intro1Words1;
+			dupeText.text = intro1Words2;
 			InvokeRepeating ("BubbleOneShake", 5.0f, 3.0f);
-		}
+			offScreenPos = finger.transform.position;
+			onScreenPos = new Vector3(-3.3f,-5.7f,-.6f);
+			onFrameSPos = new Vector3(-2.25f,-3.5f,-.6f);
 
+		}
 
 		roomMan = GameObject.FindGameObjectWithTag ("Room Manager").GetComponent<RoomManager> ();
 
 		CreateDrawing ();
+
 		if (drawing2 == true) {
 			Invoke ("MoveUpPed", 2.0f);
 			myVote.WiggleStart ();
@@ -83,8 +99,82 @@ public class TutorialVoteScript : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		if (Input.GetKeyDown (KeyCode.C)) {
-			DupeLooking ();
+		if (fingerMovement == true && drawing1 == true) {
+			
+			if (myVote.gameObject.transform.parent == null) {
+				fingerMovement = false;
+				DOTween.Kill ("finger");
+				MoveFingerOff ();
+			}
+				
+		}
+
+
+		if (Input.GetMouseButtonDown (0) && roomMan.curtainMoving == false) {
+		
+			if (roomMan == null) {
+				return;
+			}
+				
+			if (dupeText.text == intro1Words2) {
+				dupeText.text = intro1Words3;
+				CancelInvoke ();
+				InvokeRepeating ("BubbleOneShake", 3.0f, 3.0f);
+			} else if (dupeText.text == intro1Words3) {
+				CancelInvoke ();
+				tutorialDupe.SetActive (false);
+				myVote.WiggleStart ();
+				dupeText.text = "";
+				SendUpVote ();
+			} else if (dupeText.text == intro1Words4) {
+				CancelInvoke ();
+				dupeText.text = intro1Words5;
+				Invoke ("RevealVotes", 3.0f);
+			} else if (dupeText.text == intro1Words6) {
+				dupeText.text = intro1Words7;
+
+				foreach (GameObject voteThing in votes) {
+					voteThing.SetActive (false);
+				}
+
+				GameObject vote = GameObject.FindGameObjectWithTag ("Vote");
+				Destroy (vote);
+				CancelInvoke ();
+				Invoke ("TurnOffTutorialDupe", 3.0f);
+
+			} else if (dupeText.text == intro1Words8) {
+				dupeText.text = intro1Words9;
+				CancelInvoke ();
+				InvokeRepeating ("BubbleOneShake", 4.0f, 3.0f);
+			} else if (dupeText.text == intro1Words9) {
+				dupeText.text = "";
+				roomMan.CurtainsIn ();
+				Invoke ("EndScene", 4.0f);
+
+			} else if (dupeText.text == intro2Words1) {
+				CancelInvoke ();
+				dupeText.text = intro2Words2;
+				Invoke ("RevealVotes2", 2.0f);
+			} else if (dupeText.text == intro2Words3) {
+				CancelInvoke ();
+				InvokeRepeating ("BubbleOneShake", 3.0f, 3.0f);
+				dupeText.text = intro2Words4;
+			} else if (dupeText.text == intro2Words4) {
+				CancelInvoke ();
+				InvokeRepeating ("BubbleOneShake", 3.0f, 3.0f);
+				dupeText.text = intro2Words5;
+			} else if (dupeText.text == intro2Words5) {
+				CancelInvoke ();
+				InvokeRepeating ("BubbleOneShake", 3.0f, 3.0f);
+				dupeText.text = intro2Words6;
+			} else if (dupeText.text == intro2Words6) {
+				CancelInvoke ();
+				dupeText.text = intro2Words7;
+				Invoke ("CloseCurtains", 3.0f);
+				roomMan.cameFromTurnBased = true;
+				roomMan.tutorialMode = false;
+			} 
+		
 		}
 
 	}
@@ -205,77 +295,73 @@ public class TutorialVoteScript : MonoBehaviour {
 		}
 	}
 
-	public void DupeBubble () {
+//	public void DupeBubble () {
+//
+//		if (dupeText.text == intro1Words2) {
+//			dupeText.text = intro1Words3;
+//			CancelInvoke ();
+//			InvokeRepeating ("BubbleOneShake", 3.0f, 3.0f);
+//		} else if (dupeText.text == intro1Words3) {
+//			CancelInvoke ();
+//			tutorialDupe.SetActive (false);
+//			myVote.WiggleStart ();
+//			SendUpVote ();
+//		} else if (dupeText.text == intro1Words4) {
+//			CancelInvoke ();
+//			dupeText.text = intro1Words5;
+//			Invoke ("RevealVotes", 3.0f);
+//		} else if (dupeText.text == intro1Words6) {
+//			dupeText.text = intro1Words7;
+//
+//			foreach (GameObject voteThing in votes) {
+//				voteThing.SetActive (false);
+//			}
+//
+//			GameObject vote = GameObject.FindGameObjectWithTag ("Vote");
+//			Destroy (vote);
+//			CancelInvoke ();
+//			Invoke ("TurnOffTutorialDupe", 3.0f);
+//
+//		} else if (dupeText.text == intro1Words8) {
+//			dupeText.text = intro1Words9;
+//			CancelInvoke ();
+//			InvokeRepeating ("BubbleOneShake", 4.0f, 3.0f);
+//		} else if (dupeText.text == intro1Words9) {
+//
+//			roomMan.CurtainsIn ();
+//			Invoke ("EndScene", 4.0f);
+//
+//		}
+//
+//	}
 
-		if (dupeText.text == intro1Words1) {
-			dupeText.text = intro1Words2;
-			CancelInvoke ();
-			InvokeRepeating ("BubbleOneShake", 3.0f, 3.0f);
-		} else if (dupeText.text == intro1Words2) {
-			dupeText.text = intro1Words3;
-			CancelInvoke ();
-			InvokeRepeating ("BubbleOneShake", 3.0f, 3.0f);
-		} else if (dupeText.text == intro1Words3) {
-			CancelInvoke ();
-			tutorialDupe.SetActive (false);
-			myVote.WiggleStart ();
-			SendUpVote ();
-		} else if (dupeText.text == intro1Words4) {
-			CancelInvoke ();
-			dupeText.text = intro1Words5;
-			Invoke ("RevealVotes", 4.0f);
-		} else if (dupeText.text == intro1Words6) {
-			dupeText.text = intro1Words7;
-
-			foreach (GameObject voteThing in votes) {
-				voteThing.SetActive (false);
-			}
-
-			GameObject vote = GameObject.FindGameObjectWithTag ("Vote");
-			Destroy (vote);
-			CancelInvoke ();
-			Invoke ("TurnOffTutorialDupe", 4.0f);
-
-		} else if (dupeText.text == intro1Words8) {
-			dupeText.text = intro1Words9;
-			CancelInvoke ();
-			InvokeRepeating ("BubbleOneShake", 4.0f, 3.0f);
-		} else if (dupeText.text == intro1Words9) {
-
-			roomMan.CurtainsIn ();
-			Invoke ("EndScene", 4.0f);
-
-		}
-
-	}
-
-	public void DupeBubble2 () {
-
-		if (dupeText.text == intro2Words1) {
-			CancelInvoke ();
-			dupeText.text = intro2Words2;
-			Invoke ("RevealVotes2", 3.5f);
-		} else if (dupeText.text == intro2Words3) {
-			CancelInvoke ();
-			InvokeRepeating ("BubbleOneShake", 3.0f, 3.0f);
-			dupeText.text = intro2Words4;
-		} else if (dupeText.text == intro2Words4) {
-			CancelInvoke ();
-			InvokeRepeating ("BubbleOneShake", 3.0f, 3.0f);
-			dupeText.text = intro2Words5;
-		} else if (dupeText.text == intro2Words5) {
-			CancelInvoke ();
-			InvokeRepeating ("BubbleOneShake", 3.0f, 3.0f);
-			dupeText.text = intro2Words6;
-		} else if (dupeText.text == intro2Words6) {
-			CancelInvoke ();
-			dupeText.text = intro2Words7;
-			Invoke ("CloseCurtains", 3.0f);
-			roomMan.cameFromTurnBased = true;
-			roomMan.tutorialMode = false;
-		} 
-
-	}
+//	public void DupeBubble2 () {
+//
+//		 if (dupeText.text == intro2Words1) {
+//			CancelInvoke ();
+//			dupeText.text = intro2Words2;
+//			Invoke ("RevealVotes2", 2.0f);
+//		} else if (dupeText.text == intro2Words3) {
+//			CancelInvoke ();
+//			InvokeRepeating ("BubbleOneShake", 3.0f, 3.0f);
+//			dupeText.text = intro2Words4;
+//		} else if (dupeText.text == intro2Words4) {
+//			CancelInvoke ();
+//			InvokeRepeating ("BubbleOneShake", 3.0f, 3.0f);
+//			dupeText.text = intro2Words5;
+//		} else if (dupeText.text == intro2Words5) {
+//			CancelInvoke ();
+//			InvokeRepeating ("BubbleOneShake", 3.0f, 3.0f);
+//			dupeText.text = intro2Words6;
+//		} else if (dupeText.text == intro2Words6) {
+//			CancelInvoke ();
+//			dupeText.text = intro2Words7;
+//			Invoke ("CloseCurtains", 3.0f);
+//			roomMan.cameFromTurnBased = true;
+//			roomMan.tutorialMode = false;
+//		} 
+//
+//	}
 
 	void EndScene (){
 	
@@ -290,9 +376,7 @@ public class TutorialVoteScript : MonoBehaviour {
 	}
 
 	void EndTutorial (){
-		roomMan.cameFromTutorial = true;
 		SceneManager.LoadScene ("Lobby Menu");
-
 	}
 
 	void SendUpVote(){
@@ -300,6 +384,10 @@ public class TutorialVoteScript : MonoBehaviour {
 		LocalTurnVoting localMan = GameObject.FindGameObjectWithTag ("Local Room").GetComponent<LocalTurnVoting> ();
 		localMan.MoveUpSign ();
 		localMan.MoveUpPedestal ();
+		if (drawing1 == true) {
+			Invoke ("MoveFingerIn", 1.5f);
+			Debug.Log ("Send UP Vote");
+		}
 
 	}
 
@@ -327,10 +415,16 @@ public class TutorialVoteScript : MonoBehaviour {
 			artistNum = 0;
 		}
 
+
+
+
 		if (drawing1 == true) {
-			Invoke ("AfterVote", 2.5f);
+			Invoke ("AfterVote", 1.0f);
+			if (artistNum == 3) {
+				confettiBlast.SetActive (true);
+			}
 		} else {
-			Invoke ("AfterVote2", 2.5f);
+			Invoke ("AfterVote2", 1.0f);
 		}
 	}
 
@@ -380,6 +474,7 @@ public class TutorialVoteScript : MonoBehaviour {
 	void RevealPoints(){
 	
 		dupeText.text = intro1Words6;
+		starBlast.SetActive (true);
 		InvokeRepeating ("BubbleOneShake", 3.0f, 3.0f);
 	
 	}
@@ -387,7 +482,7 @@ public class TutorialVoteScript : MonoBehaviour {
 	void TurnOffTutorialDupe (){
 	
 		tutorialDupe.SetActive (false);
-		Invoke ("StartDupeGuess", 2.0f);
+		Invoke ("StartDupeGuess", .5f);
 	}
 
 	void StartDupeGuess (){
@@ -400,15 +495,15 @@ public class TutorialVoteScript : MonoBehaviour {
 	}
 
 	void DupeLooking (){
-		DOTween.To(()=> sliderVal.value, x=> sliderVal.value = x, 0, 2.0f).OnComplete(BackUp);
+		DOTween.To(()=> sliderVal.value, x=> sliderVal.value = x, 0, 1.5f).OnComplete(BackUp);
 	}
 
 	void BackUp (){
-		DOTween.To(()=> sliderVal.value, x=> sliderVal.value = x, .95f, 1.2f).OnComplete(ToElephant);
+		DOTween.To(()=> sliderVal.value, x=> sliderVal.value = x, .95f, .8f).OnComplete(ToElephant);
 	}
 
 	void ToElephant(){
-		DOTween.To(()=> sliderVal.value, x=> sliderVal.value = x, .44f, .8f).OnComplete(SelectElephant);
+		DOTween.To(()=> sliderVal.value, x=> sliderVal.value = x, .44f, .5f).OnComplete(SelectElephant);
 	}
 
 	void SelectElephant(){
@@ -435,7 +530,7 @@ public class TutorialVoteScript : MonoBehaviour {
 
 		drawing2Votes [artistNum - 1].SetActive (true);
 
-		Invoke ("RevealPoints2", 2.0f);
+		Invoke ("RevealPoints2", 1.0f);
 
 	}
 
@@ -443,8 +538,39 @@ public class TutorialVoteScript : MonoBehaviour {
 
 		dupeText.text = intro2Words3;
 		CancelInvoke ();
-		InvokeRepeating ("BubbleOneShake", 3.0f, 3.0f);
+		InvokeRepeating ("BubbleOneShake", 2.0f, 3.0f);
 
 	}
+
+	void MoveFingerIn(){
+		fingerMovement = true;
+		finger.transform.DOMove (onScreenPos, .75f).SetId ("finger").OnComplete(MoveDown);
+	}
+
+	void MoveDown(){
+		Vector3 smaller = new Vector3 (.16f, .17f, 1);
+		finger.transform.DOScale(smaller,.3f).SetEase(Ease.OutBounce).SetId ("finger").OnComplete(MoveFingerToFrame);
+	}
+
+	void MoveFingerToFrame(){
+		finger.transform.DOMove (onFrameSPos, .75f).SetId ("finger").OnComplete(MoveUp);
+	}
+
+	void MoveUp(){
+		Vector3 bigger = new Vector3 (.19f, .2f, 1);
+		finger.transform.DOScale(bigger,.3f).SetEase(Ease.OutBounce).SetId ("finger").OnComplete(MoveFingerToLeft);
+	}
+
+	void MoveFingerToLeft(){
+		fingerMovement = false;
+		finger.transform.DOLocalMoveX (-7.3f, .75f).SetId ("finger").OnComplete(MoveFingerOff);
+	}
+
+	void MoveFingerOff(){
+		fingerMovement = false;
+		finger.transform.DOMove (offScreenPos, .75f).SetId ("finger");
+	}
+
+
 
 }

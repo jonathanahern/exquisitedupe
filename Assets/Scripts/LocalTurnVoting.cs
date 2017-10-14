@@ -365,7 +365,7 @@ public class LocalTurnVoting : MonoBehaviour {
 
 	void MoveInGuesser(){
 
-		guessObject.transform.DOLocalMoveX (0, 1.0f).SetEase (inBump);
+		guessObject.transform.DOLocalMoveX (0, .75f).SetEase (inBump);
 
 	}
 
@@ -751,8 +751,8 @@ public class LocalTurnVoting : MonoBehaviour {
 		sign.SetActive (false);
 		guessNonDupe.SetActive (false);
 
-		Camera.main.transform.DOLocalMoveY (-2.6f, 1.5f).OnComplete(MoveInGuesser);
-		DOTween.To(()=> Camera.main.orthographicSize, x=> Camera.main.orthographicSize = x, 6.7f, 1.5f);
+		Camera.main.transform.DOLocalMoveY (-2.6f, .75f).OnComplete(MoveInGuesser);
+		DOTween.To(()=> Camera.main.orthographicSize, x=> Camera.main.orthographicSize = x, 6.7f, .75f);
 
 	}
 

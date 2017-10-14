@@ -32,6 +32,8 @@ public class LobbyMenu : MonoBehaviour {
 
 	RoomManager roomMan;
 	public GameObject frameText;
+	public GameObject tutorialWords;
+	public GameObject fiveRooms;
 
 	public GameObject turnButtonObj;
 	public Transform turnHolder;
@@ -66,10 +68,10 @@ public class LobbyMenu : MonoBehaviour {
 		startPos = newCats.position.x;
 		roomMan = GameObject.FindGameObjectWithTag ("Room Manager").GetComponent<RoomManager> ();
 
-		if (roomMan.cameFromTutorial == true) {
-			GetAllCategories ();
-			roomMan.cameFromTutorial = false;
-		}
+//		if (roomMan.cameFromTutorial == true) {
+//			GetAllCategories ();
+//			roomMan.cameFromTutorial = false;
+//		}
 
 		if (tutorialMode == true) {
 			return;
@@ -89,6 +91,12 @@ public class LobbyMenu : MonoBehaviour {
 
 
 		UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
+
+		if (userAccount.firstLogin == true) {
+			AskForTutorial ();
+			userAccount.firstLogin = false;
+		}
+
 		string roomsString = userAccount.activeRooms;
 
 		roomsString = roomsString.TrimEnd ('/');
@@ -137,6 +145,21 @@ public class LobbyMenu : MonoBehaviour {
 		
 		}
 		
+	}
+
+	void AskForTutorial(){
+
+		tutorialWords.SetActive (true);
+		fiveRooms.SetActive (false);
+		offScreen = frameMessage.transform.position;
+		frameMessage.transform.DOLocalMoveY(0,1.0f).SetEase (Ease.OutBounce);
+
+	}
+
+	public void SendUpTutorial(){
+	
+		frameMessage.transform.DOLocalMoveY(offScreen.y,1.0f);
+
 	}
 
 	void AutoUpdateRooms (){
@@ -198,7 +221,6 @@ public class LobbyMenu : MonoBehaviour {
 		okToClick = false;
 
 		Invoke ("OkToClickAgain", 2.5f);
-
 		if (roomCount > 4) {
 			FiveRoomsOnly ();
 			return;
@@ -264,7 +286,8 @@ public class LobbyMenu : MonoBehaviour {
 	}
 
 	public void FiveRoomsOnly(){
-
+		tutorialWords.SetActive (false);
+		fiveRooms.SetActive (true);
 		offScreen = frameMessage.transform.position;
 
 		frameMessage.transform.DOLocalMoveY(0,1.0f).SetEase (Ease.OutBounce);

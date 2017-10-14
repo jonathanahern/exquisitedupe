@@ -129,7 +129,6 @@ public class CameraScript : MonoBehaviour {
 	}
 
 	void StartTutorial(){
-	
 		tutorialOne.StartGame ();
 	
 	}

@@ -86,6 +86,11 @@ public class LocalRoomManager : MonoBehaviour {
 
 	void ShakeButton (){
 	
+		if (tutorialMode == true) {
+
+			return;
+		}
+
 		Vector3 punchSize = new Vector3 (.5f, .5f, .5f);
 		//Debug.Log (punchSize);
 		theDrawButton.transform.DOPunchScale (punchSize, 1.0f,10,.01f).SetDelay(3.0f).SetId("buttshake").OnComplete(ShakeButton);		

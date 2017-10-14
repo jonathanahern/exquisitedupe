@@ -14,15 +14,15 @@ public class TutorialPhaseOneScript : MonoBehaviour {
 	public GameObject speechBubble;
 	public CameraScript cameraOne;
 
-	string intro1Words1 = "Your subject for this painting is \"elephant\"";
-	string intro1Words2 = "This outline is just a suggestion to show direction and general shape";
-	string intro1Words3 = "You were assigned the top right corner, so you only need to draw the elephant's head";
-	string intro1Words4 = "These brushes are where you connect with the other players' drawings";
-	string intro1Words5 = "By drawing on the brushes you will create a complete masterpiece!";
+	//string intro1Words1 = "Your subject for this painting is \"elephant\"";
+	string intro1Words2 = "This outline is just a suggestion to show DIRECTION AND SHAPE";
+	string intro1Words3 = "You're drawing the top right corner, so you must DRAW THE ELEPHANT'S HEAD";
+	string intro1Words4 = "Connect to the other players by drawing to these brushes";
+	string intro1Words5 = "Drawing to these brushes will create a connected masterpiece!";
 	string intro1Words6 = "Start drawing an elephant head!";
 
-	string intro2Words1 = "This time the category is \"SUPER HEROES\" and your subject is \"The Flash\"";
-	string intro2Words2 = "Try not to draw so obvious this time so the dupe can't guess it";
+	string intro2Words1 = "This time the category is \"SUPER HEROES\" and your subject is \"THE FLASH\"";
+//	string intro2Words2 = "Try not to draw so obviously this time so the dupe can't guess it";
 
 	public LineSpawnerScipt lineSpawn;
 	public LocalRoomManager localRoom;
@@ -47,21 +47,63 @@ public class TutorialPhaseOneScript : MonoBehaviour {
 
 	int playerNum = 0;
 
+	public GameObject drawButton;
+
+	public RectTransform bottomPanel;
+	Vector3 panelScreen;
+	Vector3 panelScreenOff;
+
+	public GameObject readyButts;
+	public GameObject drawingButts;
+
+	public RectTransform fingerOne;
+	Vector2 offscreenPosF1;
+	Vector2 screenPosF1;
+
+	public Transform brushOne;
+	public Transform brushTwo;
+
+//	public RectTransform fingerTwo;
+//	Vector2 offscreenPosF2;
+//	Vector2 screenPosF2;
+//	Vector2 midScreenPos;
+
+
+	void Awake (){
+		roomMan = GameObject.FindGameObjectWithTag ("Room Manager").GetComponent<RoomManager> ();
+	}
+
 	// Use this for initialization
 	void Start () {
 
+		screenPosF1 = fingerOne.anchoredPosition;
+		offscreenPosF1 = new Vector2 (screenPosF1.x, screenPosF1.y - 300);
+		fingerOne.anchoredPosition = offscreenPosF1;
+
 		if (drawing1 == true) {
-			introText.text = intro1Words1;
+
+//			screenPosF2 = fingerTwo.anchoredPosition;
+//			offscreenPosF2 = new Vector2 (screenPosF2.x-500, screenPosF2.y);
+//			midScreenPos = new Vector2 (screenPosF2.x-250, screenPosF2.y);
+//			fingerTwo.anchoredPosition = offscreenPosF2;
+
+
+
+			introText.text = intro1Words2;
 			playerNum = 2;
-			InvokeRepeating ("BubbleOneShake", 5.0f, 3.0f);
+			InvokeRepeating ("DrawShake", 3.0f, 3.0f);
+			Invoke ("MoveFingerOneIn", 4.0f);
 		}
 
 		if (drawing2 == true) {
 			introText.text = intro2Words1;
 			playerNum = 4;
-			InvokeRepeating ("BubbleOneShake", 5.0f, 3.0f);
+			Invoke ("MoveFingerOneIn", 6.5f);
+			InvokeRepeating ("DrawShake", 4.5f, 1.5f);
 		}
 
+		panelScreen = bottomPanel.anchoredPosition;
+		panelScreenOff = new Vector3 (panelScreen.x, panelScreen.y - 500, panelScreen.z);
 
 		cameraOne.ZoomIn(playerNum);
 		lineSpawn.dontDraw = true;
@@ -71,12 +113,47 @@ public class TutorialPhaseOneScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+
+		if (Input.GetMouseButtonDown(0) && roomMan.curtainMoving == false)
+		{
+
+			if (roomMan == null) {
+				return;
+			}
+
+			if (introText.text == intro1Words3 && speechBubble.activeInHierarchy == true) {
+				CancelInvoke ();
+//				Invoke ("MoveTheFing", 2.5f);
+				InvokeRepeating ("BubbleOneShake", 4.0f, 3.0f);
+				FadeOutElephant ();
+				Invoke("JiggleBrushes", 1.5f);
+				LoadBrushes ();
+				introText.text = intro1Words5;
+
+			} else if (introText.text == intro1Words5 && speechBubble.activeInHierarchy == true) {
+				tutorialDupe.SetActive (false);
+				lineSpawn.dontDraw = false;
+				okayToClick = true;
+				CancelInvoke ();
+				DOTween.Kill ("brushjig");
+				Vector3 twelve = new Vector3 (.12f, .12f, .12f);
+				brushOne.DOScale (twelve, .5f);
+				brushTwo.DOScale (twelve, .5f);
+			}
+
+		}
 		
 	}
 
 	void BubbleOneShake (){
 
 		bubbleOne.DOShakeScale(1.0f, .2f, 10);
+
+	}
+
+	void DrawShake (){
+
+		drawButton.transform.DOShakeScale(1.0f, .4f, 10);
 
 	}
 
@@ -91,18 +168,7 @@ public class TutorialPhaseOneScript : MonoBehaviour {
 
 	public void IntroBubble () {
 
-		if (introText.text == intro1Words1) {
-			introText.text = intro1Words2;
-			CancelInvoke ();
-			InvokeRepeating ("BubbleOneShake", 4.0f, 3.0f);
-		} else if (introText.text == intro1Words2){
-			speechBubble.SetActive (false);
-			cameraOne.MoveToSectionTutorial ();
-			introText.text = intro1Words3;
-			CancelInvoke ();
-			InvokeRepeating ("BubbleOneShake", 7.0f, 3.0f);
-
-		} else if (introText.text == intro1Words3){
+		if (introText.text == intro1Words3){
 			FadeOutElephant ();
 			LoadBrushes ();
 			introText.text = intro1Words4;
@@ -124,20 +190,43 @@ public class TutorialPhaseOneScript : MonoBehaviour {
 		}
 	}
 
-	public void DupeBubble2 () {
-
-		if (introText.text == intro2Words1) {
-			introText.text = intro2Words2;
-			CancelInvoke ();
-			InvokeRepeating ("BubbleOneShake", 3.0f, 3.0f);
-		} else if (introText.text == intro2Words2) {
-			CancelInvoke ();
-			tutorialDupe.SetActive (false);
-			cameraOne.MoveToSectionTutorial ();
-		}
+	public void DrawButtonHit(){
+	
+		DOTween.Kill ("finger1");
+		MoveFingerOneOut ();
+		speechBubble.SetActive (false);
+		cameraOne.MoveToSectionTutorial ();
+		introText.text = intro1Words3;
+		CancelInvoke ();
+		InvokeRepeating ("BubbleOneShake", 5.0f, 3.0f);
+		bottomPanel.DOAnchorPos (panelScreenOff, .5f).OnComplete(SwitchToDrawingButts);
 
 	}
 
+	public void DrawButtonHitSecond(){
+
+		if (introText.text == intro2Words1) {
+
+			DOTween.Kill ("finger1");
+			MoveFingerOneOut ();
+			speechBubble.SetActive (false);
+			cameraOne.MoveToSectionTutorial ();
+			introText.text = "";
+			CancelInvoke ();
+			tutorialDupe.SetActive (false);
+			bottomPanel.DOAnchorPos (panelScreenOff, .5f).OnComplete (SwitchToDrawingButts);
+
+		}
+	}
+
+
+	void SwitchToDrawingButts (){
+	
+		readyButts.SetActive (false);
+		drawingButts.SetActive (true);
+
+	}
+		
 	public void StartGame(){
 
 		localRoom.MoveUpPanel ();
@@ -262,6 +351,7 @@ public class TutorialPhaseOneScript : MonoBehaviour {
 		}
 
 		if (readyToAdvance == true) {
+			okayToClick = false;
 			CollectYourLineData ();
 		} else {
 			localRoom.StillHaveBrushes ();
@@ -374,5 +464,37 @@ public class TutorialPhaseOneScript : MonoBehaviour {
 		}
 
 	}
+
+	void MoveFingerOneIn(){
+
+		fingerOne.DOAnchorPos (screenPosF1, .6f).SetId ("finger1").OnComplete(PressDownF1);
+		Invoke ("MoveFingerOneOut", 2.0f);
+
+	}
+
+	void PressDownF1(){
+		Vector3 smaller = new Vector3 (-.15f, -.15f, -.15f);
+		fingerOne.DOPunchScale (smaller, .5f, 1, .01f);
+	}
+
+	void MoveFingerOneOut(){
+
+		fingerOne.DOAnchorPos (offscreenPosF1, .6f);
+
+	}
+
+	void JiggleBrushes(){
+
+		brushOne = GameObject.FindGameObjectWithTag ("Brush X").transform;
+		brushTwo = GameObject.FindGameObjectWithTag ("Brush Y").transform;
+
+		Vector3 jiggleSize = new Vector3 (.15f, .15f, .15f);
+		brushOne.DOPunchScale (jiggleSize, .5f, 1, .1f).SetDelay (1.5f).SetId ("brushjig").OnComplete(JiggleBrushes);
+		brushTwo.DOPunchScale (jiggleSize, .5f, 1, .1f).SetDelay (1.5f).SetId ("brushjig");
+
+	}
+
+
+
 
 }
