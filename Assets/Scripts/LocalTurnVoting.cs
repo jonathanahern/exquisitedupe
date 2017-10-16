@@ -124,18 +124,7 @@ public class LocalTurnVoting : MonoBehaviour {
 			lineMats[i].color = regColors[i];
 
 		}
-
-		//snapShot = GameObject.FindObjectOfType<CaptureAndSave> ();
-
-
-		//		foreach (Material lineMat in lineMats) {
-		//
-		//			Color lineColor = lineMat.color;
-		//			Color fullColor = new Color (lineColor.r, lineColor.g, lineColor.b, 1.0f);
-		//			lineMat.color = fullColor;
-		//			
-		//		}
-
+			
 		roomMan = GameObject.FindGameObjectWithTag ("Room Manager");
 
 		if (roomMan == null) {
@@ -294,7 +283,7 @@ public class LocalTurnVoting : MonoBehaviour {
 
 			string[] points = line.Split ('@');
 
-			lineRend.numPositions = points.Length;
+			lineRend.positionCount = points.Length;
 
 			for (int i = 0; i < points.Length; i++) {
 
@@ -322,7 +311,7 @@ public class LocalTurnVoting : MonoBehaviour {
 
 			string[] points = dot.Split ('@');
 
-			lineRend.numPositions = points.Length;
+			lineRend.positionCount = points.Length;
 
 			for (int i = 0; i < points.Length; i++) {
 
@@ -609,7 +598,7 @@ public class LocalTurnVoting : MonoBehaviour {
 
 		MoveDownSign ();
 		MoveDownNonDupeGuess ();
-		Invoke ("LaunchNonDupeGuess", 2.0f);
+		Invoke ("LaunchNonDupeGuess", .4f);
 
 
 	}
@@ -619,7 +608,7 @@ public class LocalTurnVoting : MonoBehaviour {
 		MoveDownSign ();
 		myDupeSubjectGuess = "Pass";
 		MoveDownNonDupeGuess ();
-		Invoke ("LaunchVote2", 2.0f);
+		Invoke ("LaunchVote2", 1.0f);
 
 	}
 

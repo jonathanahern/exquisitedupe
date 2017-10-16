@@ -87,7 +87,7 @@ public class LineScript : MonoBehaviour {
 
 		points.Add (point);
 
-		lineRend.numPositions = points.Count;
+		lineRend.positionCount = points.Count;
 		lineRend.SetPosition (points.Count - 1, point);
 
 	}
@@ -113,8 +113,8 @@ public class LineScript : MonoBehaviour {
 	
 		deadLine = true;
 		DestroyCollider ();
-		lineRend.numPositions = points.Count;
-		Vector3 lastPoint = lineRend.GetPosition(lineRend.numPositions-1);
+		lineRend.positionCount = points.Count;
+		Vector3 lastPoint = lineRend.GetPosition(lineRend.positionCount-1);
 		lineSpawn.MakeNewDot (brushPos, brushPosMid,lastPoint,brushHit);
 		lineSpawn.MakeNewLine (lastPoint, midPos);
 	

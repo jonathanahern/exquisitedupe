@@ -30,6 +30,9 @@ public class LineSpawnerScipt : MonoBehaviour {
 	public bool drawingScene;
 	public bool dontDraw;
 
+	public Material[] lineMats;
+	public Color[] regColors;
+
 	// Use this for initialization
 	void Start () {
 
@@ -40,6 +43,11 @@ public class LineSpawnerScipt : MonoBehaviour {
 			yMin = -3.83f;
 			yMax = 3.8f;
 		}
+
+		for (int i = 0; i < lineMats.Length; i++) {
+			lineMats[i].color = regColors[i];
+		}
+
 	}
 
 	public void GetColor(int color) {
@@ -181,7 +189,7 @@ public class LineSpawnerScipt : MonoBehaviour {
 		GameObject dotGo = Instantiate (dotPrefab);
 		LineRenderer dotRend = dotGo.GetComponent<LineRenderer> ();
 
-		dotRend.numPositions = 3;
+		dotRend.positionCount = 3;
 		dotRend.SetPosition (0, firstPoint);
 		dotRend.SetPosition (1, secondPoint);
 		dotRend.SetPosition (2, thirdPoint);

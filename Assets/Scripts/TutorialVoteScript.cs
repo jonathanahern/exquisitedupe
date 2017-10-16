@@ -247,7 +247,7 @@ public class TutorialVoteScript : MonoBehaviour {
 
 			string[] points = line.Split ('@');
 
-			lineRend.numPositions = points.Length;
+			lineRend.positionCount = points.Length;
 
 			for (int i = 0; i < points.Length; i++) {
 
@@ -275,7 +275,7 @@ public class TutorialVoteScript : MonoBehaviour {
 
 			string[] points = dot.Split ('@');
 
-			lineRend.numPositions = points.Length;
+			lineRend.positionCount = points.Length;
 
 			for (int i = 0; i < points.Length; i++) {
 

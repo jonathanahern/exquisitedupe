@@ -378,7 +378,7 @@ public class TutorialPhaseOneScript : MonoBehaviour {
 		foreach (GameObject line in lines) {
 
 			LineRenderer lineRend = line.GetComponent<LineRenderer> ();
-			int lineAmount = lineRend.numPositions;
+			int lineAmount = lineRend.positionCount;
 
 			for (int i = 0; i < lineAmount; i++) {
 
@@ -416,7 +416,7 @@ public class TutorialPhaseOneScript : MonoBehaviour {
 		foreach (GameObject dot in dots) {
 
 			LineRenderer lineRend = dot.GetComponent<LineRenderer> ();
-			int lineAmount = lineRend.numPositions;
+			int lineAmount = lineRend.positionCount;
 
 			for (int i = 0; i < lineAmount; i++) {
 

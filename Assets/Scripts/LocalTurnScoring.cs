@@ -134,10 +134,18 @@ public class LocalTurnScoring : MonoBehaviour {
 
 	public AnimationCurve splatterCurve;
 	public AnimationCurve starEnd;
+	public AnimationCurve wordBounce;
 	//bool privateScoring = false;
+
+	public Material[] lineMats;
+	public Color[] regColors;
 
 	// Use this for initialization
 	void Start () {
+
+		for (int i = 0; i < lineMats.Length; i++) {
+			lineMats[i].color = regColors[i];
+		}
 
 		starPoints = new GameObject[3];
 		abovePainting = starHolder.transform.position.y;
@@ -271,7 +279,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 			}
 
-			starHolder.transform.DOMoveY (abovePainting, .8f * speed).SetEase(Ease.OutBounce);
+			starHolder.transform.DOMoveY (abovePainting, .8f * speed).SetEase(wordBounce);
 
 		}
 
@@ -289,7 +297,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		}
 
-		starHolder.transform.DOMoveY (abovePainting, 1.2f * speed).SetEase(Ease.OutBounce);
+		starHolder.transform.DOMoveY (abovePainting, 1.2f * speed).SetEase(wordBounce);
 
 	}
 
@@ -734,7 +742,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 			string[] points = line.Split ('@');
 
-			lineRend.numPositions = points.Length;
+			lineRend.positionCount = points.Length;
 
 			for (int i = 0; i < points.Length; i++) {
 
@@ -762,7 +770,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 			string[] points = dot.Split ('@');
 
-			lineRend.numPositions = points.Length;
+			lineRend.positionCount = points.Length;
 
 			for (int i = 0; i < points.Length; i++) {
 
@@ -780,8 +788,8 @@ public class LocalTurnScoring : MonoBehaviour {
 
 	void BeginDupeReveal () {
 		stepNum = 1;
-		intro.transform.DOLocalMoveX (-1000, 1.0f * speed).SetEase (Ease.OutBounce);
-		questionObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
+		intro.transform.DOLocalMoveX (-1000, 1.0f * speed);
+		questionObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (wordBounce);
 		MoveStarsUp (3);
 
 		Invoke ("RevealDupeVotes", 2.0f * speed);
@@ -816,7 +824,7 @@ public class LocalTurnScoring : MonoBehaviour {
 		}
 
 		//Vector3 neg90 = new Vector3 (0, 0, -90);
-		nameObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
+		nameObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (wordBounce);
 		Invoke ("RevealDupeGuess", 2.0f * speed);
 	}
 		
@@ -864,7 +872,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		//Vector3 neg90 = new Vector3 (0, 0, -90);
 		//questionRotation.transform.DORotate (neg90, 1.0f).SetEase (Ease.OutBounce);
-		nameObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
+		nameObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (wordBounce);
 		Invoke ("RevealDupeStatus", 1.5f * speed);
 	}
 
@@ -891,7 +899,7 @@ public class LocalTurnScoring : MonoBehaviour {
 		//Invoke ("GiveOutDupePoints", 1.0f * speed);
 		Invoke ("SendOutDupeStars", 1.0f * speed);
 		//Vector3 pos90 = new Vector3 (0, 0, 90);
-		dupeStatusObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
+		dupeStatusObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (wordBounce);
 		questionObj.transform.DOLocalMoveX (1000, 1.0f * speed);
 		nameObj.transform.DOLocalMoveX (1000, 1.0f * speed);
 
@@ -1036,7 +1044,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		MoveStarsUp (3);
 
-		questionObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase(Ease.InBounce);
+		questionObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase(wordBounce);
 		dupeStatusObj.transform.DOLocalMoveX (-1000, 1.0f * speed);
 		Invoke ("RevealSecondVotes", 2.0f * speed);
 			
@@ -1079,7 +1087,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			}
 		}
 
-		nameObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce).OnComplete(SendOutStarsAward2);
+		nameObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (wordBounce).OnComplete(SendOutStarsAward2);
 
 	}
 
@@ -1373,7 +1381,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			award3QText.text = "WHO GOT THE MOST VAGUE PANTS VOTES?";
 		}
 
-		award3Q.transform.DOLocalMoveX (0, 1.0f * speed).SetEase(Ease.InBounce);
+		award3Q.transform.DOLocalMoveX (0, 1.0f * speed).SetEase(wordBounce);
 		questionObj.transform.DOLocalMoveX (-1000, 1.0f * speed);
 		nameObj.transform.DOLocalMoveX (-1000, 1.0f * speed);
 
@@ -1418,7 +1426,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		Vector3 farLeft = new Vector3 (-1000, nameObj.transform.position.y, nameObj.transform.position.z);
 		nameObj.transform.position = farLeft;
-		nameObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce).OnComplete(GiveOutAward3Points);
+		nameObj.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (wordBounce).OnComplete(GiveOutAward3Points);
 
 	}
 
@@ -1506,7 +1514,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		finale.GetComponent<Text> ().text = "WHAT DID Y'ALL THINK THE DUPE DREW?";
 
-		finale.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
+		finale.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (wordBounce);
 		award3Q.transform.DOLocalMoveX (-1000, 1.0f * speed);
 		nameObj.transform.DOLocalMoveX (-1000, 1.0f * speed);
 		Invoke ("MoveFinaleOver", 3.5f * speed);
@@ -1515,14 +1523,14 @@ public class LocalTurnScoring : MonoBehaviour {
 
 	void MoveFinaleOver(){
 
-		finale.transform.DOLocalMoveX (1000, 1.0f * speed).SetEase (Ease.OutBounce).OnComplete(MoveInGuesses);
+		finale.transform.DOLocalMoveX (1000, 1.0f * speed).OnComplete(MoveInGuesses);
 
 	}
 
 	void MoveInGuesses(){
 	
 		for (int i = 0; i < guessObjs.Length; i++) {
-			guessObjs [i].GetComponent<RectTransform> ().DOAnchorPos(guessOnScreen[i], .5f * speed).SetEase(Ease.OutBounce);
+			guessObjs [i].GetComponent<RectTransform> ().DOAnchorPos(guessOnScreen[i], .5f * speed).SetEase(wordBounce);
 		}
 
 		Invoke ("MoveInDupeWord", 2.5f * speed);
@@ -1531,7 +1539,7 @@ public class LocalTurnScoring : MonoBehaviour {
 
 	void MoveInDupeWord(){
 
-		dupeDrew.GetComponent<RectTransform>().DOAnchorPos (dupeDrewScreenPos, 1.0f * speed).SetEase (Ease.OutBounce);
+		dupeDrew.GetComponent<RectTransform>().DOAnchorPos (dupeDrewScreenPos, 1.0f * speed).SetEase (wordBounce);
 
 		Invoke ("ScoreGuesses", 2.5f * speed);
 
@@ -1606,7 +1614,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			guessObjs [i].GetComponent<RectTransform> ().DOAnchorPos(guessOffScreen[i], 1.0f * speed);
 		}
 	
-		dupeDrew.transform.DOLocalMoveX (-1000, 1.0f * speed).SetEase (Ease.OutBounce);
+		dupeDrew.transform.DOLocalMoveX (-1000, 1.0f * speed);
 
 		Invoke ("StartDupeGuessReveal", 1.0f * speed);
 	}
@@ -1618,14 +1626,14 @@ public class LocalTurnScoring : MonoBehaviour {
 		finale.GetComponent<Text> ().text = "AND FINALLY... WHAT'D THE DUPE GUESS???";
 		guess.GetComponent<Text> ().text = dupeGuess;
 
-		finale.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
+		finale.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (wordBounce);
 		Invoke ("RevealDupeSubjectGuess", 3.5f * speed);
 
 	}
 
 	void RevealDupeSubjectGuess (){
 
-		guess.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
+		guess.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (wordBounce);
 		finale.transform.DOLocalMoveX (1000, 1.0f * speed);
 		Invoke ("RevealResult", 2.5f * speed);
 	}
@@ -1640,7 +1648,7 @@ public class LocalTurnScoring : MonoBehaviour {
 			finale.GetComponent<Text> ().text = "WRONG!";
 		}
 	
-		finale.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
+		finale.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (wordBounce);
 		guess.transform.DOLocalMoveX (-1000, 1.0f * speed);
 		Invoke ("GiveFinalePoints", 2.5f * speed);
 	}
@@ -1873,9 +1881,9 @@ public class LocalTurnScoring : MonoBehaviour {
 
 //		gameWinnerName.text = players [winnerNumber].text;
 
-		finale.transform.DOLocalMoveX (1000, 1.0f * speed).SetEase (Ease.OutBounce);
-		dupeStatusObj.transform.DOLocalMoveX (1000, 1.0f * speed).SetEase (Ease.OutBounce);
-		trueArtist.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
+		finale.transform.DOLocalMoveX (1000, 1.0f * speed);
+		dupeStatusObj.transform.DOLocalMoveX (1000, 1.0f * speed);
+		trueArtist.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (wordBounce);
 		//Invoke ("BringInWinner", 3.5f * speed);
 
 		stepNum = 6;
@@ -1887,8 +1895,8 @@ public class LocalTurnScoring : MonoBehaviour {
 
 	void BringInWinner(){
 		
-		trueArtist.transform.DOLocalMoveX (-1000, 1.0f * speed).SetEase (Ease.OutBounce);
-		congrats.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (Ease.OutBounce);
+		trueArtist.transform.DOLocalMoveX (-1000, 1.0f * speed);
+		congrats.transform.DOLocalMoveX (0, 1.0f * speed).SetEase (wordBounce);
 		exitSign.SetActive (true);
 
 	}

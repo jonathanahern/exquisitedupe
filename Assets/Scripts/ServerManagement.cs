@@ -190,7 +190,7 @@ public class ServerManagement : MonoBehaviour {
 
 			string[] points = line.Split ('@');
 
-			lineRend.numPositions = points.Length;
+			lineRend.positionCount = points.Length;
 
 			for (int i = 0; i < points.Length; i++) {
 				//Debug.Log (points [i]);
@@ -219,7 +219,7 @@ public class ServerManagement : MonoBehaviour {
 
 			string[] points = dot.Split ('@');
 
-			lineRend.numPositions = points.Length;
+			lineRend.positionCount = points.Length;
 
 			for (int i = 0; i < points.Length; i++) {
 

@@ -41,7 +41,7 @@ public class CategoryCreatorScript : MonoBehaviour {
 			foreach (GameObject line in lines) {
 
 				LineRenderer lineRend = line.GetComponent<LineRenderer> ();
-				int lineAmount = lineRend.numPositions;
+				int lineAmount = lineRend.positionCount;
 
 				for (int i = 0; i < lineAmount; i++) {
 
@@ -114,7 +114,7 @@ public class CategoryCreatorScript : MonoBehaviour {
 		foreach (GameObject line in lines) {
 
 			LineRenderer lineRend = line.GetComponent<LineRenderer> ();
-			int lineAmount = lineRend.numPositions;
+			int lineAmount = lineRend.positionCount;
 
 			for (int i = 0; i < lineAmount; i++) {
 
