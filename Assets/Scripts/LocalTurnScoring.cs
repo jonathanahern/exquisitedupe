@@ -353,13 +353,13 @@ public class LocalTurnScoring : MonoBehaviour {
 			Vector3 fullRotation = new Vector3 (0,0,540);
 
 			if (playerPos.x > 0) {
-				offscreen = new Vector3 (playerPos.x + 2.5f, playerPos.y + 2.5f, playerPos.z);
+				offscreen = new Vector3 (playerPos.x + 4.0f, playerPos.y + 3.5f, playerPos.z);
 			} else {
-				offscreen = new Vector3 (playerPos.x - 2.5f, playerPos.y + 2.5f, playerPos.z);
+				offscreen = new Vector3 (playerPos.x - 4.0f, playerPos.y + 3.5f, playerPos.z);
 			}
 
-			star.transform.DOMove (offscreen, 1 * speed).SetEase(Ease.OutCirc);
-			star.transform.DORotate (fullRotation, 1 * speed, RotateMode.FastBeyond360);
+			star.transform.DOMove (offscreen, 1.5f * speed).SetEase(Ease.OutCirc);
+			star.transform.DORotate (fullRotation, 1.5f * speed, RotateMode.FastBeyond360);
 		
 		}
 	
@@ -1547,7 +1547,6 @@ public class LocalTurnScoring : MonoBehaviour {
 
 	void ScoreGuesses (){
 
-
 		for (int i = 0; i < guesserNames.Length; i++) {
 
 			int playerNum = 0;
@@ -1557,7 +1556,7 @@ public class LocalTurnScoring : MonoBehaviour {
 				if (players [t].text == guesserNames [i].text) {
 				
 					playerNum = t +1;
-				
+					Debug.Log ("Num: " + playerNum);
 				}
 
 			}
@@ -1599,7 +1598,9 @@ public class LocalTurnScoring : MonoBehaviour {
 	}
 
 	void SetupGuessIcon (int playerNum, int points){
-		
+
+		Debug.Log ("asdf: " + playerNum);
+
 		GameObject newIcon = Instantiate (awardPrefab, Vector3.zero, Quaternion.identity, awardHolder [playerNum - 1]);
 		AwardIconScript awardScript = newIcon.GetComponent<AwardIconScript> ();
 		awardScript.SetupGuess (points);

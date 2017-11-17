@@ -561,10 +561,10 @@ public class RoomManager : MonoBehaviour {
 
 				//Debug.Log ("It did happen! " + category);
 
-				if (category.StartsWith ("abcde")) {
+				if (category.StartsWith ("v1")) {
 				
-					category = category.Substring (5);
-					roomScript.privateRoom = true;
+					category = category.Substring (2);
+					//roomScript.privateRoom = true;
 				}
 
 				roomScript.roomType = category;
@@ -1027,9 +1027,11 @@ public class RoomManager : MonoBehaviour {
 
 			for (int t = 0; t < catsWanted.Length; t++) {
 
-				if (acceptableStrings [i] == catsWanted [t]) {
+				string testableCat = "v1" + acceptableStrings [i];
+
+				if (testableCat == catsWanted [t]) {
 				
-					bestStrings.Add (catsWanted [t]);
+					bestStrings.Add (acceptableStrings [i]);
 
 				}
 

@@ -57,7 +57,7 @@ public class LocalRoomManager : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
-		Invoke ("ShakeButton", 4.0f);
+		Invoke ("ShakeButton", 0.5f);
 
 		panelScreen = bottomPanel.anchoredPosition;
 		panelScreenOff = new Vector3 (panelScreen.x, panelScreen.y - 500, panelScreen.z);

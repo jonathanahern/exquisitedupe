@@ -336,7 +336,7 @@ public class LobbyMenu : MonoBehaviour {
 
 	IEnumerator getAllCategories (){
 
-		IEnumerator e = DCP.RunCS ("categories", "GetCategories");
+		IEnumerator e = DCP.RunCS ("categories", "GetCategories2");
 
 		while (e.MoveNext ()) {
 			yield return e.Current;

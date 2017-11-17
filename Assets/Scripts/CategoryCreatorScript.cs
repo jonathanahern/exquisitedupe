@@ -48,7 +48,7 @@ public class CategoryCreatorScript : MonoBehaviour {
 					Vector2 point = lineRend.GetPosition (i);
 
 
-					myLineString = myLineString + point.ToString ("F2") + "@";
+					myLineString = myLineString + point.ToString ("F3") + "@";
 
 					if (i == lineAmount - 1) {
 
@@ -120,8 +120,7 @@ public class CategoryCreatorScript : MonoBehaviour {
 
 				Vector2 point = lineRend.GetPosition (i);
 
-
-				myLineString = myLineString + point.ToString ("F2") + "@";
+				myLineString = myLineString + point.ToString ("F3") + "@";
 
 				if (i == lineAmount - 1) {
 

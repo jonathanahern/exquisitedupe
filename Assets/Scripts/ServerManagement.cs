@@ -5,6 +5,8 @@ using UnityEngine.SceneManagement;
 using DatabaseControl;
 using UnityEngine.UI;
 
+using System.IO;
+
 public class ServerManagement : MonoBehaviour {
 
 	public Text roomID;
@@ -14,6 +16,7 @@ public class ServerManagement : MonoBehaviour {
 	public Text username;
 	public Text catName;
 	public Text inOut;
+	public Text title;
 
 //	public Text roomList;
 //	public Text usernameAlterList;
@@ -32,16 +35,21 @@ public class ServerManagement : MonoBehaviour {
 	public GameObject orangeDot;
 
 	string shrinkString;
+	string drawingTemp;
+
+	string filePath;
 
 	// Use this for initialization
 	void Start () {
-		
+
+		filePath = Application.dataPath + "/PaintingArrays.txt";
+
 	}
 	
 	// Update is called once per frame
 	void Update () {
 
-		if (Input.GetKeyDown (KeyCode.A)) {
+		if (Input.GetKeyDown (KeyCode.Alpha1)) {
 		
 			GameObject[] lines = GameObject.FindGameObjectsWithTag ("Line");
 			foreach (GameObject item in lines) {
@@ -134,9 +142,10 @@ public class ServerManagement : MonoBehaviour {
 	void CreateDrawing (string drawing){
 
 		drawing = drawing.TrimEnd ('$');
+
+		drawingTemp = drawing + "|";
+
 		string[] drawingInfos = drawing.Split ('$');
-
-
 
 		foreach (string drawingInfo in drawingInfos) {
 
@@ -152,7 +161,6 @@ public class ServerManagement : MonoBehaviour {
 			dotsString = drawings [2];
 
 			DrawLine (colorNum, drawingString, dotsString);
-
 
 
 		}
@@ -406,5 +414,60 @@ public class ServerManagement : MonoBehaviour {
 		Debug.Log ("Changed?:" + returnText);
 
 	}
+
+	public void StoreDrawing(){
+	
+		//Debug.Log (filePath);
+
+		StreamWriter sWriter;
+
+		if (!File.Exists (filePath)) {
+		
+			sWriter = File.CreateText (filePath);
+
+		} else {
+		
+			sWriter = new StreamWriter (filePath, append: true);
+		
+		}
+
+		drawingTemp = title.text + "^" + drawingTemp;
+
+		sWriter.Write (drawingTemp);
+
+		sWriter.Close ();
+	
+	}
+
+	public void RestoreDrawing(){
+
+		//Debug.Log (filePath);
+
+		StreamReader sReader = new StreamReader(filePath);
+
+		string allData = sReader.ReadToEnd ();
+
+		sReader.Close ();
+
+		allData = allData.TrimEnd ('|');
+
+		string[] splitDrawings = allData.Split ('|');
+
+		for (int i = 0; i < splitDrawings.Length; i++) {
+
+			string[] splitTitle = splitDrawings[i].Split ('^');
+
+			if (splitTitle [0] == title.text) {
+				
+				CreateDrawing (splitTitle[1]);
+
+			}
+
+
+
+		}
+
+	}
+
 
 }

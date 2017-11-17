@@ -97,10 +97,10 @@ public class TurnRoomButton : MonoBehaviour {
 
 		Debug.Log ("From butt: " + fate);
 
-		string roomToSend = roomType.text;
+		string roomToSend = "v1" + roomType.text;
 
 		if (privateRoom == true) {
-			roomToSend = "abcde" + roomToSend;
+			roomToSend = "v1" + roomToSend;
 		}
 
 		UserAccountManagerScript.instance.TurnRoomSearch(roomToSend, fate, gameObject);
@@ -145,7 +145,7 @@ public class TurnRoomButton : MonoBehaviour {
 		string roomToSend = roomType.text;
 
 		if (privateRoom == true) {
-			roomToSend = "abcde" + roomToSend;
+			roomToSend = "v1" + roomToSend;
 		}
 
 		UserAccountManagerScript.instance.TurnRoomSearch(roomToSend, fate, gameObject);

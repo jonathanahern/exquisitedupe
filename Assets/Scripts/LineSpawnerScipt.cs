@@ -33,6 +33,8 @@ public class LineSpawnerScipt : MonoBehaviour {
 	public Material[] lineMats;
 	public Color[] regColors;
 
+	bool drawing = false;
+
 	// Use this for initialization
 	void Start () {
 
@@ -109,9 +111,12 @@ public class LineSpawnerScipt : MonoBehaviour {
 			UndoLine ();
 
 		}
+			
 
-		if (Input.GetMouseButtonDown (0)) {
+		if (Input.GetMouseButton (0) && drawing == false) {
 		
+			//Debug.Log ("SCREEN!");
+
 			Vector2 mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);
 
 			if (mousePos.x > xMax) {
@@ -126,6 +131,7 @@ public class LineSpawnerScipt : MonoBehaviour {
 				return;
 			}
 
+			drawing = true;
 
 			GameObject lineGo = Instantiate (linePrefab);
 			activeLine = lineGo.GetComponent<LineScript> ();
@@ -136,7 +142,9 @@ public class LineSpawnerScipt : MonoBehaviour {
 		}
 
 		if (Input.GetMouseButtonUp (0)) {
-			
+
+			drawing = false;
+
 			if (activeLine != null) {
 				activeLine.DestroyCollider ();
 			}
