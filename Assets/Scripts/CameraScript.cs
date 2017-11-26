@@ -21,8 +21,12 @@ public class CameraScript : MonoBehaviour {
 	public LocalRoomManager localRoomMan;
 	public TutorialPhaseOneScript tutorialOne;
 
+
 	// Use this for initialization
 	void Start () {
+
+		//.4618227, .5625
+		Debug.Log (Camera.main.aspect);
 
 		moveRate = .019f;
 
@@ -77,27 +81,36 @@ public class CameraScript : MonoBehaviour {
 	}
 
 	public void ZoomIn (int playerNum){
-	
-		seekerCam.orthographicSize = 2.5f;
+
+		float zoomAmt = 2.5f;
+		float yAmt = 2;
+
+		if (Camera.main.aspect < .5f) {
+			zoomAmt = 3.0f;
+			yAmt = 2.39f;
+
+		}
+
+		seekerCam.orthographicSize = zoomAmt;
 
 		if (playerNum == 1) {
 			goalX = 1;
-			seekerCam.transform.position = new Vector3 (-1.35f, 2, -10);
+			seekerCam.transform.position = new Vector3 (-1.35f, yAmt, -10);
 			moveCamera = true;
 
 		} else if (playerNum == 2) {
 			goalX = 0;
-			seekerCam.transform.position = new Vector3 (1.35f, 2, -10);
+			seekerCam.transform.position = new Vector3 (1.35f, yAmt, -10);
 			moveCamera = true;
 
 		} else if(playerNum == 3) {
 			goalX = 0;
-			seekerCam.transform.position = new Vector3 (1.35f, -2, -10);
+			seekerCam.transform.position = new Vector3 (1.35f, yAmt * -1, -10);
 			moveCamera = true;
 
 		} else if (playerNum == 4) {
 			goalX = 1;
-			seekerCam.transform.position = new Vector3 (-1.35f, -2, -10);
+			seekerCam.transform.position = new Vector3 (-1.35f, yAmt * -1, -10);
 			moveCamera = true;
 
 		}

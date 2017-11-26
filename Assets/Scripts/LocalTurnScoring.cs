@@ -140,8 +140,18 @@ public class LocalTurnScoring : MonoBehaviour {
 	public Material[] lineMats;
 	public Color[] regColors;
 
+	public GameObject signs;
+
 	// Use this for initialization
 	void Start () {
+
+		if (Camera.main.aspect < .5f) {
+			//9.73
+			Camera.main.GetComponent<Camera> ().orthographicSize = 11.8f;
+			Vector3 signPos = new Vector3 (signs.transform.position.x, signs.transform.position.y - 1.25f, signs.transform.position.z);
+			signs.transform.position = signPos;
+
+		}
 
 		for (int i = 0; i < lineMats.Length; i++) {
 			lineMats[i].color = regColors[i];

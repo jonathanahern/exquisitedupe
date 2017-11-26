@@ -99,7 +99,7 @@ public class TurnGameStatus : MonoBehaviour {
 		phaseOneReady = false;
 		doneDrawing.SetActive (true);
 		doneDrawingCheck.SetActive (true);
-		gameStatus.text = "waiting...";
+		gameStatus.text = "WAITINGS";
 		button.color = wait;
 
 	}
@@ -124,7 +124,7 @@ public class TurnGameStatus : MonoBehaviour {
 		doneDrawingCheck.SetActive (true);
 		doneVoting.SetActive (true);
 		doneVotingCheck.SetActive (true);
-		gameStatus.text = "waiting...";
+		gameStatus.text = "WAITING";
 		button.color = wait;
 
 	}

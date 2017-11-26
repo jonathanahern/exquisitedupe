@@ -84,7 +84,7 @@ public class TutorialScript : MonoBehaviour {
 			Invoke("OffBubble", 5.0f);
 
 			screenPosF4 = fingerFour.anchoredPosition;
-			offscreenPosF4 = new Vector2 (screenPosF4.x + 500, screenPosF4.y - 300);
+			offscreenPosF4 = new Vector2 (screenPosF4.x + 575, screenPosF4.y - 225);
 			fingerFour.anchoredPosition = offscreenPosF4;
 		}
 

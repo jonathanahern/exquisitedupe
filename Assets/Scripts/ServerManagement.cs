@@ -17,6 +17,8 @@ public class ServerManagement : MonoBehaviour {
 	public Text catName;
 	public Text inOut;
 	public Text title;
+	public Text newWord;
+	public Text rowNum;
 
 //	public Text roomList;
 //	public Text usernameAlterList;
@@ -63,6 +65,26 @@ public class ServerManagement : MonoBehaviour {
 		
 		}
 		
+	}
+
+	public void TurnToGarbage (){
+	 
+		StartCoroutine (turnToGarbage());
+
+	}
+
+	IEnumerator turnToGarbage (){
+
+		IEnumerator e = DCP.RunCS ("turnRooms", "ChangeACell", new string[2] {newWord.text, rowNum.text});
+
+		while (e.MoveNext ()) {
+			yield return e.Current;
+		}
+
+		string returnText = e.Current as string;
+
+		Debug.Log ("Garbages?:" + returnText);
+
 	}
 
 	public void BackToZero (){

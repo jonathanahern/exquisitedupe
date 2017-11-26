@@ -98,8 +98,22 @@ public class LocalTurnVoting : MonoBehaviour {
 	public bool tutorialMode;
 	public AnimationCurve inBump;
 
+	float cameraZoom = 5.5f;
+	Vector3 cameraStartPos;
+
 	// Use this for initialization
 	void Start () {
+
+		cameraStartPos = new Vector3 (0, -1.25f, -10);
+
+		if (Camera.main.aspect < .5f) {
+
+			cameraStartPos = new Vector3 (0, 0, -10.0f);
+			cameraZoom = 6.6f;
+			Camera.main.transform.position = cameraStartPos;
+			Camera.main.GetComponent<Camera> ().orthographicSize = 6.6f;
+
+		}
 
 		pedScreenPos = pedestal.transform.position.y;
 		pedOffPos = pedScreenPos - 3.0f;
@@ -530,7 +544,7 @@ public class LocalTurnVoting : MonoBehaviour {
 			dupeColor.GetComponent<Text> ().text = dupeColorString;
 			FlipSignToWords ();
 
-			Invoke ("MoveUpPedAndSign", 2.5f);
+			Invoke ("MoveUpPedAndSign", 1.5f);
 		}
 
 	}
@@ -810,9 +824,9 @@ public class LocalTurnVoting : MonoBehaviour {
 			myDupeSubjectGuess = subject;
 			MoveOutGuesser ();
 
-			Vector3 cameraStartPos = new Vector3 (0, -1.25f, -10);
+
 			Camera.main.transform.DOMove (cameraStartPos, 1.5f);
-			DOTween.To(()=> Camera.main.orthographicSize, x=> Camera.main.orthographicSize = x, 5.5f, 1.5f);
+			DOTween.To(()=> Camera.main.orthographicSize, x=> Camera.main.orthographicSize = x, cameraZoom, 1.5f);
 			Invoke ("LaunchVote2", 2.5f);
 
 		}

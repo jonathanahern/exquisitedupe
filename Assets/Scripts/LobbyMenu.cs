@@ -93,7 +93,7 @@ public class LobbyMenu : MonoBehaviour {
 		UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
 
 		if (userAccount.firstLogin == true) {
-			AskForTutorial ();
+			Invoke ("AskForTutorial", 1.0f);
 			userAccount.firstLogin = false;
 		}
 
