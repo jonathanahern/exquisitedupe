@@ -77,14 +77,14 @@ public class LobbyMenu : MonoBehaviour {
 			return;
 		}
 
-		roomMan.roomsReady = false;
+		//roomMan.roomsReady = false;
 		if (roomMan.cameFromTurnBased == true) {
 			Debug.Log ("came From turn based");
 			TurnBasedClicked ();
 			roomMan.CurtainsOut();
-			//roomMan.FindEmptyRooms ();
+			roomMan.FindEmptyRooms ();
 			roomMan.startingNew = false;
-			roomMan.GetRooms ();
+			roomMan.UpdateStatus ();
 			//roomMan.DropOffButtons ();
 		}
 
@@ -98,52 +98,52 @@ public class LobbyMenu : MonoBehaviour {
 		}
 
 		string roomsString = userAccount.activeRooms;
-
-		roomsString = roomsString.TrimEnd ('/');
-		roomCount = roomsString.Split ('/').Length;
+		string[] roomArray = roomsString.Split ('/');
+		roomCount = roomArray.Length;
+		if (userAccount.activeRooms == "") {
+			roomCount = 0;
+		}
 		//Debug.Log (roomCount);
 
 		if (roomMan.cameFromScoring == false) {
 			highScores.gameObject.GetComponent<HighScoreScript> ().UpdateTheScore ();
 		} else {
-			
-				if (roomsString.Length < 5) {
-					roomMan.noRooms = true;
-					if (frameText == null) {
-						frameText = GameObject.FindGameObjectWithTag ("Frame Text");
-					}
-				frameText.GetComponent<Text> ().text = "YOU ART NOT APART\nOF ANY PAINTINGS";
-				}
-
-				GoToHighScores ();
-
-
+			GoToHighScores ();
 			roomMan.cameFromScoring = false;
+		}
+			
+		if (roomCount < 1) {
+			roomMan.noRooms = true;
+			if (frameText == null) {
+				frameText = GameObject.FindGameObjectWithTag ("Frame Text");
+			}
+			frameText.GetComponent<Text> ().text = "YOU ART NOT APART\nOF ANY PAINTINGS";
+		} else {
+			Debug.Log (roomCount);
+			for (int i = 0; i < roomCount; i++) {
+				Debug.Log (roomArray [i]);
+				roomMan.UpdateTurnRoomsFromLogin (int.Parse (roomArray [i]));
+			}
 
 		}
 
-//		if (roomMan.cameFromPrivateScoring == true) {
-//			roomMan.cameFromPrivateScoring = false;
-//			StartNextPrivateRound ();
-//		}
-
-			InvokeRepeating ("AutoUpdateRooms", 10.0f, 10.0f);
+		InvokeRepeating ("AutoUpdateRooms", 1.0f, 10.0f);
 
 	}
 	
 	// Update is called once per frame
 	void Update () {
 
-		if (Input.GetKeyDown (KeyCode.C)) {
-		
-			GameObject buttonObj = Instantiate (turnButtonObj,offScreen,Quaternion.identity);
-			buttonObj.transform.SetParent (roomMan.buttonHolder, false);
-			GameObject buttonObj1 = Instantiate (turnButtonObj,offScreen,Quaternion.identity);
-			buttonObj1.transform.SetParent (roomMan.buttonHolder, false);
-			GameObject buttonObj2 = Instantiate (turnButtonObj,offScreen,Quaternion.identity);
-			buttonObj2.transform.SetParent (roomMan.buttonHolder, false);
-		
-		}
+//		if (Input.GetKeyDown (KeyCode.C)) {
+//		
+//			GameObject buttonObj = Instantiate (turnButtonObj,offScreen,Quaternion.identity);
+//			buttonObj.transform.SetParent (roomMan.buttonHolder, false);
+//			GameObject buttonObj1 = Instantiate (turnButtonObj,offScreen,Quaternion.identity);
+//			buttonObj1.transform.SetParent (roomMan.buttonHolder, false);
+//			GameObject buttonObj2 = Instantiate (turnButtonObj,offScreen,Quaternion.identity);
+//			buttonObj2.transform.SetParent (roomMan.buttonHolder, false);
+//		
+//		}
 		
 	}
 
@@ -336,34 +336,53 @@ public class LobbyMenu : MonoBehaviour {
 
 	IEnumerator getAllCategories (){
 
-		IEnumerator e = DCP.RunCS ("categories", "GetCategories2");
+		string getCatsURL = "http://dupesite.000webhostapp.com/getCats.php";
 
-		while (e.MoveNext ()) {
-			yield return e.Current;
-		}
+		WWWForm form = new WWWForm ();
+		form.AddField ("usernamePost", "fakeUser");
 
-		string returnText = e.Current as string;
+		WWW www = new WWW (getCatsURL, form);
+		yield return www;
 
-		if (returnText == "") {
-			Debug.Log ("not cats returned");
+		//Debug.Log (www.text);
 
-			GetAllCategories ();
-			yield break;
-		
-		}
-			
-		CreateCatButtons (returnText);
+
+//		IEnumerator e = DCP.RunCS ("categories", "GetCategories2");
+//
+//		while (e.MoveNext ()) {
+//			yield return e.Current;
+//		}
+//
+//		string returnText = e.Current as string;
+//
+//		if (returnText == "") {
+//			Debug.Log ("not cats returned");
+//
+//			GetAllCategories ();
+//			yield break;
+//		
+//		}
+//			
+		CreateCatButtons (www.text);
 
 	}
 
 	void CreateCatButtons (string totalCats) {
 
+		totalCats = totalCats.Replace("\n", "");
+
+//		string newCatString = totalCats.Substring(totalCats.Length-6);
+//		newCatString = "&" + newCatString + "&";
+//		Debug.Log (newCatString);
+
 		totalCats = totalCats.TrimEnd ('^');
-		//Debug.Log (totalCats);
+
 		string[] totalCat = totalCats.Split ('^');
 
-
 		foreach (string cat in totalCat) {
+
+
+			//Debug.Log (cat);
 
 			Vector3 offScreen = new Vector3 (2000,2000, 0);
 			GameObject buttonObj = Instantiate (turnButtonObj,offScreen,Quaternion.identity, roomMan.buttonHolder);
@@ -403,6 +422,7 @@ public class LobbyMenu : MonoBehaviour {
 		if (roomMan == null) {
 			roomMan = GameObject.FindGameObjectWithTag ("Room Manager").GetComponent<RoomManager> ();
 		}
+
 		roomMan.buttonsReady = true;
 		roomMan.FindEmptyRooms ();
 

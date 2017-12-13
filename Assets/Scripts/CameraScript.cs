@@ -25,9 +25,7 @@ public class CameraScript : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
-		//.4618227, .5625
-		Debug.Log (Camera.main.aspect);
-
+	
 		moveRate = .019f;
 
 	}

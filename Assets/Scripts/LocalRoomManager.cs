@@ -157,33 +157,31 @@ public class LocalRoomManager : MonoBehaviour {
 		string roomsString = userAccount.activeRooms;
 
 		string roomSearch = roomsString;
-
-		Debug.Log (roomSearch);
-
-		if (roomsString.Contains ("[ID]") == false) {
-			roomsString = "[ID]" + roomsString;
-		} else {
-			roomSearch = roomSearch.Substring (4);
-			roomSearch = roomSearch.TrimEnd('/');
-		}
-			
-		string[] roomSplit = roomSearch.Split ('/');
-		string curRoom = myRoom.roomID.ToString ();
 		bool foundRoom = false;
+//		Debug.Log (roomSearch);
 
-		for (int i = 0; i < roomSplit.Length; i++) {
+		if (roomSearch.Length > 0) {
+			
+			string[] roomSplit = roomSearch.Split ('/');
+			string curRoom = myRoom.roomID.ToString ();
 
-			//Debug.Log (curRoom.Length + " & " + roomSplit [i].Length);
+			for (int i = 0; i < roomSplit.Length; i++) {
 
-			if (curRoom == roomSplit [i]) {
-				foundRoom = true;
+				if (curRoom == roomSplit [i]) {
+					foundRoom = true;
+				}
+
 			}
-
 		}
-
 		if (foundRoom == false) {
-			roomsString = roomsString + myRoom.roomID.ToString () + "/";
-			userAccount.activeRooms = roomsString;
+
+			if (roomsString == "") {
+				roomsString = myRoom.roomID.ToString ();
+				userAccount.activeRooms = roomsString;
+			} else {
+				roomsString = roomsString + "/" + myRoom.roomID.ToString ();
+				userAccount.activeRooms = roomsString;
+			}
 		} else {
 			Debug.Log ("Already logged room");
 		}
@@ -504,29 +502,42 @@ public class LocalRoomManager : MonoBehaviour {
 	IEnumerator doneDrawing (int roomID, string drawingArray){
 
 		string roomIdString = roomID.ToString();
+		string myPlayerNum = myRoom.myColor.ToString ();
 
-		IEnumerator e = DCP.RunCS ("turnRooms", "AddDrawing", new string[3] { roomIdString, drawingArray, myRoom.myActualColor.ToString()});
+		string URL = "http://dupesite.000webhostapp.com/storeDrawing.php";
 
-		while (e.MoveNext ()) {
-			yield return e.Current;
-		}
+		WWWForm form = new WWWForm ();
+		form.AddField ("roomIdPost", roomIdString);
+		form.AddField ("playerNumPost", myPlayerNum);
+		form.AddField ("drawingPost", drawingArray);
 
-		string returnText = e.Current as string;
+		WWW www = new WWW (URL, form);
+		yield return www;
 
-		Debug.Log ("Returned:" + returnText);
+		Debug.Log ("Drawing return:" + www.text);
 
-		string drawingID = "[MYCOLOR]" + myRoom.myActualColor.ToString ();
-
-		if (returnText.Contains(drawingID) == false){
-
-			CollectYourLineData();
-			yield break;
-
-		}
+//		IEnumerator e = DCP.RunCS ("turnRooms", "AddDrawing", new string[3] { roomIdString, drawingArray, myRoom.myActualColor.ToString()});
+//
+//		while (e.MoveNext ()) {
+//			yield return e.Current;
+//		}
+//
+//		string returnText = e.Current as string;
+//
+//		Debug.Log ("Returned:" + returnText);
+//
+//		string drawingID = "[MYCOLOR]" + myRoom.myActualColor.ToString ();
+//
+//		if (returnText.Contains(drawingID) == false){
+//
+//			CollectYourLineData();
+//			yield break;
+//
+//		}
 
 		myRoom.activeRoom = false;
 		myRoom.status = "waiting...";
-		myRoom.statusNum = 2;
+		myRoom.statusNum = 1;
 
 		RoomManager.instance.cameFromTurnBased=true;
 		SceneManager.LoadScene ("Lobby Menu");

@@ -50,17 +50,17 @@ public class TurnGameStatus : MonoBehaviour {
 
 	}
 
-	public void StatusUpdated () {
+	public void StatusUpdated (int statusNum) {
 	
-		if (loadedStatus == 0) {
+		if (statusNum == 0) {
 			PhaseOneReady ();
-		} else if (loadedStatus == 1) {
+		} else if (statusNum == 1) {
 			PhaseOneDone ();
-		} else if (loadedStatus == 2) {
+		} else if (statusNum == 2) {
 			PhaseTwoReady ();
-		} else if (loadedStatus == 3) {
+		} else if (statusNum == 3) {
 			PhaseTwoDone ();
-		} else if (loadedStatus == 4) {
+		} else if (statusNum == 4) {
 			PhaseThreeReady ();
 		} 
 	

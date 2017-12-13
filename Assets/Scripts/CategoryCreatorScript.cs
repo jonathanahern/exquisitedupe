@@ -14,6 +14,7 @@ public class CategoryCreatorScript : MonoBehaviour {
 
 	public Text[] words;
 	public Text roomType;
+	public Text catName;
 
 	public Text[] wordsAlter;
 	public Text roomTypeAlter;
@@ -24,64 +25,41 @@ public class CategoryCreatorScript : MonoBehaviour {
 	public Text newBrushesText;
 	public Text newBrushesTextTitle;
 	public GameObject brushesPanel;
+	public GameObject blackLine;
 
 	private static string ROOMTYPE_SYM = "[ROOMTYPE]";
 	private static string WORDS_SYM = "[WORDS]";
 	private static string BRUSHES_SYM = "[BRUSHES]";
 	private static string GROUNDING_SYM = "[GROUNDING]";
 
+	public string cat1;
+	public string words1;
+	public string brushes1;
+	public string grounding1;
+
+	string createCategoryURL = "http://dupesite.000webhostapp.com/insertNewCategory.php";
+
 	void Update () {
 
 		if (Input.GetKeyDown (KeyCode.A)) {
-
-			GameObject[] lines = GameObject.FindGameObjectsWithTag ("Line");
-
-			myLineString = "";
-
-			foreach (GameObject line in lines) {
-
-				LineRenderer lineRend = line.GetComponent<LineRenderer> ();
-				int lineAmount = lineRend.positionCount;
-
-				for (int i = 0; i < lineAmount; i++) {
-
-					Vector2 point = lineRend.GetPosition (i);
-
-
-					myLineString = myLineString + point.ToString ("F3") + "@";
-
-					if (i == lineAmount - 1) {
-
-						string[] charsToRemove = new string[] { "(", ")", " "};
-						foreach (string character in charsToRemove)
-						{
-							myLineString = myLineString.Replace(character, string.Empty);
-						}
-
-
-						myLineString = myLineString.Replace("-0.", "-.");
-						myLineString = myLineString.Replace("0@", "@");
-						myLineString = myLineString.Replace("0.", ".");
-						myLineString = myLineString.Replace("0,", ",");
-						
-
-					}
-
-				}
-
-				myLineString = myLineString.TrimEnd('@');
-				myLineString = myLineString + "$";
-
-			}
-
-			myLineString = myLineString.TrimEnd('$');
-
-			Debug.Log (myLineString);
-
 		}
 
 	}
 
+	IEnumerator createCat (){
+	
+		WWWForm form = new WWWForm ();
+		form.AddField ("categoryPost", cat1);
+		form.AddField ("wordsPost", words1);
+		form.AddField ("brushesPost", brushes1);
+		form.AddField ("groundingPost", grounding1);
+
+		WWW w = new WWW (createCategoryURL, form);
+		yield return w;
+
+		Debug.Log (w.text);
+
+	}
 
 	public void CollectAllData(){
 	
@@ -124,11 +102,16 @@ public class CategoryCreatorScript : MonoBehaviour {
 
 				if (i == lineAmount - 1) {
 
-					string[] charsToRemove = new string[] { "(", ")" };
+					string[] charsToRemove = new string[] { "(", ")", " "};
 					foreach (string character in charsToRemove)
 					{
 						myLineString = myLineString.Replace(character, string.Empty);
 					}
+
+					myLineString = myLineString.Replace("0.000", "0");
+					myLineString = myLineString.Replace("-0.", "-.");
+					myLineString = myLineString.Replace("0.", ".");
+					myLineString = myLineString.Replace("$$", "$");
 
 				}
 
@@ -140,7 +123,7 @@ public class CategoryCreatorScript : MonoBehaviour {
 		}
 
 		myLineString = myLineString.TrimEnd('$');
-		myLineString = "|" + GROUNDING_SYM + myLineString;
+		//myLineString = "|" + GROUNDING_SYM + myLineString;
 
 
 	}
@@ -154,7 +137,7 @@ public class CategoryCreatorScript : MonoBehaviour {
 		}
 
 		myWordsString = myWordsString.TrimEnd ('/');
-		myWordsString = "|" + WORDS_SYM + myWordsString;
+		//myWordsString = "|" + WORDS_SYM + myWordsString;
 
 	}
 
@@ -167,21 +150,21 @@ public class CategoryCreatorScript : MonoBehaviour {
 		}
 
 		myWordsString = myWordsString.TrimEnd ('/');
-		myWordsString = "|" + WORDS_SYM + myWordsString;
+		//myWordsString = "|" + WORDS_SYM + myWordsString;
 
 	}
 
 	void CollectRoomType (){
 	
 		myRoomType = roomType.text;
-		myRoomType = ROOMTYPE_SYM + myRoomType;
+		//myRoomType = ROOMTYPE_SYM + myRoomType;
 	
 	}
 
 	void CollectRoomTypeAlter (){
 
 		myRoomType = roomTypeAlter.text;
-		myRoomType = ROOMTYPE_SYM + myRoomType;
+		//myRoomType = ROOMTYPE_SYM + myRoomType;
 
 	}
 
@@ -201,23 +184,32 @@ public class CategoryCreatorScript : MonoBehaviour {
 		}
 
 		myBrushesString = myBrushesString.TrimEnd ('/');
-		myBrushesString = "|" + BRUSHES_SYM + myBrushesString;
+		//myBrushesString = "|" + BRUSHES_SYM + myBrushesString;
 
 	}
 
 	IEnumerator sendAllDataToServer (){
 
-		IEnumerator e = DCP.RunCS ("categories", "AddCategory", new string[4] {myLineString, myRoomType, myWordsString, myBrushesString});
+		WWWForm form = new WWWForm ();
+		form.AddField ("categoryPost", myRoomType);
+		form.AddField ("wordsPost", myWordsString);
+		form.AddField ("brushesPost", myBrushesString);
+		form.AddField ("groundingPost", myLineString);
 
-		Debug.Log (myLineString + "&&&" + myRoomType + "&&&" +  myWordsString + "&&&" + myBrushesString);
+		WWW w = new WWW (createCategoryURL, form);
+		yield return w;
 
-		while (e.MoveNext ()) {
-			yield return e.Current;
-		}
+//		IEnumerator e = DCP.RunCS ("categories", "AddCategory", new string[4] {myLineString, myRoomType, myWordsString, myBrushesString});
+//
+//		Debug.Log (myLineString + "&&&" + myRoomType + "&&&" +  myWordsString + "&&&" + myBrushesString);
+//
+//		while (e.MoveNext ()) {
+//			yield return e.Current;
+//		}
+//
+//		string returnText = e.Current as string;
 
-		string returnText = e.Current as string;
-
-		Debug.Log ("Cat Added:" + returnText);
+		Debug.Log ("Cat Added:" + w.text);
 
 	}
 
@@ -315,6 +307,65 @@ public class CategoryCreatorScript : MonoBehaviour {
 			rectTran.DOAnchorPosX (1500, 1.0f);
 		}
 
+	}
+
+	public void ReturnDrawing (){
+	
+		StartCoroutine (getDrawing());
+
+	}
+
+	IEnumerator getDrawing(){
+
+		string myNewRoomType = ROOMTYPE_SYM + catName.text;
+
+		IEnumerator e = DCP.RunCS ("categories", "GetGrounding", new string[1] {myNewRoomType});
+
+		Debug.Log (myNewRoomType);
+
+		while (e.MoveNext ()) {
+			yield return e.Current;
+		}
+
+		string returnText = e.Current as string;
+
+		Debug.Log ("Cat Altered:" + returnText);
+
+		DrawLine (returnText);
+
+	}
+		
+
+	void DrawLine (string drawing) {
+
+		drawing = drawing.Substring (GROUNDING_SYM.Length + 1);
+
+		GameObject lineFab = blackLine;
+
+		string[] lines = drawing.Split ('$');
+		//Debug.Log (drawing);
+		foreach (string line in lines) {
+
+			GameObject lineGo = Instantiate (lineFab);
+			LineRenderer lineRend = lineGo.GetComponent <LineRenderer> ();
+
+			string[] points = line.Split ('@');
+
+			lineRend.positionCount = points.Length;
+
+			for (int i = 0; i < points.Length; i++) {
+				//Debug.Log (points [i]);
+				string[] vectArray = points [i].Split (',');
+				Vector3 tempVect = new Vector3 (
+					float.Parse (vectArray [0]),
+					float.Parse (vectArray [1]),
+					0);
+				
+				lineRend.SetPosition (i, tempVect);
+
+			}
+		}
+	
 	}
 
 }

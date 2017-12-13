@@ -8,7 +8,6 @@ using DatabaseControl;//This line is always needed for any C# script using the d
 //use 'import DatabaseControl;' if you are using JS
 using DG.Tweening;
 
-
 public class LoginMenu : MonoBehaviour {
 	////These variables are set in the Inspector:
 	
@@ -203,35 +202,42 @@ public class LoginMenu : MonoBehaviour {
 	
 	IEnumerator sendLoginRequest (string username, string password) {
 
-		Debug.Log (username + password);
+		//Debug.Log (username + password);
 
 		if (isDatabaseSetup == true) {
 		
-			IEnumerator e = DCP.RunCS (databaseName, "Login", new string[2] { username, password });
+//			IEnumerator e = DCP.RunCS (databaseName, "Login", new string[2] { username, password });
+//
+//			while (e.MoveNext ()) {
+//				yield return e.Current;
+//			}
 
-			while (e.MoveNext ()) {
-				yield return e.Current;
-			}
+			string URL = "http://dupesite.000webhostapp.com/loginRequest.php";
 
-			string returnText = e.Current as string;
+			WWWForm form = new WWWForm ();
+			form.AddField ("usernamePost", username);
 
-			Debug.Log (returnText);
+			WWW www = new WWW (URL, form);
+			yield return www;
 
-			if (returnText == "") {
-				RetryLoginRequest (username, password);
-				yield break;
-			}
+			string returnText = www.text;
+			returnText = returnText.Replace("\n", "");
+		//	Debug.Log (returnText);
 
-			if (returnText.Contains("#")) {
-				RetryLoginRequest (username, password);
-				Debug.Log("Weird bug happened");
-				yield break;
+//			if (returnText == "") {
+//				RetryLoginRequest (username, password);
+//				yield break;
+//			}
+//
+//			if (returnText.Contains("#")) {
+//				RetryLoginRequest (username, password);
+//				Debug.Log("Weird bug happened");
+//				yield break;
+//
+//			}
 
-			}
-
-
-			string[] returnBroken = returnText.Split ('|');
-			string success = returnBroken [0];
+				string[] returnBroken = returnText.Split ('|');
+				string success = returnBroken [0];
 
 			//Debug.Log("SUCCESSa" + returnBroken[0]);
 
@@ -249,11 +255,13 @@ public class LoginMenu : MonoBehaviour {
 				PlayerPrefs.SetString (userNameLocation, username);
 				PlayerPrefs.SetString (passwordLocation, password);
 
+				//Debug.Log ("Paintings: " + returnBroken [1]);
+
 				UserAccountManagerScript.instance.LogIn (username, password, returnBroken[1], 1);
 
 			} else {
 				
-			if (returnText == "UserError") {
+			if (returnText == "Not Found") {
 				//Account with username not found in database
 				login_error.text = "Name not found. Register this username?";
 				blankErrors();
@@ -352,15 +360,17 @@ public class LoginMenu : MonoBehaviour {
 	
 	IEnumerator sendRegisterRequest (string username, string password, string data) {
 
-		if (isDatabaseSetup == true) {
+		string URL = "http://dupesite.000webhostapp.com/registerRequest.php";
 
-			IEnumerator ee = DCP.RunCS(databaseName, "Register", new string[2] { username, password });
-			while(ee.MoveNext()) {
-				yield return ee.Current;
-			}
-			//WWW returnedd = ee.Current as WWW;
+		WWWForm form = new WWWForm ();
+		form.AddField ("usernamePost", username);
 
-			string returnText = ee.Current as string;
+		WWW www = new WWW (URL, form);
+		yield return www;
+
+		string returnText = www.text;
+		returnText = returnText.Replace("\n", "");
+		Debug.Log (returnText);
 
 			if (returnText == "Success") {
 				//Account created successfully
@@ -375,7 +385,7 @@ public class LoginMenu : MonoBehaviour {
 				
 		UserAccountManagerScript.instance.LogIn (username, password, "", 0);
 
-			} else if (returnText == "username in use") {
+			} else if (returnText == "Already exists") {
 				//Account Not Created due to username being used on another Account
 				part = 1;
 				register_error.text = "Username Unavailable. Try another.";
@@ -398,7 +408,7 @@ public class LoginMenu : MonoBehaviour {
 			input_register_password.text = "";
 			input_register_confirmPassword.text = "";
 
-		}
+		
 	}
 }
 	

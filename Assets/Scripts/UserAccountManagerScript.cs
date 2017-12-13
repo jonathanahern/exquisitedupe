@@ -94,7 +94,7 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 		IsLoggedIn = true;
 
-		Debug.Log ("User in as: " + username);
+		//Debug.Log ("User in as: " + username);
 
 		if (firstGame == 0) {
 			firstLogin = true;
@@ -218,53 +218,79 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 	IEnumerator turnRoom (string roomType, string playerName, string fate){
 
-		IEnumerator e = DCP.RunCS ("turnRooms", "JoinCreateRoom", new string[3] { roomType, playerName, fate});
+		string URL = "http://dupesite.000webhostapp.com/createJoin.php";
 
-		while (e.MoveNext ()) {
-			yield return e.Current;
-		}
+		WWWForm form = new WWWForm ();
+		form.AddField ("usernamePost", playerName);
+		form.AddField ("categoryPost", roomType);
+		form.AddField ("fatePost", fate);
 
-		string returnText = e.Current as string;
+		WWW www = new WWW (URL, form);
+		yield return www;
 
-		if (returnText == "") {
+		RoomCreated room = JsonUtility.FromJson<RoomCreated>(www.text);
+		//DisplayRoom (room);
 
-			Debug.Log ("Retrying new room. Came up blank.");
-			RetryTurnRoom (roomType, playerName, fate);
+		//string returnText = www.text;
 
-			yield break;
+		//Debug.Log (returnText);
 
-		}
+//		IEnumerator e = DCP.RunCS ("turnRooms", "JoinCreateRoom", new string[3] { roomType, playerName, fate});
+//
+//		while (e.MoveNext ()) {
+//			yield return e.Current;
+//		}
+//
+//		string returnText = e.Current as string;
 
-		if (returnText.StartsWith ("<!")) {
-		
-			Debug.Log ("Retrying new room. Gobbly gook came up.");
-			RetryTurnRoom (roomType, playerName, fate);
+//		if (returnText == "") {
+//
+//			Debug.Log ("Retrying new room. Came up blank.");
+//			RetryTurnRoom (roomType, playerName, fate);
+//
+//			yield break;
+//
+//		}
+//
+//		if (returnText.StartsWith ("<!")) {
+//		
+//			Debug.Log ("Retrying new room. Gobbly gook came up.");
+//			RetryTurnRoom (roomType, playerName, fate);
+//
+//			yield break;
+//		
+//		}
+//
+//		Debug.Log ("HERE?" + returnText);
+//
+//		string[] fates = returnText.Split ('|');
+//
+//		foreach (string data in fates) {
+//
+//			if (data.StartsWith ("[ID]")){
+//
+//				roomId = data.Substring ("[ID]".Length);
+//				roomId = roomId + "/";
+//
+//			}
+//			
+//		}
+//
+//		Debug.Log ("UserName: " + LoggedIn_Username);
+//		Debug.Log ("roomId: " + roomId);
 
-			yield break;
-		
-		}
-
-		Debug.Log ("HERE?" + returnText);
-
-		string[] fates = returnText.Split ('|');
-
-		foreach (string data in fates) {
-
-			if (data.StartsWith ("[ID]")){
-
-				roomId = data.Substring ("[ID]".Length);
-				roomId = roomId + "/";
-
-			}
-			
-		}
-
-		Debug.Log ("UserName: " + LoggedIn_Username);
-		Debug.Log ("roomId: " + roomId);
-
-		RoomManager.instance.CreateRoom (roomType, returnText, -2);
+//		RoomManager.instance.CreateRoom (roomType, returnText, -2);
+		RoomManager.instance.CreateRoom (roomType, room.id, room.fate, room.playerNum, -2);
 
 	}
+
+//	void CreateRoom (RoomCreated room){
+//	
+//		Debug.Log ("Id: " + room.id);
+//		Debug.Log ("Fate: " + room.fate);
+//		Debug.Log ("Number: " + room.playerNum);
+//	
+//	}
 
 	void RetryTurnRoom(string tempRoomType, string tempPlayerName, string tempFate){
 
@@ -312,29 +338,43 @@ public class UserAccountManagerScript : MonoBehaviour {
 		Debug.Log ("UserName: " + LoggedIn_Username);
 		Debug.Log ("roomId: " + roomId);
 
-		RoomManager.instance.CreateRoom (roomType, returnText, -2);
+		//temp RoomManager.instance.CreateRoom (roomType, returnText, -2);
 
 	}
 
 	public void StoreRoom (string roomId){
-	
+
 		StartCoroutine (storeRoomId (LoggedIn_Username, roomId));
 	
 	}
 
 	IEnumerator storeRoomId (string username, string roomId){
-	
-		IEnumerator e = DCP.RunCS ("accounts", "StoreRoomId", new string[2] { username, roomId });
 
-			while (e.MoveNext ()) {
-				yield return e.Current;
-			}
+		string URL = "http://dupesite.000webhostapp.com/storeRoom.php";
 
-		string returnText = e.Current as string;
+		WWWForm form = new WWWForm ();
+		form.AddField ("newIdPost", roomId);
+		form.AddField ("usernamePost", username);
+
+		WWW www = new WWW (URL, form);
+		yield return www;
+
+		string returnText = www.text;
+
+		Debug.Log ("Stored: " + www.text);
+
+
+//		IEnumerator e = DCP.RunCS ("accounts", "StoreRoomId", new string[2] { username, roomId });
+//
+//			while (e.MoveNext ()) {
+//				yield return e.Current;
+//			}
+//
+//		string returnText = e.Current as string;
 			
 		//activeRooms = returnText; 	
 
-		Debug.Log ("Stored: " + returnText);
+//		Debug.Log ("Stored: " + returnText);
 	
 	}
 

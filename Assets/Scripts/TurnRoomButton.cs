@@ -73,7 +73,7 @@ public class TurnRoomButton : MonoBehaviour {
 		int rightWord = Random.Range (1, 11);
 		int wrongWord = Random.Range (1, 11);
 		int colorMod = Random.Range (0, 4);
-		Debug.Log ("From colMod: " + colorMod);
+		//Debug.Log ("From colMod: " + colorMod);
 
 		while(rightWord == wrongWord)
 		{
@@ -95,12 +95,12 @@ public class TurnRoomButton : MonoBehaviour {
 
 		fate = "|[WORDS]" + newWords + "|[BRUSHES]" + brushes + "|" + grounding + "|[FATE]" + dupeNum + "/" + rightWord + "/" + wrongWord + "/" + awardNum + "/" + colorMod;
 
-		Debug.Log ("From butt: " + fate);
+		//Debug.Log ("From butt: " + fate);
 
-		string roomToSend = "v1" + roomType.text;
+		string roomToSend = "v2" + roomType.text;
 
 		if (privateRoom == true) {
-			roomToSend = "v1" + roomToSend;
+			roomToSend = "v2" + roomToSend;
 		}
 
 		UserAccountManagerScript.instance.TurnRoomSearch(roomToSend, fate, gameObject);
@@ -145,7 +145,7 @@ public class TurnRoomButton : MonoBehaviour {
 		string roomToSend = roomType.text;
 
 		if (privateRoom == true) {
-			roomToSend = "v1" + roomToSend;
+			roomToSend = "v2" + roomToSend;
 		}
 
 		UserAccountManagerScript.instance.TurnRoomSearch(roomToSend, fate, gameObject);
