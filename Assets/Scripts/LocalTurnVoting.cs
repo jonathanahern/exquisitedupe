@@ -249,7 +249,7 @@ public class LocalTurnVoting : MonoBehaviour {
 		drawing = drawing.TrimEnd ('$');
 		string[] drawingInfos = drawing.Split ('$');
 
-		Debug.Log ("drawing: " + drawing);
+		//Debug.Log ("drawing: " + drawing);
 
 		foreach (string drawingInfo in drawingInfos) {
 
@@ -471,7 +471,7 @@ public class LocalTurnVoting : MonoBehaviour {
 				}
 
 				if (myRoom.dupeCaught != "o" || myRoom.dupeCaught != "x") {
-					string stringRoomId = "|[ID]" + myRoom.roomID.ToString ();
+					string stringRoomId = myRoom.roomID.ToString ();
 					StartCoroutine (checkVoteStatus (stringRoomId, dupeStatus));
 				}
 
@@ -574,17 +574,30 @@ public class LocalTurnVoting : MonoBehaviour {
 
 	IEnumerator checkVoteStatus (string roomId, string caughtVar){
 
-		IEnumerator e = DCP.RunCS ("turnRooms", "CheckVoteStatus", new string[2] {roomId, caughtVar});
+//		IEnumerator e = DCP.RunCS ("turnRooms", "CheckVoteStatus", new string[2] {roomId, caughtVar});
+//
+//		while (e.MoveNext ()) {
+//			yield return e.Current;
+//		}
+//
+//		string returnText = e.Current as string;
+//
+//		returnText = returnText.TrimStart ('|');
+//
+//		Debug.Log ("Returned Status:" + returnText);
 
-		while (e.MoveNext ()) {
-			yield return e.Current;
-		}
+		string URL = "http://dupesite.000webhostapp.com/checkCaughtEscape.php";
 
-		string returnText = e.Current as string;
+		WWWForm form = new WWWForm ();
+		form.AddField ("idPost", roomId);
+		form.AddField ("caughtPost", caughtVar);
 
-		returnText = returnText.TrimStart ('|');
+		WWW www = new WWW (URL, form);
+		yield return www;
 
-		Debug.Log ("Returned Status:" + returnText);
+		string returnText = www.text;
+
+		//Debug.Log ("Returned status: " + returnText);
 
 		if (returnText == "Error") {
 
@@ -792,7 +805,7 @@ public class LocalTurnVoting : MonoBehaviour {
 
 		if (myRoom.myActualColor == myRoom.dupeNum) {
 
-			string roomId = "|[ID]" + myRoom.roomID.ToString ();
+			string roomId = myRoom.roomID.ToString ();
 
 			string[] charsToRemove = new string[] { "(", ")" };
 			string voteOne = dupeVotePos.ToString ("F3");
@@ -800,25 +813,25 @@ public class LocalTurnVoting : MonoBehaviour {
 				voteOne = voteOne.Replace (character, string.Empty);
 			}
 
-			string dupeString = "|[DUPEGUESS]" + subject + "$" + voteOne;
+			string dupeString = subject + "$" + voteOne;
 
-			string myColor;
-
-			if (myRoom.myActualColor == 1) {
-				myColor = "a";
-			} else if (myRoom.myActualColor == 2) {
-				myColor = "b";
-			} else if (myRoom.myActualColor == 3) {
-				myColor = "c";
-			} else if (myRoom.myActualColor == 4) {
-				myColor = "d";
-			} else {
-				myColor = "poop";
-			}
+//			string myColor;
+//
+//			if (myRoom.myActualColor == 1) {
+//				myColor = "a";
+//			} else if (myRoom.myActualColor == 2) {
+//				myColor = "b";
+//			} else if (myRoom.myActualColor == 3) {
+//				myColor = "c";
+//			} else if (myRoom.myActualColor == 4) {
+//				myColor = "d";
+//			} else {
+//				myColor = "poop";
+//			}
 
 			roomMan.GetComponent<RoomManager> ().CurtainsIn ();
 
-			StartCoroutine (addDupeGuess (roomId, dupeString, myColor));
+			StartCoroutine (addDupeGuess (roomId, dupeString));
 		} else {
 
 			myDupeSubjectGuess = subject;
@@ -833,15 +846,28 @@ public class LocalTurnVoting : MonoBehaviour {
 
 	}
 
-	IEnumerator addDupeGuess (string roomId, string dupeString, string playerId){
+	IEnumerator addDupeGuess (string roomId, string dupeString){
 
-		IEnumerator e = DCP.RunCS ("turnRooms", "AddDupeGuess", new string[3] {roomId, dupeString, playerId});
+//		IEnumerator e = DCP.RunCS ("turnRooms", "AddDupeGuess", new string[3] {roomId, dupeString, playerId});
+//
+//		while (e.MoveNext ()) {
+//			yield return e.Current;
+//		}
+//
+//		string returnText = e.Current as string;
 
-		while (e.MoveNext ()) {
-			yield return e.Current;
-		}
+		string URL = "http://dupesite.000webhostapp.com/addDupeGuess.php";
+		Debug.Log ("Returned Dupe:" + roomId);
+		Debug.Log ("Returned Dupe:" + dupeString);
+		WWWForm form = new WWWForm ();
+		form.AddField ("idPost", roomId);
+		form.AddField ("dupePost", dupeString);
+		form.AddField ("dupeIdPost", myRoom.myColor.ToString());
 
-		string returnText = e.Current as string;
+		WWW www = new WWW (URL, form);
+		yield return www;
+
+		string returnText = www.text;
 
 		Debug.Log ("Returned Dupe:" + returnText);
 
@@ -850,7 +876,7 @@ public class LocalTurnVoting : MonoBehaviour {
 		myRoom.statusNum = 3;
 
 		RoomManager.instance.cameFromTurnBased=true;
-		SceneManager.LoadScene ("Lobby Menu");
+		Invoke ("GoToLobby", 1.25f);
 
 	}
 
@@ -875,53 +901,65 @@ public class LocalTurnVoting : MonoBehaviour {
 		string colorString = myRoom.myActualColor.ToString();
 		string votingPositions = colorString + "$" + voteOne + "$" + voteTwo + "$" + voteThree + "$" + myDupeSubjectGuess + "@";
 
-		string roomId = "|[ID]" + myRoom.roomID.ToString();
+		string roomId = myRoom.roomID.ToString();
 
-		if (myRoom.myActualColor == 1) {
-			myColor = "a";
-		} else if (myRoom.myActualColor == 2) {
-			myColor = "b";
-		} else if (myRoom.myActualColor == 3) {
-			myColor = "c";
-		} else if (myRoom.myActualColor == 4) {
-			myColor = "d";
-		}
+//		if (myRoom.myActualColor == 1) {
+//			myColor = "a";
+//		} else if (myRoom.myActualColor == 2) {
+//			myColor = "b";
+//		} else if (myRoom.myActualColor == 3) {
+//			myColor = "c";
+//		} else if (myRoom.myActualColor == 4) {
+//			myColor = "d";
+//		}
 
-		StartCoroutine (addVotingPos (roomId, votingPositions, myColor));
+		StartCoroutine (addVotingPos (roomId, votingPositions));
 
 		Debug.Log (votingPositions);
 
 	}
 
-	void TrySendingAgain (string roomId, string votingPositions, string myColor){
+	void TrySendingAgain (string roomId, string votingPositions){
 
 		Debug.Log ("Didn't go thru. Trying again.");
 
-		StartCoroutine (addVotingPos (roomId, votingPositions, myColor));
+		StartCoroutine (addVotingPos (roomId, votingPositions));
 
 	}
 
-	IEnumerator addVotingPos (string roomId, string votingPositions, string myColor){
+	IEnumerator addVotingPos (string roomId, string votingPositions){
 
-		IEnumerator e = DCP.RunCS ("turnRooms", "AddVotingPos", new string[3] {roomId, votingPositions, myColor});
+//		IEnumerator e = DCP.RunCS ("turnRooms", "AddVotingPos", new string[3] {roomId, votingPositions, myColor});
+//
+//		while (e.MoveNext ()) {
+//			yield return e.Current;
+//		}
+//
+//		string returnText = e.Current as string;
+//
+//		returnText = returnText.TrimStart ('|');
+//		returnText = returnText.TrimEnd ('@');
+//
+//		Debug.Log ("Returned Positions:" + returnText);
+//
+//		if (returnText == string.Empty) {
+//
+//			TrySendingAgain (roomId, votingPositions);
+//			yield break;
+//
+//		}
 
-		while (e.MoveNext ()) {
-			yield return e.Current;
-		}
+		string URL = "http://dupesite.000webhostapp.com/addPlayerGuess.php";
 
-		string returnText = e.Current as string;
+		WWWForm form = new WWWForm ();
+		form.AddField ("idPost", roomId);
+		form.AddField ("votePost", votingPositions);
+		form.AddField ("playerIdPost", myRoom.myColor.ToString());
 
-		returnText = returnText.TrimStart ('|');
-		returnText = returnText.TrimEnd ('@');
+		WWW www = new WWW (URL, form);
+		yield return www;
 
-		Debug.Log ("Returned Positions:" + returnText);
-
-		if (returnText == string.Empty) {
-
-			TrySendingAgain (roomId, votingPositions, myColor);
-			yield break;
-
-		}
+		string returnText = www.text;
 
 		myRoom.activeVoteRoom = false;
 		myRoom.status = "waiting...";
@@ -939,10 +977,12 @@ public class LocalTurnVoting : MonoBehaviour {
 		} 
 
 		RoomManager.instance.cameFromTurnBased=true;
-		SceneManager.LoadScene ("Lobby Menu");
+		Invoke ("GoToLobby", 1.25f);
 
 	}
 
-}
+	void GoToLobby(){
+		SceneManager.LoadScene ("Lobby Menu");
+	}
 
-//lion skunk rhino gerbil cow bear pig dog camel horse
+}

@@ -25,6 +25,7 @@ public class HighScoreScript : MonoBehaviour {
 
 	public void TranslateToHighScoreList (string scores) {
 
+		scores = scores.Replace("\n", "");
 		scoreList = new List<string> ();
 		scoreObjList = new List<GameObject> ();
 
@@ -84,8 +85,8 @@ public class HighScoreScript : MonoBehaviour {
 
 		okToClick = false;
 
-		string points = "0";
-		string currentRooms = "0";
+		string points = "";
+		string currentRooms = "";
 
 		if (username == null) {
 			UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
@@ -112,23 +113,40 @@ public class HighScoreScript : MonoBehaviour {
 
 	IEnumerator updateHighScore (string points, string username, string currentRooms){
 
-		IEnumerator e = DCP.RunCS ("accounts", "UpdateHighScore", new string[3] {points,username,currentRooms});
-
-		while (e.MoveNext ()) {
-			yield return e.Current;
-		}
-
-		string returnText = e.Current as string;
+//		IEnumerator e = DCP.RunCS ("accounts", "UpdateHighScore", new string[3] {points,username,currentRooms});
+//
+//		while (e.MoveNext ()) {
+//			yield return e.Current;
+//		}
+//
+//		string returnText = e.Current as string;
 
 		//Debug.Log ("HighScore List:" + returnText);
 
-		if (returnText.Length < 2) {
-			UpdateTheScore ();
-			yield break;
-		}
+//		if (returnText.Length < 2) {
+//			UpdateTheScore ();
+//			yield break;
+//		}
+
+		string URL = "http://dupesite.000webhostapp.com/updateHighScore.php";
+
+		WWWForm form = new WWWForm ();
+		form.AddField ("usernamePost", username);
+		form.AddField ("pointsPost", points);
+		form.AddField ("currentRoomsPost", currentRooms);
+		form.AddField ("playerColorPost", "");
+		form.AddField ("idPost", "");
+
+		WWW www = new WWW (URL, form);
+		yield return www;
+
+		string returnText = www.text;
+
+		Debug.Log ("High return: " + returnText);
+
 
 		TranslateToHighScoreList (returnText);
-		Invoke ("OkToClickAgain", 1.0f);
+		Invoke ("OkToClickAgain", 3.0f);
 
 	}
 

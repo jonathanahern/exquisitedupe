@@ -246,35 +246,35 @@ public class LocalTurnScoring : MonoBehaviour {
 			starPeeps.Add (1);
 		} 
 
-		if (myRoom.privateRoom == true && myRoom.roundNum != 1) {
+//		if (myRoom.privateRoom == true && myRoom.roundNum != 1) {
+//
+//			string myUsername = players [myRoom.myActualColor - 1].text;
+//
+//			for (int i = 0; i < players.Length; i++) {
+//
+//				string location = myUsername + players [i].text + "abcde";
+//
+//				int curScore = PlayerPrefs.GetInt (location);
+//				scores [i].text = curScore.ToString();
+//				Debug.Log (location);
+//				Debug.Log ("Player " + myUsername + " scores " + curScore.ToString());
+//				if (i == 0) {
+//					redScore = curScore;
+//				} else if (i == 1) {
+//					blueScore = curScore;
+//				} else if (i == 2) {
+//					greenScore = curScore;
+//				} else if (i == 3) {
+//					orangeScore = curScore;
+//				}
+//
+//			}
+//
+//		}
 
-			string myUsername = players [myRoom.myActualColor - 1].text;
-
-			for (int i = 0; i < players.Length; i++) {
-
-				string location = myUsername + players [i].text + "abcde";
-
-				int curScore = PlayerPrefs.GetInt (location);
-				scores [i].text = curScore.ToString();
-				Debug.Log (location);
-				Debug.Log ("Player " + myUsername + " scores " + curScore.ToString());
-				if (i == 0) {
-					redScore = curScore;
-				} else if (i == 1) {
-					blueScore = curScore;
-				} else if (i == 2) {
-					greenScore = curScore;
-				} else if (i == 3) {
-					orangeScore = curScore;
-				}
-
-			}
-
-		}
-
-		if (myRoom.privateRoom == true && myRoom.roundNum == 1) {
-			ClearPlayerPrefs ();
-		}
+//		if (myRoom.privateRoom == true && myRoom.roundNum == 1) {
+//			ClearPlayerPrefs ();
+//		}
 
 	}
 	
@@ -389,13 +389,14 @@ public class LocalTurnScoring : MonoBehaviour {
 	}
 
 	void GetVoteData (){
-	
+		
+		myRoom.votePoses = myRoom.votePoses.TrimEnd('@');
 		string[] voteDataWhole = myRoom.votePoses.Split ('@');
 
 		int guessCount = 0;
 
 		foreach (string voteData in voteDataWhole) {
-
+			Debug.Log (voteData);
 			string[] oneData = voteData.Split ('$');
 			oneData [4] = CheckIfPass (oneData[4]);
 
@@ -1809,10 +1810,10 @@ public class LocalTurnScoring : MonoBehaviour {
 
 		} else {
 			roomManScript.cameFromScoring = true;
-			Invoke ("ReallyEndRoundPublic", 1.0f * speed);
+			Invoke ("ReallyEndRoundPublic", 1.0f);
 		}
 
-		Destroy(myRoom.gameObject);
+
 
 		roomManScript.CurtainsIn ();
 
@@ -1822,35 +1823,38 @@ public class LocalTurnScoring : MonoBehaviour {
 	
 		int myScore = 0;
 
-		if (myColor == 1) {
+		if (myRoom.myColor == 1) {
 			myScore = redScore;
-		} else if (myColor == 2) {
+		} else if (myRoom.myColor == 2) {
 			myScore = blueScore;
-		} else if (myColor == 3) {
+		} else if (myRoom.myColor == 3) {
 			myScore = greenScore;
-		} else if (myColor == 4) {
+		} else if (myRoom.myColor == 4) {
 			myScore = orangeScore;
 		}
 
-		string roomIDstring = "|[ID]" + myRoomID.ToString ();
+		string roomIDstring = myRoomID.ToString ();
 
 		UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
 
 		string roomsString = userAccount.activeRooms;
-		string currentRoom = myRoom.roomID + "/";
+		string currentRoom = myRoom.roomID.ToString();
 
 		roomsString = roomsString.Replace (currentRoom, string.Empty);
+		roomsString = roomsString.TrimEnd ('/');
+		roomsString = roomsString.TrimStart ('/');
+		roomsString = roomsString.Replace ("//", "/");
 
-		if (roomsString.Length < 5) {
-		
+		if (roomsString.Length < 1) {
 			roomsString = string.Empty;
-
 		}
 
 		userAccount.activeRooms = roomsString;
 
-		roomMan.GetComponent<RoomManager> ().SendTheScore (myScore, myColor, roomIDstring, roomsString);
+		Debug.Log ("finished room " + roomIDstring);
+		roomMan.GetComponent<RoomManager> ().SendTheScore (myScore, myRoom.myColor, roomIDstring, roomsString);
 		RoomManager.instance.cameFromTurnBased = true;
+		Destroy(myRoom.gameObject);
 		SceneManager.LoadScene ("Lobby Menu");
 
 	}
@@ -1912,52 +1916,52 @@ public class LocalTurnScoring : MonoBehaviour {
 
 	}
 
-	public void ExitSign (){
-		
-		RoomManager roomManScript = roomMan.GetComponent<RoomManager> ();
-		UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
+//	public void ExitSign (){
+//		
+//		RoomManager roomManScript = roomMan.GetComponent<RoomManager> ();
+//		UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
+//
+//		string roomsString = userAccount.activeRooms;
+//		string currentRoom = myRoom.roomID + "/";
+//
+//		roomsString = roomsString.Replace (currentRoom, string.Empty);
+//
+//		if (roomsString.Length < 5) {
+//			roomsString = string.Empty;
+//		}
+//
+//		userAccount.activeRooms = roomsString;
+//		userAccount.StoreEditedRooms (roomsString);
+//
+//		Destroy(myRoom.gameObject);
+//		roomManScript.CurtainsIn ();
+//
+//		Invoke ("LeavePrivateGame", 2.0f * speed);
+//
+//	}
 
-		string roomsString = userAccount.activeRooms;
-		string currentRoom = myRoom.roomID + "/";
+//	void LeavePrivateGame(){
+//	
+//		RoomManager.instance.cameFromTurnBased = true;
+//		SceneManager.LoadScene ("Lobby Menu");
+//	
+//	}
 
-		roomsString = roomsString.Replace (currentRoom, string.Empty);
-
-		if (roomsString.Length < 5) {
-			roomsString = string.Empty;
-		}
-
-		userAccount.activeRooms = roomsString;
-		userAccount.StoreEditedRooms (roomsString);
-
-		Destroy(myRoom.gameObject);
-		roomManScript.CurtainsIn ();
-
-		Invoke ("LeavePrivateGame", 2.0f * speed);
-
-	}
-
-	void LeavePrivateGame(){
-	
-		RoomManager.instance.cameFromTurnBased = true;
-		SceneManager.LoadScene ("Lobby Menu");
-	
-	}
-
-	void ClearPlayerPrefs (){
-		
-		string myUsername = players [myRoom.myActualColor - 1].text;
-
-		for (int i = 0; i < players.Length; i++) {
-
-			string location = myUsername + players [i].text + "abcde";
-
-			Debug.Log ("Clearing: " + location);
-
-			PlayerPrefs.DeleteKey (location);
-
-		}
-			
-	}
+//	void ClearPlayerPrefs (){
+//		
+//		string myUsername = players [myRoom.myActualColor - 1].text;
+//
+//		for (int i = 0; i < players.Length; i++) {
+//
+//			string location = myUsername + players [i].text + "abcde";
+//
+//			Debug.Log ("Clearing: " + location);
+//
+//			PlayerPrefs.DeleteKey (location);
+//
+//		}
+//			
+//	}
 
 	//play animation = 1
 	void GivePoints (int playerNum, int points, int animation) {

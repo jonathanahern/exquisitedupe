@@ -145,6 +145,12 @@ public class RoomManager : MonoBehaviour {
 
 	public bool afterDark = false;
 
+
+	public int pointsToAddTemp;
+	public int playerColorTemp;
+	public string roomIDstringTemp;
+	public string currentRoomsTemp;
+
 	void Start (){
 
 		if (tutorialMode == true) {
@@ -257,9 +263,9 @@ public class RoomManager : MonoBehaviour {
 
 			}
 			noRooms = true;
-			frameText.GetComponent<Text> ().text = "YOU ART NOT APART\nOF ANY PAINTINGS";
-			GameObject loadAnimation = GameObject.FindGameObjectWithTag ("Load Animation");
-			loadAnimation.SetActive (false);
+//			frameText.GetComponent<Text> ().text = "YOU ART NOT APART\nOF ANY PAINTINGS";
+//			GameObject loadAnimation = GameObject.FindGameObjectWithTag ("Load Animation");
+//			loadAnimation.SetActive (false);
 			roomTotal = 0;
 			roomsReady = true;
 			refreshing = false;
@@ -487,21 +493,21 @@ public class RoomManager : MonoBehaviour {
 		roomScript.statusServer = roomData.status1 + roomData.status2 + roomData.status3 + roomData.status4 + roomData.caughtEscape;
 		roomScript.dupeCaught = roomData.caughtEscape;
 		int dupeColor = roomScript.dupeNum;
-		dupeColor = dupeColor + roomScript.colorMod;
-		if (dupeColor > 4) {
-			dupeColor = dupeColor - 4;
+		dupeColor = dupeColor - roomScript.colorMod;
+		if (dupeColor < 1) {
+			dupeColor = dupeColor + 4;
 		}
 		if (dupeColor == 1) {
-			roomScript.votePoses =	"2" + roomData.vote2 + "@" + "3" + roomData.vote3 + "@" + "4" + roomData.vote4;
+			roomScript.votePoses =	roomData.vote2 + roomData.vote3 + roomData.vote4;
 			roomScript.dupeGuess = roomData.vote1;
 		} else if (dupeColor == 2) {
-			roomScript.votePoses =	"1" + roomData.vote1 + "@" + "3" + roomData.vote3 + "@" + "4" + roomData.vote4;
+			roomScript.votePoses =	roomData.vote1 + roomData.vote3 + roomData.vote4;
 			roomScript.dupeGuess = roomData.vote2;
 		} else if (dupeColor == 3) {
-			roomScript.votePoses =	"1" + roomData.vote1 + "@" + "2" + roomData.vote2 + "@" + "4" + roomData.vote4;
+			roomScript.votePoses =	roomData.vote1 + roomData.vote2 + roomData.vote4;
 			roomScript.dupeGuess = roomData.vote3;
 		} else if (dupeColor == 4) {
-			roomScript.votePoses =	"1" + roomData.vote1 + "@" + "2" + roomData.vote2 + "@" + "3" + roomData.vote3;
+			roomScript.votePoses =	roomData.vote1 + roomData.vote2 + roomData.vote3;
 			roomScript.dupeGuess = roomData.vote4;
 		}
 
@@ -1073,21 +1079,21 @@ public class RoomManager : MonoBehaviour {
 		roomScript.statusServer = roomData.status1 + roomData.status2 + roomData.status3 + roomData.status4 + roomData.caughtEscape;
 		roomScript.dupeCaught = roomData.caughtEscape;
 		int dupeColor = roomScript.dupeNum;
-		dupeColor = dupeColor + roomScript.colorMod;
-		if (dupeColor > 4) {
-			dupeColor = dupeColor - 4;
+		dupeColor = dupeColor - roomScript.colorMod;
+		if (dupeColor < 1) {
+			dupeColor = dupeColor + 4;
 		}
 		if (dupeColor == 1) {
-			roomScript.votePoses =	"2" + roomData.vote2 + "@" + "3" + roomData.vote3 + "@" + "4" + roomData.vote4;
+			roomScript.votePoses =	roomData.vote2 + roomData.vote3 + roomData.vote4;
 			roomScript.dupeGuess = roomData.vote1;
 		} else if (dupeColor == 2) {
-			roomScript.votePoses =	"1" + roomData.vote1 + "@" + "3" + roomData.vote3 + "@" + "4" + roomData.vote4;
+			roomScript.votePoses =	roomData.vote1 + roomData.vote3 + roomData.vote4;
 			roomScript.dupeGuess = roomData.vote2;
 		} else if (dupeColor == 3) {
-			roomScript.votePoses =	"1" + roomData.vote1 + "@" + "2" + roomData.vote2 + "@" + "4" + roomData.vote4;
+			roomScript.votePoses =	roomData.vote1 + roomData.vote2 + roomData.vote4;
 			roomScript.dupeGuess = roomData.vote3;
 		} else if (dupeColor == 4) {
-			roomScript.votePoses =	"1" + roomData.vote1 + "@" + "2" + roomData.vote2 + "@" + "3" + roomData.vote3;
+			roomScript.votePoses =	roomData.vote1 + roomData.vote2 + roomData.vote3;
 			roomScript.dupeGuess = roomData.vote4;
 		}
 
@@ -1106,7 +1112,7 @@ public class RoomManager : MonoBehaviour {
 			stringIdLetter = "z";
 		}
 
-		Debug.Log ("status server: " + roomScript.statusServer + " & my num is " + stringID);
+		//Debug.Log ("status server: " + roomScript.statusServer + " & my num is " + stringID);
 
 		if (roomScript.statusServer.Contains ("a") && roomScript.statusServer.Contains ("b") && roomScript.statusServer.Contains ("c") && roomScript.statusServer.Contains ("d")) {
 			roomScript.statusNum = 4;
@@ -1189,8 +1195,8 @@ public class RoomManager : MonoBehaviour {
 		if (returnText == "Good") {
 
 			userAccount.StoreRoom(roomIDstring);
-			SceneManager.LoadScene ("Turn Based Room");
-		
+			Invoke("DelayedNewRoom", 1.0f);
+
 		} 
 //		else if (returnText == "New Room") {
 //
@@ -1220,6 +1226,13 @@ public class RoomManager : MonoBehaviour {
 			
 	}
 
+	void DelayedNewRoom(){
+	
+		SceneManager.LoadScene ("Turn Based Room");
+	
+	}
+
+
 	public void UpdateTurnRoomsFromLogin(int statusRoomId){
 		
 
@@ -1246,7 +1259,7 @@ public class RoomManager : MonoBehaviour {
 				status.categoryName.text = turnRoom.roomType;
 				status.gameStatus.text = turnRoom.status;
 
-				Debug.Log ("status num creation: " + turnRoom.statusNum);
+				//Debug.Log ("status num creation: " + turnRoom.statusNum);
 
 				if (turnRoom.statusNum == 0) {
 					status.PhaseOneReady ();
@@ -1324,42 +1337,55 @@ public class RoomManager : MonoBehaviour {
 		
 	public void SendTheScore (int pointsToAdd, int playerColor, string roomIDstring, string currentRooms){
 	
-		string points = pointsToAdd.ToString ();
+//		Debug.Log ("Stuff: " + pointsToAdd + " " + playerColor + " " + currentRooms);
+
+		pointsToAddTemp = pointsToAdd;
+		playerColorTemp = playerColor;
+		roomIDstringTemp = roomIDstring;
+		currentRoomsTemp = currentRooms;
+
+		//string points = pointsToAdd.ToString ();
 		//string currentRooms = "[ID]";
-		int children = roomHolder.childCount;
-		tempColor = playerColor;
-		tempID = roomIDstring;
+		//int children = roomHolder.childCount;
+		//tempColor = playerColor;
+		//tempID = roomIDstring;
 
-		if (username == null) {
-			userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
-			username = userAccount.loggedInUsername;
-		}
+//		if (username == null) {
+//			userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
+//			username = userAccount.loggedInUsername;
+//		}
 
 
-		StartCoroutine (updateHighScore(points, username, currentRooms));
-		StartCoroutine (statusUpdateScoring(roomIDstring, playerColor.ToString()));
+//		StartCoroutine (updateHighScore());
+//		StartCoroutine (statusUpdateScoring(roomIDstring, playerColor.ToString()));
 
 
 	}
 
-	IEnumerator updateHighScore (string points, string username, string currentRooms){
+	public void SendTheScoreToServer (){
+	
+		StartCoroutine (updateHighScore ());
 
-		IEnumerator e = DCP.RunCS ("accounts", "UpdateHighScore", new string[3] {points,username,currentRooms});
+	}
 
-		while (e.MoveNext ()) {
-			yield return e.Current;
-		}
+	IEnumerator updateHighScore (){
 
-		string returnText = e.Current as string;
+		string URL = "http://dupesite.000webhostapp.com/updateHighScore.php";
 
-		//returnText = returnText.TrimStart ('|');
+		WWWForm form = new WWWForm ();
+		form.AddField ("usernamePost", username);
+		form.AddField ("pointsPost", pointsToAddTemp);
+		form.AddField ("currentRoomsPost", currentRoomsTemp);
+		form.AddField ("playerColorPost", playerColorTemp);
+		form.AddField ("idPost", roomIDstringTemp);
 
-		Debug.Log ("HighScore List:" + returnText);
+		WWW www = new WWW (URL, form);
+		yield return www;
 
-		if (returnText.Length < 2) {
-			SendTheScore (int.Parse(points), tempColor, tempID, currentRooms);
-			yield break;
-		}
+		string returnText = www.text;
+
+		Debug.Log (returnText);
+
 
 		if (highscore == null) {
 
@@ -1368,6 +1394,26 @@ public class RoomManager : MonoBehaviour {
 		} 
 
 		highscore.TranslateToHighScoreList (returnText);
+
+
+//		IEnumerator e = DCP.RunCS ("accounts", "UpdateHighScore", new string[3] {points,username,currentRooms});
+//
+//		while (e.MoveNext ()) {
+//			yield return e.Current;
+//		}
+//
+//		string returnText = e.Current as string;
+
+		//returnText = returnText.TrimStart ('|');
+
+		Debug.Log ("HighScore List:" + returnText);
+
+//		if (returnText.Length < 2) {
+//			SendTheScore (int.Parse(points), tempColor, tempID, currentRooms);
+//			yield break;
+//		}
+
+
 
 	}
 

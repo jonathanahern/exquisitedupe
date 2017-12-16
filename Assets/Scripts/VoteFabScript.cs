@@ -174,7 +174,7 @@ public class VoteFabScript : MonoBehaviour {
 
 
 		if (transform.parent != null) {
-			Debug.Log ("SHAKE STOP");
+			//Debug.Log ("SHAKE STOP");
 			DOTween.Kill ("voteshake");
 			gameObject.transform.DOScale (Vector3.one, 0.1f);
 			CancelInvoke ();

@@ -57,7 +57,7 @@ public class LocalRoomManager : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
-		Invoke ("ShakeButton", 0.5f);
+		Invoke ("ShakeButton", 1.5f);
 
 		panelScreen = bottomPanel.anchoredPosition;
 		panelScreenOff = new Vector3 (panelScreen.x, panelScreen.y - 500, panelScreen.z);
@@ -90,7 +90,7 @@ public class LocalRoomManager : MonoBehaviour {
 
 			return;
 		}
-
+		roomMan.GetComponent<RoomManager> ().CurtainsOut();
 		Vector3 punchSize = new Vector3 (.5f, .5f, .5f);
 		//Debug.Log (punchSize);
 		theDrawButton.transform.DOPunchScale (punchSize, 1.0f,10,.01f).SetDelay(3.0f).SetId("buttshake").OnComplete(ShakeButton);		
@@ -149,8 +149,6 @@ public class LocalRoomManager : MonoBehaviour {
 		}
 
 		backGroundDraw.color = pColors [myRoom.myActualColor - 1];
-
-		roomMan.GetComponent<RoomManager> ().CurtainsOut();
 
 		UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
 
@@ -540,6 +538,12 @@ public class LocalRoomManager : MonoBehaviour {
 		myRoom.statusNum = 1;
 
 		RoomManager.instance.cameFromTurnBased=true;
+		Invoke ("GoToLobby", 1.0f);
+
+	}
+
+	void GoToLobby(){
+	
 		SceneManager.LoadScene ("Lobby Menu");
 
 	}

@@ -99,7 +99,7 @@ public class TurnGameStatus : MonoBehaviour {
 		phaseOneReady = false;
 		doneDrawing.SetActive (true);
 		doneDrawingCheck.SetActive (true);
-		gameStatus.text = "WAITINGS";
+		gameStatus.text = "WAITING";
 		button.color = wait;
 
 	}
@@ -208,7 +208,7 @@ public class TurnGameStatus : MonoBehaviour {
 
 		int children = roomHolder.childCount;
 
-		Debug.Log (roomMan.name + children);
+		//Debug.Log (roomMan.name + children);
 
 		for (int i = 0; i < children; ++i){
 			

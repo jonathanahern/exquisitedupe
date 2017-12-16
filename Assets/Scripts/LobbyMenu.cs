@@ -48,6 +48,7 @@ public class LobbyMenu : MonoBehaviour {
 	public GameObject refreshingScreen;
 	public Text loadScreenWords;
 
+	public GameObject loadingAnimationCenter;
 	public bool tutorialMode = false;
 	int roomCount;
 	public AnimationCurve moveItOut;
@@ -81,7 +82,7 @@ public class LobbyMenu : MonoBehaviour {
 		if (roomMan.cameFromTurnBased == true) {
 			Debug.Log ("came From turn based");
 			TurnBasedClicked ();
-			roomMan.CurtainsOut();
+			Invoke ("CurtainsOpen", 1.0f);
 			roomMan.FindEmptyRooms ();
 			roomMan.startingNew = false;
 			roomMan.UpdateStatus ();
@@ -106,10 +107,12 @@ public class LobbyMenu : MonoBehaviour {
 		//Debug.Log (roomCount);
 
 		if (roomMan.cameFromScoring == false) {
-			highScores.gameObject.GetComponent<HighScoreScript> ().UpdateTheScore ();
+			//highScores.gameObject.GetComponent<HighScoreScript> ().UpdateTheScore ();
 		} else {
 			GoToHighScores ();
+			roomMan.SendTheScoreToServer ();
 			roomMan.cameFromScoring = false;
+
 		}
 			
 		if (roomCount < 1) {
@@ -118,10 +121,11 @@ public class LobbyMenu : MonoBehaviour {
 				frameText = GameObject.FindGameObjectWithTag ("Frame Text");
 			}
 			frameText.GetComponent<Text> ().text = "YOU ART NOT APART\nOF ANY PAINTINGS";
+			loadingAnimationCenter.SetActive (false);
 		} else {
-			Debug.Log (roomCount);
+			//Debug.Log (roomCount);
 			for (int i = 0; i < roomCount; i++) {
-				Debug.Log (roomArray [i]);
+				//Debug.Log (roomArray [i]);
 				roomMan.UpdateTurnRoomsFromLogin (int.Parse (roomArray [i]));
 			}
 
@@ -145,6 +149,13 @@ public class LobbyMenu : MonoBehaviour {
 //		
 //		}
 		
+	}
+
+	void CurtainsOpen (){
+	
+
+		roomMan.GetComponent<RoomManager> ().CurtainsOut();
+	
 	}
 
 	void AskForTutorial(){
