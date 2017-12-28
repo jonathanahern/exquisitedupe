@@ -257,7 +257,7 @@ public class LoginMenu : MonoBehaviour {
 
 				//Debug.Log ("Paintings: " + returnBroken [1]);
 
-				UserAccountManagerScript.instance.LogIn (username, password, returnBroken[1], 1);
+				UserAccountManagerScript.instance.LogIn (username, password, returnBroken[1], returnBroken[2], 1);
 
 			} else {
 				
@@ -361,9 +361,11 @@ public class LoginMenu : MonoBehaviour {
 	IEnumerator sendRegisterRequest (string username, string password, string data) {
 
 		string URL = "http://dupesite.000webhostapp.com/registerRequest.php";
+		string notId = UserAccountManagerScript.instance.notificationId;
 
 		WWWForm form = new WWWForm ();
 		form.AddField ("usernamePost", username);
+		form.AddField ("notIdPost",notId);
 
 		WWW www = new WWW (URL, form);
 		yield return www;
@@ -383,7 +385,7 @@ public class LoginMenu : MonoBehaviour {
 				//blank username field
 				input_register_username.text = ""; //password field is blanked at the end of this function, even when error is returned
 				
-		UserAccountManagerScript.instance.LogIn (username, password, "", 0);
+			UserAccountManagerScript.instance.LogIn (username, password, "", notId, 0);
 
 			} else if (returnText == "Already exists") {
 				//Account Not Created due to username being used on another Account

@@ -28,12 +28,17 @@ public class LineSpawnerScipt : MonoBehaviour {
 	private float yMax;
 
 	public bool drawingScene;
+	public bool portraitScene;
 	public bool dontDraw;
 
 	public Material[] lineMats;
 	public Color[] regColors;
 
 	bool drawing = false;
+	public Transform portraitCircle;
+	Vector2 centerPos;
+	public float radius = 1.5f;
+	float offset = -50.0f;
 
 	// Use this for initialization
 	void Start () {
@@ -42,6 +47,15 @@ public class LineSpawnerScipt : MonoBehaviour {
 			linePrefab = blackPrefab;
 			xMin = -3.8f;
 			xMax = 3.8f;
+			yMin = -3.83f;
+			yMax = 3.8f;
+		}
+
+		if (portraitScene == true) {
+			linePrefab = blackPrefab;
+			centerPos = portraitCircle.localPosition;
+			xMin = -3.8f + offset;
+			xMax = 3.8f + offset;
 			yMin = -3.83f;
 			yMax = 3.8f;
 		}
@@ -158,20 +172,37 @@ public class LineSpawnerScipt : MonoBehaviour {
 		
 			Vector2 mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);
 
-			if (mousePos.x > xMax) {
-				mousePos.x = xMax;
-			} else if (mousePos.x < xMin) {
-				mousePos.x = xMin;
-			}
+			if (portraitScene == false) {
 
-			if (mousePos.y > yMax) {
-				mousePos.y = yMax;
-			} else if (mousePos.y < yMin) {
-				mousePos.y = yMin;
-			}
+				if (mousePos.x > xMax) {
+					mousePos.x = xMax;
+				} else if (mousePos.x < xMin) {
+					mousePos.x = xMin;
+				}
 
-			activeLine.UpdateLine (mousePos);
-		
+				if (mousePos.y > yMax) {
+					mousePos.y = yMax;
+				} else if (mousePos.y < yMin) {
+					mousePos.y = yMin;
+				}
+
+				activeLine.UpdateLine (mousePos);
+			} else {
+				
+				 //radius of *black circle*
+				//Vector2 centerPosition = portraitCircle.localPosition; //center of *black circle*
+				float distance = Vector3.Distance(mousePos, centerPos); //distance from ~green object~ to *black circle*
+
+				if (distance > radius) //If the distance is less than the radius, it is already within the circle.
+				{
+					Vector2 fromOriginToObject = mousePos - centerPos; //~GreenPosition~ - *BlackCenter*
+					fromOriginToObject *= radius / distance; //Multiply by radius //Divide by Distance
+					mousePos = centerPos + fromOriginToObject; //*BlackCenter* + all that Math
+				}
+
+				activeLine.UpdateLine (mousePos);
+
+			}
 		}
 	}
 
@@ -205,6 +236,8 @@ public class LineSpawnerScipt : MonoBehaviour {
 		currentLine.GetComponent<LineScript> ().ParentBrush (brushHit);
 
 	}
+
+
 
 	public void UndoLine () {
 

@@ -26,18 +26,22 @@ public class FullRoomData
 	public string category;
 	public string fate;
 	public string player1;
+	public string notId1;
 	public string status1;
 	public string drawing1;
 	public string vote1;
 	public string player2;
+	public string notId2;
 	public string status2;
 	public string drawing2;
 	public string vote2;
 	public string player3;
+	public string notId3;
 	public string status3;
 	public string drawing3;
 	public string vote3;
 	public string player4;
+	public string notId4;
 	public string status4;
 	public string drawing4;
 	public string vote4;
@@ -93,6 +97,7 @@ public class RoomManager : MonoBehaviour {
 	private string[] brushes = new string[10];
 
 	public bool cameFromTurnBased;
+	public bool amIFirstDone = false;
 	public bool cameFromScoring = false;
 	public bool startingNew = false;
 	public bool cameFromTutorial = false;
@@ -473,6 +478,11 @@ public class RoomManager : MonoBehaviour {
 				myColor = i + 1;
 			}
 		}
+		roomScript.playersNotId = new string[4];
+		roomScript.playersNotId [0] = roomData.notId1;
+		roomScript.playersNotId [1] = roomData.notId2;
+		roomScript.playersNotId [2] = roomData.notId3;
+		roomScript.playersNotId [3] = roomData.notId4;
 
 		roomScript.myColor = myColor;
 		string realCat = roomData.category;
@@ -547,94 +557,21 @@ public class RoomManager : MonoBehaviour {
 			roomScript.dupeCaught = "n";
 		}
 
+		if (roomScript.needsToSendAlert == true) {
 
-		//string[] pieces = roomInfoWhole.Split('|');
+			string message;
 
-//		foreach (string piece in pieces) {
-//
-//			if (piece.StartsWith (PLAYERS_SYM)) {
-//
-//				string playersWhole = piece.Substring (PLAYERS_SYM.Length);
-//				string[] players = playersWhole.Split('/');
-//
-//				myRoom.players = new string[players.Length];
-//				int colorMod = myRoom.colorMod;
-//
-//				for (int i = 0; i < players.Length; i++) {
-//
-//					if (players[i] == username) {
-//						Debug.Log ("colormod CHECK!: " + myRoom.colorMod.ToString());
-//						myRoom.myColor = i + 1;
-//					}
-//				
-//				}
-//
-//
-//
-//				if (players.Length > 3) {
-//					for (int i = 0; i < players.Length; i++) {
-//
-//						int playerPos = i - colorMod;
-//
-//						if (playerPos < 0) {
-//							playerPos = playerPos + 4;
-//						}
-//
-//						myRoom.players [i] = players [playerPos];
-//					}
-//				}
-//
-//			} else if (piece.StartsWith (STATUS_SYM)) {
-//				
-//				string status = piece.Substring (STATUS_SYM.Length);
-//
-//				if (status.Contains ("x")) {
-//
-//					myRoom.dupeCaught = "x";
-//
-//				} else if (status.Contains ("o")) {
-//
-//					myRoom.dupeCaught = "o";
-//
-//				} else {
-//
-//					myRoom.dupeCaught = "n";
-//
-//				}
-//
-//			}
-//
-//			else if (piece.StartsWith (DRAWING_SYM)) {
-//
-//				string drawingString = piece.Substring (DRAWING_SYM.Length);
-//				//Debug.Log ("Drawing: " + drawingString);
-//
-//				myRoom.drawings = drawingString;
-//
-//			}
-//
-//			else if (piece.StartsWith (VOTEPOS_SYM)) {
-//
-//				string votePoses = piece.Substring (VOTEPOS_SYM.Length);
-//
-//				//Debug.Log ("Vote Poses: " + votePoses);
-//
-//				votePoses = votePoses.TrimEnd ('@');
-//				myRoom.votePoses = votePoses;
-//
-//			}
-//
-//			else if (piece.StartsWith (DUPEGUESS_SYM)) {
-//
-//				string dupeGuess = piece.Substring (DUPEGUESS_SYM.Length);
-//
-//				//Debug.Log ("Dupe Guess: " + dupeGuess);
-//
-//				myRoom.dupeGuess = dupeGuess;
-//
-//			}
-//		}
+			if (roomScript.statusNum == 4) {
+				message = "It's time to score!";
+			} else if (roomScript.statusNum == 2) {
+				message = "It's time to vote!";
+			} else {
+				message = "Come play!";
+			}
 
+			SendNotification (message, roomScript);
+
+		}
 
 
 		for (int i = 0; i < statusHolder.transform.childCount; i++) {
@@ -648,6 +585,43 @@ public class RoomManager : MonoBehaviour {
 
 		}
 
+	}
+
+	void SendNotification (string message, TurnRoomScript roomScript){
+	
+		List<string> notIds;
+		notIds = new List<string>();
+
+		for (int i = 0; i < 4; i++) {
+			if (i != roomScript.myColor - 1 && roomScript.playersNotId[i] != "Nothing") {
+				notIds.Add(roomScript.playersNotId[i]);
+			}
+		}
+
+		if (notIds.Count > 0) {
+			Debug.Log ("Send alert to: " + notIds [0] + ". That makes: " + notIds.Count);
+			var notification = new Dictionary<string, object> ();
+			notification ["contents"] = new Dictionary<string, string> () { { "en", message } };
+
+			if (notIds.Count == 1) {
+				notification ["include_player_ids"] = new List<string> () { notIds [0] };
+			} else if (notIds.Count == 2) {
+				notification ["include_player_ids"] = new List<string> () { notIds [0], notIds [1] };
+			} else if (notIds.Count == 3) {
+				notification ["include_player_ids"] = new List<string> () { notIds [0], notIds [1], notIds [2] };
+			}
+
+			OneSignal.PostNotification (notification, (responseSuccess) => {
+				Debug.Log ("Notification posted successful!");
+			}, (responseFailure) => {
+				Debug.Log ("Notification failed to post");
+			});
+		} else {
+			Debug.Log("No notIds found");
+		}
+
+		roomScript.needsToSendAlert = false;
+	
 	}
 
 	//RoomManager.instance.CreateRoom (roomType, room.id, room.fate, room.playerNum, -2);
@@ -1058,6 +1032,12 @@ public class RoomManager : MonoBehaviour {
 				myColor = i + 1;
 			}
 		}
+
+		roomScript.playersNotId = new string[4];
+		roomScript.playersNotId [0] = roomData.notId1;
+		roomScript.playersNotId [1] = roomData.notId2;
+		roomScript.playersNotId [2] = roomData.notId3;
+		roomScript.playersNotId [3] = roomData.notId4;
 
 		roomScript.myColor = myColor;
 		string realCat = roomData.category;
@@ -1795,7 +1775,7 @@ public class RoomManager : MonoBehaviour {
 
 		//Debug.Log (statusNum);
 
-		Invoke ("RefreshingTurnOff", 2.0f);
+		Invoke ("RefreshingTurnOff", 1.0f);
 
 		if (roomScript.statusNum == statusNum) {
 			return;
@@ -1818,6 +1798,13 @@ public class RoomManager : MonoBehaviour {
 				tempScript.NewStatus (statusNum);
 			}
 
+		}
+
+		if (amIFirstDone == true) {
+
+			roomScript.needsToSendAlert = true;
+			amIFirstDone = false;
+		
 		}
 			
 	}
@@ -1891,3 +1878,5 @@ public class RoomManager : MonoBehaviour {
 	}
 
 }
+
+//how to tell if you were last one drawing...

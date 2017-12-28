@@ -20,7 +20,7 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 		instance = this;
 		DontDestroyOnLoad (this);
-	
+
 	}
 
 	public static string LoggedIn_Username { get; protected set;} //stores username once logged in
@@ -43,6 +43,11 @@ public class UserAccountManagerScript : MonoBehaviour {
 	LobbyMenu lobbyMenu;
 
 	GameObject tempGameobject;
+	public string notificationId;
+
+	void Start(){
+		notificationId = "Nothing";
+	}
 
 	public void LogOut(){
 	
@@ -50,8 +55,6 @@ public class UserAccountManagerScript : MonoBehaviour {
 		LoggedIn_Password = "";
 
 		IsLoggedIn = false;
-
-
 
 		Debug.Log ("User out");
 		SceneManager.LoadScene (loggedOutSceneName);
@@ -84,11 +87,15 @@ public class UserAccountManagerScript : MonoBehaviour {
 	
 	}
 
-	public void LogIn(string username, string password, string rooms, int firstGame){
+	public void LogIn(string username, string password, string rooms, string notIdServer, int firstGame){
 
 		LoggedIn_Username = username;
 		LoggedIn_Password = password;
 		loggedInUsername = username;
+
+		if (notificationId == "Nothing" || notificationId == "") {
+			notificationId = notIdServer;
+		}
 
 		activeRooms = rooms;
 
@@ -224,6 +231,7 @@ public class UserAccountManagerScript : MonoBehaviour {
 		form.AddField ("usernamePost", playerName);
 		form.AddField ("categoryPost", roomType);
 		form.AddField ("fatePost", fate);
+		form.AddField ("notIdPost", notificationId);
 
 		WWW www = new WWW (URL, form);
 		yield return www;

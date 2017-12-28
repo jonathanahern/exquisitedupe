@@ -12,6 +12,7 @@ public class TurnRoomScript : MonoBehaviour {
 	public string [] words = new string [12];
 	public Vector3[] brushes;
 	public string[] players;
+	public string[] playersNotId;
 	public int dupeNum;
 	public string rightword;
 	public string wrongword;
@@ -33,23 +34,7 @@ public class TurnRoomScript : MonoBehaviour {
 	public int colorMod;
 	public int myActualColor;
 	public string statusServer;
-
-	// Use this for initialization
-	void Start () {
-
-
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-
-//		if (Input.GetKeyDown (KeyCode.Q)) {
-//
-//		
-//		}
-		
-	}
+	public bool needsToSendAlert = false;
 
 
 		

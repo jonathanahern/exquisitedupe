@@ -54,6 +54,8 @@ public class LobbyMenu : MonoBehaviour {
 	public AnimationCurve moveItOut;
 	public AnimationCurve moveItIn;
 
+	public Text playersName;
+
 	// Use this for initialization
 	void Awake () {
 
@@ -86,6 +88,8 @@ public class LobbyMenu : MonoBehaviour {
 			roomMan.FindEmptyRooms ();
 			roomMan.startingNew = false;
 			roomMan.UpdateStatus ();
+			Invoke ("TurnOffFirstDone", 3.0f);
+
 			//roomMan.DropOffButtons ();
 		}
 
@@ -134,6 +138,56 @@ public class LobbyMenu : MonoBehaviour {
 		InvokeRepeating ("AutoUpdateRooms", 1.0f, 10.0f);
 
 	}
+
+	void TurnOffFirstDone (){
+	
+		roomMan.amIFirstDone = false;
+	
+	}
+
+	public void SendAHello (){
+		
+		StartCoroutine (getPlayerNotId ());
+	
+	}
+
+	IEnumerator getPlayerNotId (){
+
+		string getPlayerNotIdURL = "http://dupesite.000webhostapp.com/getPlayerNotId.php";
+
+		WWWForm form = new WWWForm ();
+		form.AddField ("usernamePost", playersName.text);
+
+		WWW www = new WWW (getPlayerNotIdURL, form);
+		yield return www;
+
+		Debug.Log (www.text);
+
+		SendTheMessage (www.text);
+	}
+
+	void SendTheMessage (string userNotId){
+
+		if (userNotId == "Not Found") {
+			return;
+		}
+	
+				// Just an example userId, use your own or get it the devices by calling OneSignal.GetIdsAvailable
+				
+		var notification = new Dictionary<string, object> ();
+		notification ["contents"] = new Dictionary<string, string> () { { "en", "Hey punky" } };
+
+		notification ["include_player_ids"] = new List<string> () { userNotId };
+		// Example of scheduling a notification in the future.
+		//notification ["send_after"] = System.DateTime.Now.ToUniversalTime ().AddSeconds (5).ToString ("U");
+
+		OneSignal.PostNotification (notification, (responseSuccess) => {
+			Debug.Log("Notification posted successful! Delayed by about 30 secounds to give you time to press the home button to see a notification vs an in-app alert.");
+		}, (responseFailure) => {
+			Debug.Log("Notification failed to post");
+		});
+
+	}
 	
 	// Update is called once per frame
 	void Update () {
@@ -175,6 +229,7 @@ public class LobbyMenu : MonoBehaviour {
 
 	void AutoUpdateRooms (){
 		if (roomMan.noRooms == true) {
+			Debug.Log ("no rooms found so no updates");
 			return;
 		}
 		//Debug.Log ("TURN ON");

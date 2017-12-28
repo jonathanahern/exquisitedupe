@@ -872,10 +872,11 @@ public class LocalTurnVoting : MonoBehaviour {
 		Debug.Log ("Returned Dupe:" + returnText);
 
 		myRoom.activeVoteRoom = false;
-		myRoom.status = "waiting...";
+		myRoom.status = "waiting";
 		myRoom.statusNum = 3;
 
 		RoomManager.instance.cameFromTurnBased=true;
+		RoomManager.instance.amIFirstDone=true;
 		Invoke ("GoToLobby", 1.25f);
 
 	}
@@ -962,7 +963,7 @@ public class LocalTurnVoting : MonoBehaviour {
 		string returnText = www.text;
 
 		myRoom.activeVoteRoom = false;
-		myRoom.status = "waiting...";
+		myRoom.status = "waiting";
 		myRoom.statusNum = 3;
 
 
@@ -977,6 +978,7 @@ public class LocalTurnVoting : MonoBehaviour {
 		} 
 
 		RoomManager.instance.cameFromTurnBased=true;
+		RoomManager.instance.amIFirstDone=true;
 		Invoke ("GoToLobby", 1.25f);
 
 	}

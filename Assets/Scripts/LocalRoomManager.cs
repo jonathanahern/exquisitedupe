@@ -70,8 +70,6 @@ public class LocalRoomManager : MonoBehaviour {
 
 		FindMyRoom ();
 
-
-
 	}
 	
 	// Update is called once per frame
@@ -534,10 +532,12 @@ public class LocalRoomManager : MonoBehaviour {
 //		}
 
 		myRoom.activeRoom = false;
-		myRoom.status = "waiting...";
+		myRoom.status = "waiting";
 		myRoom.statusNum = 1;
 
+
 		RoomManager.instance.cameFromTurnBased=true;
+		RoomManager.instance.amIFirstDone=true;
 		Invoke ("GoToLobby", 1.0f);
 
 	}
