@@ -38,7 +38,7 @@ public class LineSpawnerScipt : MonoBehaviour {
 	public Transform portraitCircle;
 	Vector2 centerPos;
 	public float radius = 1.5f;
-	float offset = -50.0f;
+	float offset = 0;
 
 	// Use this for initialization
 	void Start () {

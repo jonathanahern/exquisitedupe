@@ -156,6 +156,8 @@ public class RoomManager : MonoBehaviour {
 	public string roomIDstringTemp;
 	public string currentRoomsTemp;
 
+	public bool beenToLobby = false;
+
 	void Start (){
 
 		if (tutorialMode == true) {
@@ -166,7 +168,7 @@ public class RoomManager : MonoBehaviour {
 		acceptableStrings = new List<string>();
 		bestStrings = new List<string>();
 
-		GetRooms ();
+		//GetRooms ();
 
 		if (lobbyMenu == null) {
 			lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
