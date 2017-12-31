@@ -71,6 +71,10 @@ public class LobbyMenu : MonoBehaviour {
 		startPos = newCats.position.x;
 		roomMan = GameObject.FindGameObjectWithTag ("Room Manager").GetComponent<RoomManager> ();
 
+		if (roomMan.beenToLobby == false) {
+			roomMan.InitialLobbySetup ();
+		}
+
 //		if (roomMan.cameFromTutorial == true) {
 //			GetAllCategories ();
 //			roomMan.cameFromTutorial = false;
@@ -97,10 +101,10 @@ public class LobbyMenu : MonoBehaviour {
 
 		UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
 
-		if (userAccount.firstLogin == true) {
-			Invoke ("AskForTutorial", 1.0f);
-			userAccount.firstLogin = false;
-		}
+//		if (userAccount.firstLogin == true) {
+//			Invoke ("AskForTutorial", 1.0f);
+//			userAccount.firstLogin = false;
+//		}
 
 		string roomsString = userAccount.activeRooms;
 		string[] roomArray = roomsString.Split ('/');

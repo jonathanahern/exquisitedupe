@@ -37,13 +37,13 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 	string roomId;
 	public string activeRooms;
-	public bool firstLogin = false;
 
 	public GameObject messageBoard;
 	LobbyMenu lobbyMenu;
 
 	GameObject tempGameobject;
 	public string notificationId;
+	public string selfPortrait;
 
 	void Start(){
 		notificationId = "Nothing";
@@ -87,11 +87,12 @@ public class UserAccountManagerScript : MonoBehaviour {
 	
 	}
 
-	public void LogIn(string username, string password, string rooms, string notIdServer, int firstGame){
+	public void LogIn(string username, string password, string rooms, string notIdServer, string portrait, int firstGame){
 
 		LoggedIn_Username = username;
 		LoggedIn_Password = password;
 		loggedInUsername = username;
+		selfPortrait = portrait;
 
 		if (notificationId == "Nothing" || notificationId == "") {
 			notificationId = notIdServer;
@@ -102,13 +103,20 @@ public class UserAccountManagerScript : MonoBehaviour {
 		IsLoggedIn = true;
 
 		//Debug.Log ("User in as: " + username);
-
+		RoomManager.instance.CurtainsIn();
 		if (firstGame == 0) {
-			firstLogin = true;
-			SceneManager.LoadScene (loggedInSceneName);
+			Invoke ("LoadPortrait", 2.0f);
 		} else {
-			SceneManager.LoadScene (loggedInSceneName);
+			Invoke ("LoadLobby", 2.0f);
 		}
+	}
+
+	void LoadPortrait(){
+		SceneManager.LoadScene ("Portrait Creation");
+	}
+
+	void LoadLobby(){
+		SceneManager.LoadScene (loggedInSceneName);
 	}
 
 	public void SendData (string databaseName, string data) { 
@@ -232,6 +240,7 @@ public class UserAccountManagerScript : MonoBehaviour {
 		form.AddField ("categoryPost", roomType);
 		form.AddField ("fatePost", fate);
 		form.AddField ("notIdPost", notificationId);
+		form.AddField ("portraitPost", selfPortrait);
 
 		WWW www = new WWW (URL, form);
 		yield return www;

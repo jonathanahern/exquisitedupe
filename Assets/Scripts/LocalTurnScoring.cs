@@ -141,6 +141,7 @@ public class LocalTurnScoring : MonoBehaviour {
 	public Color[] regColors;
 
 	public GameObject signs;
+	public GameObject blackLine;
 
 	// Use this for initialization
 	void Start () {
@@ -244,7 +245,9 @@ public class LocalTurnScoring : MonoBehaviour {
 			starPeeps.Add (0);
 			starPeeps.Add (2);
 			starPeeps.Add (1);
-		} 
+		}
+
+		SetupIcons ();
 
 //		if (myRoom.privateRoom == true && myRoom.roundNum != 1) {
 //
@@ -281,22 +284,58 @@ public class LocalTurnScoring : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		if (Input.GetKeyDown (KeyCode.T)) {
+//		if (Input.GetKeyDown (KeyCode.T)) {
+//
+//			for (int i = 0; i < 3; i++) {
+//
+//				starPoints[i] = Instantiate (starPrefab, starPos [i].position, Quaternion.identity, starPos[i]);
+//
+//			}
+//
+//			starHolder.transform.DOMoveY (abovePainting, .8f * speed).SetEase(wordBounce);
+//
+//		}
+//
+//		if (Input.GetKeyDown (KeyCode.Y)) {
+//
+//		}
 
-			for (int i = 0; i < 3; i++) {
+	}
 
-				starPoints[i] = Instantiate (starPrefab, starPos [i].position, Quaternion.identity, starPos[i]);
+	void SetupIcons(){
+	
+		GameObject lineFab = blackLine;
+		float scaled = playerIcons[0].transform.lossyScale.x;
+			
+		for (int i = 0; i < playerIcons.Length; i++) {
+			Vector2 newFacePos = playerIcons [i].transform.position;
+			string[] lines = myRoom.portraits[i].Split ('$');
 
+			foreach (string line in lines) {
+
+				GameObject lineGo = Instantiate (lineFab);
+				LineRenderer lineRend = lineGo.GetComponent <LineRenderer> ();
+
+				string[] points = line.Split ('@');
+
+				lineRend.positionCount = points.Length;
+
+				for (int t = 0; t < points.Length; t++) {
+					//Debug.Log (points [i]);
+					string[] vectArray = points [t].Split (',');
+					float newPointX = float.Parse (vectArray [0]) + newFacePos.x;
+					float newPointY = float.Parse (vectArray [1]) + newFacePos.y;
+					Vector3 tempVect = new Vector3 (
+						((newPointX-newFacePos.x)*scaled)+newFacePos.x,
+						((newPointY-newFacePos.y)*scaled)+newFacePos.y,
+						0);
+
+					lineRend.SetPosition (t, tempVect);
+
+				}
 			}
-
-			starHolder.transform.DOMoveY (abovePainting, .8f * speed).SetEase(wordBounce);
-
 		}
-
-		if (Input.GetKeyDown (KeyCode.Y)) {
-
-		}
-
+	
 	}
 
 	void MoveStarsUp(int starCount){

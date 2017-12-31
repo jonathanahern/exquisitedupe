@@ -13,6 +13,7 @@ public class TurnRoomScript : MonoBehaviour {
 	public Vector3[] brushes;
 	public string[] players;
 	public string[] playersNotId;
+	public string[] portraits;
 	public int dupeNum;
 	public string rightword;
 	public string wrongword;

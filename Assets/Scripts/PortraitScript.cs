@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using DG.Tweening;
 
 public class PortraitScript : MonoBehaviour {
 
 	public Text tutText;
 	string tutText1 = "Welcome to Exquisite Dupe!";
-	string tutText2 = "First things first, draw your icon!";
+	//string tutText2 = "First things first, draw your icon!";
 
 	public SpriteRenderer outline;
 	public RectTransform tutFigure;
@@ -23,40 +24,50 @@ public class PortraitScript : MonoBehaviour {
 
 	public RectTransform textTop;
 	public RectTransform pedestals;
+	string newSceneName;
 
 	// Use this for initialization
 	void Start () {
 
 		tutText.text = tutText1;
-		Invoke ("SwitchToText2", 3.0f);
-		Invoke ("StartDrawPhase", 5.0f);
+		//Invoke ("SwitchToText2", 4.0f);
+		Invoke ("StartDrawPhase", 2.5f);
 
 		newFacePos = newFace.localPosition;
 		scaled = newFace.lossyScale.x;
 
-		Debug.Log (scaled);
+		Invoke ("OpenCurtains", .25f);
 
 	}
 	
 	// Update is called once per frame
 	void Update () {
 
-		if (Input.GetKeyDown (KeyCode.G)) {
-			GetDrawing ();
-		}
-
-		if (Input.GetKeyDown (KeyCode.C)) {
-			CreateDrawing ();
-		}
+//		if (Input.GetKeyDown (KeyCode.G)) {
+//			GetDrawing ();
+//		}
+//
+//		if (Input.GetKeyDown (KeyCode.C)) {
+//			CreateDrawing ();
+//		}
 
 		
 	}
 
-	void SwitchToText2 (){
+	void OpenCurtains(){
 
-		tutText.text = tutText2;
+		if (RoomManager.instance == null) {
+			return;
+		}
 
+		RoomManager.instance.CurtainsOut();
 	}
+
+//	void SwitchToText2 (){
+//
+//		tutText.text = tutText2;
+//
+//	}
 
 	void StartDrawPhase (){
 
@@ -81,9 +92,10 @@ public class PortraitScript : MonoBehaviour {
 
 	public void DoneDrawing(){
 
+		GetDrawing ();
 		buttonBottom.DOAnchorPosY (-1000, 1.0f);
 		textTop.DOAnchorPosY (1000, 1.0f).OnComplete(MoveCamera);
-
+		SendDrawing ();
 
 	}
 
@@ -141,6 +153,30 @@ public class PortraitScript : MonoBehaviour {
 		myLineString = myLineString.TrimEnd('$');
 	
 	}
+
+	void SendDrawing(){
+	
+		StartCoroutine (SendDrawingServer ());
+	
+	}
+
+	IEnumerator SendDrawingServer(){
+
+		string URL = "http://dupesite.000webhostapp.com/storePortrait.php";
+		UserAccountManagerScript userManager = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
+		string username = userManager.loggedInUsername;
+		userManager.selfPortrait = myLineString;
+
+		WWWForm form = new WWWForm ();
+		form.AddField ("usernamePost", username);
+		form.AddField ("portraitPost", myLineString);
+
+		WWW www = new WWW (URL, form);
+		yield return www;
+
+		Debug.Log (www.text);
+
+	}
 		
 	void CreateDrawing (){
 
@@ -174,6 +210,21 @@ public class PortraitScript : MonoBehaviour {
 
 	}
 
+	public void GoToLobby(){
+		RoomManager.instance.CurtainsIn ();
+		newSceneName = "Lobby Menu";
+		Invoke ("LoadScene", 1.5f);
+	}
+
+	public void GoToTutorial(){
+		RoomManager.instance.CurtainsIn ();
+		newSceneName = "Tutorial Lobby Menu";
+		Invoke ("LoadScene", 1.5f);
+	}
+
+	void LoadScene(){
+		SceneManager.LoadScene (newSceneName);
+	}
 
 
 }

@@ -160,8 +160,10 @@ public class LineSpawnerScipt : MonoBehaviour {
 			drawing = false;
 
 			if (activeLine != null) {
+				activeLine.SmoothTheLine ();
 				activeLine.DestroyCollider ();
 			}
+
 
 			activeLine = null;
 		
@@ -212,7 +214,7 @@ public class LineSpawnerScipt : MonoBehaviour {
 			Vector2 newMid = new Vector2 (point.x, point.y);
 			midPoint = newMid;
 		}
-
+		activeLine.SmoothTheLine ();
 		activeLine = null;
 		GameObject lineGo = Instantiate (linePrefab);
 		activeLine = lineGo.GetComponent<LineScript> ();
@@ -268,5 +270,7 @@ public class LineSpawnerScipt : MonoBehaviour {
 		Destroy (line);
 
 	}
-		
+
+
+
 }

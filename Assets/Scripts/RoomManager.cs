@@ -27,21 +27,25 @@ public class FullRoomData
 	public string fate;
 	public string player1;
 	public string notId1;
+	public string portrait1;
 	public string status1;
 	public string drawing1;
 	public string vote1;
 	public string player2;
 	public string notId2;
+	public string portrait2;
 	public string status2;
 	public string drawing2;
 	public string vote2;
 	public string player3;
 	public string notId3;
+	public string portrait3;
 	public string status3;
 	public string drawing3;
 	public string vote3;
 	public string player4;
 	public string notId4;
+	public string portrait4;
 	public string status4;
 	public string drawing4;
 	public string vote4;
@@ -168,16 +172,6 @@ public class RoomManager : MonoBehaviour {
 		acceptableStrings = new List<string>();
 		bestStrings = new List<string>();
 
-		//GetRooms ();
-
-		if (lobbyMenu == null) {
-			lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
-		}
-
-		if (buttonHolder.childCount < 1) {
-			lobbyMenu.GetAllCategories ();
-		}
-
 		catNames = new string[privateCat.Length];
 
 		for (int i = 0; i < catNames.Length; i++) {
@@ -207,6 +201,17 @@ public class RoomManager : MonoBehaviour {
 //			CurtainsOut ();
 //		}
 //
+	}
+
+	public void InitialLobbySetup(){
+		beenToLobby = true;
+		Invoke ("CurtainsOut", .5f);
+		lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
+		GetRooms ();
+		if (buttonHolder.childCount < 1) {
+			lobbyMenu.GetAllCategories ();
+		}
+	
 	}
 
 	public void AfterDarkMode (){
@@ -485,6 +490,12 @@ public class RoomManager : MonoBehaviour {
 		roomScript.playersNotId [1] = roomData.notId2;
 		roomScript.playersNotId [2] = roomData.notId3;
 		roomScript.playersNotId [3] = roomData.notId4;
+
+		roomScript.portraits = new string[4];
+		roomScript.portraits [0] = roomData.portrait1;
+		roomScript.portraits [1] = roomData.portrait2;
+		roomScript.portraits [2] = roomData.portrait3;
+		roomScript.portraits [3] = roomData.portrait4;
 
 		roomScript.myColor = myColor;
 		string realCat = roomData.category;
@@ -1040,6 +1051,12 @@ public class RoomManager : MonoBehaviour {
 		roomScript.playersNotId [1] = roomData.notId2;
 		roomScript.playersNotId [2] = roomData.notId3;
 		roomScript.playersNotId [3] = roomData.notId4;
+
+		roomScript.portraits = new string[4];
+		roomScript.portraits [0] = roomData.portrait1;
+		roomScript.portraits [1] = roomData.portrait2;
+		roomScript.portraits [2] = roomData.portrait3;
+		roomScript.portraits [3] = roomData.portrait4;
 
 		roomScript.myColor = myColor;
 		string realCat = roomData.category;
