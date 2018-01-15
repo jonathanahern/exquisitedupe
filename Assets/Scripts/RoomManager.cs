@@ -50,6 +50,7 @@ public class FullRoomData
 	public string drawing4;
 	public string vote4;
 	public string caughtEscape;
+	public string privateGroup;
 
 }
 
@@ -129,6 +130,7 @@ public class RoomManager : MonoBehaviour {
 	public List<string> removeStrings;
 
 	public List<int> currentRooms;
+	public List<string> otherPlayers;
 
 	int roomTotal;
 	public bool buttonsReady = false;
@@ -154,13 +156,13 @@ public class RoomManager : MonoBehaviour {
 
 	public bool afterDark = false;
 
-
 	public int pointsToAddTemp;
 	public int playerColorTemp;
 	public string roomIDstringTemp;
 	public string currentRoomsTemp;
 
 	public bool beenToLobby = false;
+
 
 	void Start (){
 
@@ -208,9 +210,11 @@ public class RoomManager : MonoBehaviour {
 		Invoke ("CurtainsOut", .5f);
 		lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
 		GetRooms ();
+		StartCoroutine (getAllPlayerNames());
 		if (buttonHolder.childCount < 1) {
 			lobbyMenu.GetAllCategories ();
 		}
+		
 	
 	}
 
@@ -229,6 +233,29 @@ public class RoomManager : MonoBehaviour {
 		}
 
 	}
+		
+	IEnumerator getAllPlayerNames (){
+
+		string URL = "http://dupesite.000webhostapp.com/getAllPlayerNames.php";
+
+		WWWForm form = new WWWForm ();
+
+		WWW www = new WWW (URL, form);
+		yield return www;
+
+		string returnText = www.text;
+		returnText = returnText.Replace("\n", "");
+		returnText = returnText.TrimEnd ('|');
+		Debug.Log ("Everyone: " + returnText);
+		otherPlayers = new List<string>();
+		string[] names = returnText.Split ('|');
+		for (int i = 0; i < names.Length; i++) {
+			otherPlayers.Add(names[i]);
+		}
+		otherPlayers.Remove (username);
+		otherPlayers.Sort ();
+
+	}
 
 	public void GetRooms (){
 
@@ -237,25 +264,6 @@ public class RoomManager : MonoBehaviour {
 		}
 
 		refreshing = true;
-
-//		if (statusHolder == null) {
-//			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
-//		}
-//
-//		int childCount = roomHolder.transform.childCount;
-//		int statusCount = statusHolder.transform.childCount;
-//
-//		if (childCount > 0) {
-//			for (int i = 0; i < childCount; i++) {
-//				Destroy(roomHolder.transform.GetChild(i).gameObject);
-//			}
-//		}
-//
-//		if (statusCount > 0) {
-//			for (int i = 0; i < statusCount; i++) {
-//				Destroy(statusHolder.transform.GetChild(i).gameObject);
-//			}
-//		}
 
 		//roomIds = new string [] { "0", "0", "0", "0", "0"};
 		userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
@@ -275,7 +283,7 @@ public class RoomManager : MonoBehaviour {
 
 			}
 			noRooms = true;
-//			frameText.GetComponent<Text> ().text = "YOU ART NOT APART\nOF ANY PAINTINGS";
+//			frameText.GetComponent<Text> ().text = "YOU ART NOT A PART\nOF ANY PAINTINGS";
 //			GameObject loadAnimation = GameObject.FindGameObjectWithTag ("Load Animation");
 //			loadAnimation.SetActive (false);
 			roomTotal = 0;
@@ -297,10 +305,6 @@ public class RoomManager : MonoBehaviour {
 
 			currentRooms.Add (int.Parse (rooms [i]));
 			string roomId = rooms[i];
-			//Debug.Log ("My Rooms: " + roomId);
-			//Debug.Log ("ROOOOOM: " + roomId);
-			//string update = UPDATE_SYM + "Nonupdate";
-			// 0 for status update, 1 to create room
 			StartCoroutine (getRoomData(roomId));
 
 		}
@@ -310,6 +314,30 @@ public class RoomManager : MonoBehaviour {
 	void RetryRoomGrab (string roomID, int updateOrNot){
 
 	//	StartCoroutine (getRoomData(roomID, updateOrNot));
+
+	}
+
+	public void CreateRoomFromInvite (int roomID, string messageToDelete){
+	
+		StartCoroutine (getRoomData(roomID.ToString()));
+		StartCoroutine (deleteMessage(messageToDelete));
+	
+	}
+
+	IEnumerator deleteMessage (string message){
+
+		string URL = "http://dupesite.000webhostapp.com/deleteOldMessage.php";
+
+		Debug.Log ("To delete: " + message);
+
+		WWWForm form = new WWWForm ();
+		form.AddField ("usernamePost", username);
+		form.AddField ("oldMessagePost", message);
+
+		WWW www = new WWW (URL, form);
+		yield return www;
+
+		Debug.Log (www.text);
 
 	}
 
@@ -465,7 +493,10 @@ public class RoomManager : MonoBehaviour {
 				roomScript.awardNum = int.Parse(fate [3]);
 
 				roomScript.colorMod = int.Parse(fate [4]);
-				//Debug.Log ("colormod3: " + roomScript.colorMod.ToString());
+
+				roomScript.time [int.Parse(fate [5])] = true;
+				roomScript.method [int.Parse(fate [6])] = true;
+				roomScript.mode [int.Parse(fate [7])] = true;
 
 			}
 		}
@@ -504,6 +535,13 @@ public class RoomManager : MonoBehaviour {
 		roomScript.roomType = realCat;
 		string newdrawing = roomData.drawing1 + roomData.drawing2 + roomData.drawing3 + roomData.drawing4;
 		roomScript.drawings = newdrawing;
+
+		if (roomData.privateGroup == "Public") {
+			roomScript.privateRoom = false;
+		} else {
+			roomScript.privateRoom = true;
+			roomScript.nextRoom = int.Parse (roomData.privateGroup);
+		}
 
 //		int tempColor = roomScript.myColor;
 //		tempColor = tempColor + roomScript.colorMod;
@@ -638,7 +676,7 @@ public class RoomManager : MonoBehaviour {
 	}
 
 	//RoomManager.instance.CreateRoom (roomType, room.id, room.fate, room.playerNum, -2);
-	public void CreateRoom(string roomType, string roomId, string newFate, string myPlayerNum, int startRoom){
+	public void CreateRoom(string roomType, string roomId, string newFate, string myPlayerNum, string privateData, int startRoom){
 
 		//Debug.Log ("New Room: " + roomId);
 		GameObject newRoom = (GameObject)Instantiate(roomPrefab, Vector3.zero, Quaternion.identity);
@@ -693,7 +731,10 @@ public class RoomManager : MonoBehaviour {
 				roomScript.awardNum = int.Parse(fate [3]);
 
 				roomScript.colorMod = int.Parse(fate [4]);
-				//Debug.Log ("colormod3: " + roomScript.colorMod.ToString());
+
+				roomScript.time [int.Parse(fate [5])] = true;
+				roomScript.method [int.Parse(fate [6])] = true;
+				roomScript.mode [int.Parse(fate [7])] = true;
 
 			}
 		}
@@ -705,11 +746,18 @@ public class RoomManager : MonoBehaviour {
 		roomScript.roomType = realCat;
 		int tempColor = roomScript.myColor;
 		tempColor = tempColor + roomScript.colorMod;
+
 		if (tempColor > 4) {
 			tempColor = tempColor - 4;
 		}
+
 		roomScript.myActualColor = tempColor;
 		roomScript.activeRoom = true;
+
+		if (privateData != "") {
+			roomScript.portraits = new string[4];
+			roomScript.portraits [0] = privateData;
+		}
 
 		string serverSlot = myPlayerNum + "player";
 			
@@ -719,254 +767,6 @@ public class RoomManager : MonoBehaviour {
 		}
 
 		StartCoroutine (doubleCheckRoom(roomId, serverSlot, username, roomType));
-
-
-		//CurtainsIn ();
-		//SceneManager.LoadScene ("Turn Based Room");
-
-//		foreach (string piece in pieces) {
-//
-//			if (piece.StartsWith (COLOR_SYM)) {
-//
-//				int color = int.Parse (piece.Substring (COLOR_SYM.Length));
-//
-//				Debug.Log ("colormod2: " + roomScript.colorMod.ToString());
-//
-//				roomScript.myColor = color - 4;
-//
-//			} else if (piece.StartsWith (ID_SYM)) {
-//
-//				roomScript.roomID = int.Parse(piece.Substring (ID_SYM.Length));
-//
-//			} else if (piece.StartsWith (WORDS_SYM)) {
-//				
-//				string wordsWhole = piece.Substring (WORDS_SYM.Length);
-//
-//				//Debug.Log (wordsWhole);
-//
-//				words = wordsWhole.Split('/');
-//
-//				for (int i = 0; i < words.Length; i++) {
-//
-//					roomScript.words [i] = words [i];
-//
-//				}
-//
-//			} else if (piece.StartsWith (GROUNDING_SYM)) {
-//
-//				roomScript.grounding = piece.Substring (GROUNDING_SYM.Length);
-//
-//			} else if (piece.StartsWith (BRUSHES_SYM)) {
-//
-//				string brushesWhole = piece.Substring (BRUSHES_SYM.Length);
-//
-//				brushes = brushesWhole.Split ('/');
-//				roomScript.brushes = new Vector3[brushes.Length];
-//
-//				for (int i = 0; i < brushes.Length; i++) {
-//
-//					string[] vectArray = brushes[i].Split(',');
-//					//Debug.Log (vectArray[0]);
-//
-//					// store as a Vector2
-//					Vector3 tempVect = new Vector3(
-//						float.Parse(vectArray[0]),
-//						float.Parse(vectArray[1]),
-//						0);
-//
-//					roomScript.brushes [i] = tempVect;
-//
-//				}
-//
-//			} else if (piece.StartsWith (FATE_SYM)) {
-//
-//				string fateWhole = piece.Substring (FATE_SYM.Length);
-//
-//				string[] fate = fateWhole.Split('/');
-//
-//				roomScript.dupeNum = int.Parse(fate [0]);
-//
-//				int rightword = int.Parse (fate [1]);
-//				roomScript.rightword = words [rightword-1];
-//
-//				int wrongword = int.Parse (fate [2]);
-//				roomScript.wrongword = words [wrongword-1];
-//
-//				roomScript.awardNum = int.Parse(fate [3]);
-//
-//				roomScript.colorMod = int.Parse(fate [4]);
-//				//Debug.Log ("colormod3: " + roomScript.colorMod.ToString());
-//
-//			} else if (piece.StartsWith (PLAYERS_SYM)) {
-//				
-//				string playersWhole = piece.Substring (PLAYERS_SYM.Length);
-//				//Debug.Log (playersWhole + " SDFSDF");
-//				string[] players = playersWhole.Split('/');
-//
-//				roomScript.players = new string[players.Length];
-//
-//				int colorMod = roomScript.colorMod;
-//
-//				for (int i = 0; i < players.Length; i++) {
-//
-//					if (players[i] == username) {
-//						//Debug.Log ("colormod: " + roomScript.colorMod.ToString());
-//						roomScript.myColor = i + 1;
-//					}
-//
-//				}
-//
-//				if (players.Length > 3) {
-//					for (int i = 0; i < players.Length; i++) {
-//						        
-//						int playerPos = i - colorMod;
-//
-//						if (playerPos < 0) {
-//							playerPos = playerPos + 4;
-//						}
-//
-//						roomScript.players [i] = players [playerPos];
-//					}
-//				}
-//					
-//			} else if (piece.StartsWith (CATEGORY_SYM)) {
-//
-//				string category = piece.Substring (CATEGORY_SYM.Length);
-//
-//				//Debug.Log ("It did happen! " + category);
-//
-//				if (category.StartsWith ("v2")) {
-//				
-//					category = category.Substring (2);
-//					//roomScript.privateRoom = true;
-//				}
-//
-//				roomScript.roomType = category;
-//			}
-//
-//			else if (piece.StartsWith (STATUS_SYM)) {
-//
-//				string status = piece.Substring (STATUS_SYM.Length);
-//				roomScript.status = "waiting...";
-//				roomScript.statusNum = 0;
-//				roomScript.statusServer = status;
-//
-//			}
-//
-//			else if (piece.StartsWith (DRAWING_SYM)) {
-//
-//				string drawingString = piece.Substring (DRAWING_SYM.Length);
-//				//Debug.Log ("Drawing: " + drawingString);
-//
-//				roomScript.drawings = drawingString;
-//
-//			}
-//
-//			else if (piece.StartsWith (VOTEPOS_SYM)) {
-//
-//				string votePoses = piece.Substring (VOTEPOS_SYM.Length);
-//
-//				//Debug.Log ("Vote Poses: " + votePoses);
-//
-//				votePoses = votePoses.TrimEnd ('@');
-//				roomScript.votePoses = votePoses;
-//
-//			} else if (piece.StartsWith (DUPEGUESS_SYM)) {
-//
-//				string dupeGuess = piece.Substring (DUPEGUESS_SYM.Length);
-//
-//				//Debug.Log ("Dupe Guess: " + dupeGuess);
-//
-//				roomScript.dupeGuess = dupeGuess;
-//
-//			}
-//
-//		}
-
-//		int tempColor = roomScript.myColor;
-//		tempColor = tempColor + roomScript.colorMod;
-//		if (tempColor > 4) {
-//			tempColor = tempColor - 4;
-//		}
-//		roomScript.myActualColor = tempColor;
-//
-//
-//		int myColor = roomScript.myActualColor;
-//		string stringID = roomScript.myActualColor.ToString ();
-//		string stringIdLetter;
-//
-//		if (myColor == 1) {
-//			stringIdLetter = "a";
-//		} else if (myColor == 2) {
-//			stringIdLetter = "b";
-//		} else if (myColor == 3) {
-//			stringIdLetter = "c";
-//		} else if (myColor == 4) {
-//			stringIdLetter = "d";
-//		} else {
-//			stringIdLetter = "z";
-//		}
-
-//		if (roomScript.statusServer.Contains ("a") && roomScript.statusServer.Contains ("b") && roomScript.statusServer.Contains ("c") && roomScript.statusServer.Contains ("d")) {
-//			roomScript.statusNum = 4;
-//		} else if (roomScript.statusServer.Contains(stringIdLetter)){
-//			roomScript.statusNum = 3;
-//		} else if (roomScript.statusServer.Contains ("1") && roomScript.statusServer.Contains ("2") && roomScript.statusServer.Contains ("3") && roomScript.statusServer.Contains ("4")) {
-//			roomScript.statusNum = 2;
-//		} else if (roomScript.statusServer.Contains(stringID)){
-//			roomScript.statusNum = 1;
-//		}
-//
-//		if (roomScript.statusServer.Contains ("x")) {
-//			roomScript.dupeCaught = "x";
-//		} else if (roomScript.statusServer.Contains ("o")) {
-//			roomScript.dupeCaught = "o";
-//		} else {
-//			roomScript.dupeCaught = "n";
-//		}
-
-
-//		if (roomType.StartsWith ("abcde")) {
-//
-//			roomScript.privateRoom = true;
-//
-//		}
-
-//		if (startRoom == -2) {
-//
-//			int serverSlot = roomScript.myColor + 4;
-//			Debug.Log ("server Slot" + serverSlot.ToString ());
-//			string roomIDstring = "|[ID]" + roomScript.roomID.ToString();
-//
-//			if (username == null) {
-//				UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
-//				username = userAccount.loggedInUsername;
-//			}
-//
-//			StartCoroutine (doubleCheckRoom(roomIDstring, serverSlot.ToString(), username, roomType));
-//			roomScript.activeRoom = true;
-//			roomScript.roomType = roomType;
-//			//CurtainsIn ();
-//			//SceneManager.LoadScene ("Turn Based Room");
-//
-//		} else {
-//			
-//			UpdateTurnRoomsFromLogin (roomScript.roomID);
-//			lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
-//			lobbyMenu.TurnBasedClicked ();
-//
-//			//Debug.Log ("room holder: " + roomHolder.childCount.ToString() + " roomTotal: " + roomTotal.ToString());
-//
-//			if (roomHolder.childCount > roomTotal - 1) {
-//				roomsReady = true;
-//				refreshing = false;
-//				if (lobbyMenu.turnHolder.childCount < 2) {
-//					FindEmptyRooms ();
-//				}
-//					
-//			}
-//
-//		}
 			
 	}
 
@@ -1026,10 +826,16 @@ public class RoomManager : MonoBehaviour {
 				roomScript.awardNum = int.Parse(fate [3]);
 
 				roomScript.colorMod = int.Parse(fate [4]);
-				//Debug.Log ("colormod3: " + roomScript.colorMod.ToString());
+
+				roomScript.time [int.Parse(fate [5])] = true;
+				roomScript.method [int.Parse(fate [6])] = true;
+				roomScript.mode [int.Parse(fate [7])] = true;
 
 			}
 		}
+
+
+
 		if (username == null) {
 			UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
 			username = userAccount.loggedInUsername;
@@ -1072,6 +878,13 @@ public class RoomManager : MonoBehaviour {
 
 		string newdrawing = roomData.drawing1 + roomData.drawing2 + roomData.drawing3 + roomData.drawing4;
 		roomScript.drawings = newdrawing;
+
+		if (roomData.privateGroup == "Public") {
+			roomScript.privateRoom = false;
+		} else {
+			roomScript.privateRoom = true;
+			roomScript.nextRoom = int.Parse (roomData.privateGroup);
+		}
 
 		roomScript.status = "waiting...";
 		roomScript.statusNum = 0;
@@ -1133,7 +946,6 @@ public class RoomManager : MonoBehaviour {
 
 		UpdateTurnRoomsFromLogin (roomScript.roomID);
 		lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
-		//lobbyMenu.TurnBasedClicked ();
 
 		if (roomHolder.childCount > roomTotal - 1) {
 			roomsReady = true;
@@ -1154,8 +966,6 @@ public class RoomManager : MonoBehaviour {
 	}
 
 	IEnumerator doubleCheckRoom (string roomIDstring, string myColor, string usernameToSend, string roomTypeCheck ){
-	
-		//Debug.Log ("Submitted room: " + roomTypeCheck + " & " + roomIDstring);
 
 		string URL = "http://dupesite.000webhostapp.com/doubleCheckRoom.php";
 
@@ -1170,63 +980,19 @@ public class RoomManager : MonoBehaviour {
 
 		string returnText = www.text;
 
-		//Debug.Log ("Double check result: " + www.text);
 
-
-//		IEnumerator e = DCP.RunCS ("turnRooms", "DoubleCheckRoom", new string[4] {roomIDstring, myColor, usernameToSend, roomTypeCheck});
-//
-//		while (e.MoveNext ()) {
-//			yield return e.Current;
-//		}
-//
-//		string returnText = e.Current as string;
-//
-//		Debug.Log ("UpdatedRoom:" + returnText);
-//
-//		if (returnText == "") {
-//		
-//			RetryDoubleCheck (roomIDstring, myColor, usernameToSend, roomTypeCheck);
-//			Debug.Log ("BLLLAAANNNK");
-//			yield break;
-//	
-//		}
-//
 		if (returnText == "Good") {
-
 			userAccount.StoreRoom(roomIDstring);
 			Invoke("DelayedNewRoom", 1.0f);
 
 		} 
-//		else if (returnText == "New Room") {
-//
-//			Destroy (tempRoom);
-//			userAccount.RedoRoomSearch ();
-//
-//		} else {
-//
-//			Destroy (tempRoom);
-//
-//			string roomId;
-//			string[] fates = returnText.Split ('|');
-//			foreach (string data in fates) {
-//
-//				if (data.StartsWith ("[ID]")){
-//
-//					roomId = data.Substring ("[ID]".Length);
-//					roomId = roomId + "/";
-//
-//				}
-//
-//			}
-//
-//			//temp CreateRoom (roomTypeCheck, returnText, -2);
-//
-//		}
+
 			
 	}
 
 	void DelayedNewRoom(){
-	
+		
+		noRooms = false;
 		SceneManager.LoadScene ("Turn Based Room");
 	
 	}
@@ -1704,8 +1470,9 @@ public class RoomManager : MonoBehaviour {
 			StartCoroutine (getStatusData(roomIdString));
 
 		}
-	
+
 	}
+		
 
 	IEnumerator getStatusData (string roomIdString){
 
@@ -1720,20 +1487,6 @@ public class RoomManager : MonoBehaviour {
 		//Debug.Log (roomIdString + ": " + www.text);
 
 		UpdateStatusObject (www.text, roomIdString);
-
-//		IEnumerator e = DCP.RunCS ("turnRooms", "UpdateStatus", new string[1] { roomIdString });
-//
-//		while (e.MoveNext ()) {
-//			yield return e.Current;
-//		}
-//
-//		string returnText = e.Current as string;
-//
-//		//Debug.Log (returnText);
-//
-//		if (returnText.Contains("[ID]")) {
-//			UpdateStatusObject (returnText);
-//		}
 
 	}
 

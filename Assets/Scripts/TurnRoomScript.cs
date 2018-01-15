@@ -20,6 +20,10 @@ public class TurnRoomScript : MonoBehaviour {
 	public int awardNum;
 	public int myColor;
 	public string grounding;
+	public bool[] time= new bool [4];
+	public bool[] method= new bool [4];
+	public bool[] mode= new bool [2];
+
 
 	public string drawings;
 	public string votePoses;
@@ -36,6 +40,7 @@ public class TurnRoomScript : MonoBehaviour {
 	public int myActualColor;
 	public string statusServer;
 	public bool needsToSendAlert = false;
+	public int nextRoom;
 
 
 		

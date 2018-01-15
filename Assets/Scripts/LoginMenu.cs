@@ -212,6 +212,8 @@ public class LoginMenu : MonoBehaviour {
 //				yield return e.Current;
 //			}
 
+			Debug.Log ("Sent login request");
+
 			string URL = "http://dupesite.000webhostapp.com/loginRequest.php";
 
 			WWWForm form = new WWWForm ();
@@ -222,7 +224,7 @@ public class LoginMenu : MonoBehaviour {
 
 			string returnText = www.text;
 			returnText = returnText.Replace("\n", "");
-		//	Debug.Log (returnText);
+			Debug.Log (returnText);
 
 //			if (returnText == "") {
 //				RetryLoginRequest (username, password);

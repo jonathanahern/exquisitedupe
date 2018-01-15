@@ -20,6 +20,10 @@ public class LobbyMenu : MonoBehaviour {
 	private float startPos;
 	public RectTransform centerTurnButts;
 	public RectTransform highScores;
+	public RectTransform addFriendsRect;
+	public RectTransform startNewMain;
+	public RectTransform addCategories;
+	public RectTransform gameOptionsScreen;
 
 	Vector3 zeroCounter;
 	Vector3 oneEighty;
@@ -55,6 +59,38 @@ public class LobbyMenu : MonoBehaviour {
 	public AnimationCurve moveItIn;
 
 	public Text playersName;
+	public Transform inviteHolder;
+	public GameObject selectPlayerPrefab;
+	public GameObject selectPlayerLoading;
+	public GameObject selectCategoriesLoading;
+	public Transform categoryPrivateHolder;
+	public GameObject categoryPrivatePrefab;
+
+	public Text selectText;
+	public int selectCount;
+	//public string[] artistsSelected;
+	public List<string> artistsSelected;
+	bool wasAtZeroInvites = false;
+
+	public Text selectCatsText;
+	public int catsCount;
+//	public string[] catsSelected;
+	public List<string> catsSelected;
+	bool wasAtZeroCats = false;
+
+	public Toggle[] gameOption;
+	public string optionString;
+	public List<TurnRoomButton> gameData;
+	public List<string> fateData;
+	List<int> playerBag;
+	public List<int> invitationNums;
+
+	UserAccountManagerScript userAccount;
+	public GameObject invitationPrefab;
+	public Transform invitationHolder;
+	public RectTransform invitationPos;
+
+	string inviteMessage = " has challenged you to a contest of wits and stupid art!";
 
 	// Use this for initialization
 	void Awake () {
@@ -70,6 +106,16 @@ public class LobbyMenu : MonoBehaviour {
 		zeroCounter = new Vector3 (0, 0, 360.0f);
 		startPos = newCats.position.x;
 		roomMan = GameObject.FindGameObjectWithTag ("Room Manager").GetComponent<RoomManager> ();
+
+		selectCount = 3;
+		selectText.text = "SELECT " + selectCount + " ARTISTS";
+		artistsSelected = new List<string> ();
+
+		catsCount = 4;
+		selectCatsText.text = "SELECT " + catsCount + " CATEGORIES";
+		catsSelected = new List<string> ();
+
+		invitationNums = new List<int> ();
 
 		if (roomMan.beenToLobby == false) {
 			roomMan.InitialLobbySetup ();
@@ -92,6 +138,7 @@ public class LobbyMenu : MonoBehaviour {
 			roomMan.FindEmptyRooms ();
 			roomMan.startingNew = false;
 			roomMan.UpdateStatus ();
+			StartCoroutine (getMessageData());
 			Invoke ("TurnOffFirstDone", 3.0f);
 
 			//roomMan.DropOffButtons ();
@@ -99,7 +146,7 @@ public class LobbyMenu : MonoBehaviour {
 
 
 
-		UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
+		userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
 
 //		if (userAccount.firstLogin == true) {
 //			Invoke ("AskForTutorial", 1.0f);
@@ -128,7 +175,7 @@ public class LobbyMenu : MonoBehaviour {
 			if (frameText == null) {
 				frameText = GameObject.FindGameObjectWithTag ("Frame Text");
 			}
-			frameText.GetComponent<Text> ().text = "YOU ART NOT APART\nOF ANY PAINTINGS";
+			frameText.GetComponent<Text> ().text = "YOU ART NOT A PART\nOF ANY PAINTINGS";
 			loadingAnimationCenter.SetActive (false);
 		} else {
 			//Debug.Log (roomCount);
@@ -232,6 +279,7 @@ public class LobbyMenu : MonoBehaviour {
 	}
 
 	void AutoUpdateRooms (){
+		StartCoroutine (getMessageData());
 		if (roomMan.noRooms == true) {
 			Debug.Log ("no rooms found so no updates");
 			return;
@@ -240,7 +288,6 @@ public class LobbyMenu : MonoBehaviour {
 		refreshingScreen.SetActive (true);
 		//loadScreenWords.text = "refreshing...";
 		roomMan.UpdateStatus ();
-
 	}
 
 	public void TurnBasedClicked(){
@@ -290,7 +337,7 @@ public class LobbyMenu : MonoBehaviour {
 
 		okToClick = false;
 
-		Invoke ("OkToClickAgain", 2.5f);
+		Invoke ("OkToClickAgain", 1.5f);
 		if (roomCount > 4) {
 			FiveRoomsOnly ();
 			return;
@@ -300,6 +347,134 @@ public class LobbyMenu : MonoBehaviour {
 		centerTurnButts.DOLocalMoveX (startPos * -1.0f, 1.5f).SetEase(moveItOut);
 
 	}
+
+	public void GoToAddFriendsScreen() {
+
+		if (okToClick == false) {
+			return;
+		}
+
+		okToClick = false;
+
+		Invoke ("OkToClickAgain", 1.5f);
+
+		if (inviteHolder.childCount < 1) {
+			CreateFriendsList ();
+		}
+		addFriendsRect.DOAnchorPosY (0, 1.5f).SetEase(moveItIn);
+		startNewMain.DOAnchorPosY (-2100, 1.2f).SetEase(moveItOut);
+
+	}
+
+	public void GoToAddCategoriesScreen() {
+
+		if (okToClick == false) {
+			return;
+		}
+
+		if (artistsSelected.Count < 3 ) {
+			return;
+		}
+
+		okToClick = false;
+
+		Invoke ("OkToClickAgain", 1.5f);
+
+		CreateCategoriesList ();
+		addCategories.DOAnchorPosY (0, 1.5f).SetEase(moveItIn);
+		addFriendsRect.DOAnchorPosY (-2100, 1.2f).SetEase(moveItOut);
+
+	}
+
+	//From Add Cats
+	public void GoBackToAddFriendsScreen() {
+
+		if (okToClick == false) {
+			return;
+		}
+
+		okToClick = false;
+
+		Invoke ("OkToClickAgain", 1.5f);
+
+		addCategories.DOAnchorPosY (2100, 1.2f).SetEase(moveItOut);
+		addFriendsRect.DOAnchorPosY (0, 1.5f).SetEase(moveItIn);
+
+	}
+
+	//From Add Cats
+	public void GoToGameOptionsScreen() {
+
+		if (okToClick == false) {
+			return;
+		}
+
+		if (catsSelected.Count < 4 ) {
+			return;
+		}
+
+		okToClick = false;
+
+		Invoke ("OkToClickAgain", 1.5f);
+
+		addCategories.DOAnchorPosY (-2100, 1.2f).SetEase(moveItOut);
+		gameOptionsScreen.DOAnchorPosY (0, 1.5f).SetEase(moveItIn);
+
+	}
+
+	//From Add Cats
+	public void GoBackToCategoriesScreen() {
+
+		if (okToClick == false) {
+			return;
+		}
+
+		okToClick = false;
+
+		Invoke ("OkToClickAgain", 1.5f);
+
+		addCategories.DOAnchorPosY (0, 1.5f).SetEase(moveItIn);
+		gameOptionsScreen.DOAnchorPosY (2100, 1.2f).SetEase(moveItOut);
+
+	}
+
+	void CreateFriendsList(){
+
+		for (int i = 0; i < roomMan.otherPlayers.Count; i++) {
+
+			GameObject playerNameObj = Instantiate (selectPlayerPrefab, inviteHolder);
+			playerNameObj.GetComponent<SelectPlayerScript> ().InsertName (roomMan.otherPlayers [i]);
+
+		}
+
+		selectPlayerLoading.SetActive (false);
+	
+	}
+
+	void CreateCategoriesList(){
+
+		Transform catHolder = GameObject.FindGameObjectWithTag ("Category Holder").transform;
+
+		for (int i = 0; i < catHolder.childCount; i++) {
+
+			string catName = catHolder.GetChild (i).GetComponent<TurnRoomButton> ().roomTypeString;
+
+			GameObject catObjSelect = Instantiate (categoryPrivatePrefab, categoryPrivateHolder);
+			catObjSelect.GetComponent<SelectPlayerScript> ().InsertName (catName);
+
+		}
+
+		selectCategoriesLoading.SetActive (false);
+
+	}
+
+	public void BackToStartNewGame(){
+	
+		addFriendsRect.DOAnchorPosY (2100, 1.2f).SetEase(moveItIn);
+		startNewMain.DOAnchorPosY (0, 1.5f).SetEase(moveItIn);
+	
+	}
+
 
 	public void NewCatsOffScreen(){
 	
@@ -553,14 +728,258 @@ public class LobbyMenu : MonoBehaviour {
 
 	}
 
-//	public void StartNextPrivateRound (){
-//
-//		roomMan = GameObject.FindGameObjectWithTag ("Room Manager").GetComponent<RoomManager> ();
-//		roomMan.StartNextPrivateRound ();
-//		roomMan.TurnOnSign ();
-//
-//	}
+	public void ArtistSelected (string name){
+
+		selectText.text = "SELECT " + selectCount + " ARTISTS";
+		Debug.Log (name + " " + (selectCount));
+		artistsSelected.Add(name);
+
+		if (selectCount == 0) {
+			wasAtZeroInvites = true;
+			DeactivateSelection (inviteHolder);
+		}
+
+	}
+
+	public void ArtistSubtracted (string name){
+
+		selectText.text = "SELECT " + selectCount + " ARTISTS";
+		artistsSelected.Remove (name);
+
+		if (wasAtZeroInvites == true) {
+			wasAtZeroInvites = false;
+			ReactivateSelection (inviteHolder);
+		}
 
 
+	}
+
+	public void CatSelected (string name){
+
+		selectCatsText.text = "SELECT " + catsCount + " CATEGORIES";
+		catsSelected.Add(name);
+
+		if (catsCount == 0) {
+			wasAtZeroCats = true;
+			DeactivateSelection (categoryPrivateHolder);
+		}
+
+	}
+
+	public void CatSubtracted (string name){
+
+		selectCatsText.text = "SELECT " + catsCount + " CATEGORIES";
+
+		catsSelected.Remove (name);
+
+		if (wasAtZeroCats == true) {
+			wasAtZeroCats = false;
+			ReactivateSelection (categoryPrivateHolder);
+		}
+
+
+	}
+
+	void DeactivateSelection(Transform theHolder){
+	
+		int childCount = theHolder.childCount;
+		for (int i = 0; i < childCount; i++) {
+			SelectPlayerScript selectScript = theHolder.GetChild(i).GetComponent<SelectPlayerScript>();
+			if (selectScript.choosen == false) {
+				selectScript.TurnOffToggle ();
+			}
+		}
+	}
+
+	void ReactivateSelection(Transform theHolder){
+
+		int childCount = theHolder.childCount;
+		for (int i = 0; i < childCount; i++) {
+			SelectPlayerScript selectScript = theHolder.GetChild(i).GetComponent<SelectPlayerScript>();
+			if (selectScript.choosen == false) {
+				selectScript.TurnOnToggle ();
+			}
+		}
+	}
+
+	public void LaunchPrivateGame (){
+
+		RoomManager.instance.CurtainsIn ();
+
+		fateData = new List<string> ();
+
+		playerBag = new List<int> ();
+		playerBag.Add (1);
+		playerBag.Add (2);
+		playerBag.Add (3);
+		playerBag.Add (4);
+
+		int playerRemove = Random.Range (1, 5);
+		int secondaryNum = Random.Range (1, 5);
+		int randoNum = Random.Range (0, 2);
+		if (randoNum == 0) {
+			playerBag.Remove (playerRemove);
+			playerBag.Add (secondaryNum);
+		}
+
+		int count = playerBag.Count;
+		int last = count - 1;
+		for (int i = 0; i < last; ++i) {
+			int r = Random.Range(i, count);
+			int tmp = playerBag[i];
+			playerBag[i] = playerBag[r];
+			playerBag[r] = tmp;
+		}
+
+		List<int> finalGameOptions;
+		finalGameOptions = new List<int>();
+	
+		for (int i = 0; i < gameOption.Length; i++) {
+
+			if (gameOption[i].isOn == true){
+				int toggleNum = int.Parse(gameOption[i].gameObject.name);
+				finalGameOptions.Add(toggleNum);
+			}
+
+		}
+
+		int[] finalOptions = finalGameOptions.ToArray ();
+	
+		gameData = new List<TurnRoomButton>();
+
+		for (int r = 0; r < catsSelected.Count; r++) {
+
+			for (int t = 0; t < roomMan.buttonHolder.childCount; t++) {
+
+				TurnRoomButton currentButt = roomMan.buttonHolder.GetChild (t).GetComponent<TurnRoomButton> ();
+				if (currentButt.roomTypeString == catsSelected [r]) {
+					PrivateRoomMaker (currentButt, finalOptions);
+				}
+
+			}
+
+		}
+
+		StartCoroutine(createPrivateRooms());
+	}
+
+	void PrivateRoomMaker(TurnRoomButton turnRoom, int[] finalOptions){
+		
+		int dupeNum = playerBag [0];
+		playerBag.RemoveAt (0);
+		int rightWord = Random.Range (1, 11);
+		int wrongWord = Random.Range (1, 11);
+		int colorMod = Random.Range (0, 4);
+
+		while(rightWord == wrongWord)
+		{
+			wrongWord = Random.Range (1, 11);
+		}
+
+		int awardNum = Random.Range (1, 3);
+
+		string modeString;
+	
+		if (finalOptions [2] == 8) {
+			int rando = Random.Range (5, 8);
+			modeString = rando.ToString ();
+		} else {
+			modeString = finalOptions [2].ToString ();
+		}
+
+		optionString = "/" + finalOptions [0].ToString () + "/" + finalOptions [1].ToString () + "/" + modeString;
+
+
+		string fate = "|[WORDS]" + turnRoom.words + "|[BRUSHES]" + turnRoom.brushes + "|" + turnRoom.grounding + "|[FATE]" + dupeNum + "/" + rightWord + "/" + wrongWord + "/" + awardNum + "/" + colorMod + optionString;
+
+		fateData.Add (fate);
+
+	}
+	 
+	//|[WORDS]Marilyn Monroe/Angelina Jolie/Julia Roberts/Scarlett Johansson/Jennifer Lawrence/Kristen Stewart/Oprah/Jennifer Aniston/Kim Kardashian/Betty White|[BRUSHES]0.0, -2.2/0.0, 2.7/1.5, 0.0/-1.5, 0.0/0.0, -1.3|[GROUNDING]-.2|[FATE]1/1/5/1/2
+
+	IEnumerator createPrivateRooms (){
+
+		string playerName = UserAccountManagerScript.instance.loggedInUsername;
+		string notificationId = UserAccountManagerScript.instance.notificationId;
+		string selfPortrait = UserAccountManagerScript.instance.selfPortrait;
+		string URL = "http://dupesite.000webhostapp.com/createPrivateRooms.php";
+
+		WWWForm form = new WWWForm ();
+		form.AddField ("usernamePost", playerName);
+		form.AddField ("notIdPost", notificationId);
+		form.AddField ("portraitPost", selfPortrait);
+		form.AddField ("playerPost2", artistsSelected[0]);
+		form.AddField ("playerPost3", artistsSelected[1]);
+		form.AddField ("playerPost4", artistsSelected[2]);
+
+		form.AddField ("catPost1", "v2" + catsSelected[0]);
+		form.AddField ("catPost2", "v2" + catsSelected[1]);
+		form.AddField ("catPost3", "v2" + catsSelected[2]);
+		form.AddField ("catPost4", "v2" + catsSelected[3]);
+
+		form.AddField ("fatePost1", fateData[0]);
+		form.AddField ("fatePost2", fateData[1]);
+		form.AddField ("fatePost3", fateData[2]);
+		form.AddField ("fatePost4", fateData[3]);
+
+		WWW www = new WWW (URL, form);
+		yield return www;
+
+		Debug.Log (www.text);
+		//RoomManager.instance.CreateRoom (roomType, room.id, room.fate, room.playerNum, -2);
+
+		string[] rooms = www.text.Split ('|');
+
+		string privateData = UserAccountManagerScript.instance.selfPortrait;
+
+		RoomManager.instance.CreateRoom (catsSelected[0], rooms[0], fateData[0], "1", privateData, -2);
+		string message = playerName + "|" + rooms[0] + "$";
+		UserAccountManagerScript.instance.SendMessageToPlayersBox (message, artistsSelected.ToArray ());
+
+	}
+
+	IEnumerator getMessageData (){
+
+		string URL = "http://dupesite.000webhostapp.com/lookForNewMessage.php";
+
+		if (userAccount == null) {
+			userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
+		}
+
+		WWWForm form = new WWWForm ();
+		form.AddField ("usernamePost", userAccount.loggedInUsername);
+
+		WWW www = new WWW (URL, form);
+		yield return www;
+
+		string returnText = www.text;
+		returnText = returnText.TrimEnd ('$');
+
+		Debug.Log ("Message: " + www.text);
+
+		if (returnText != "Error" && returnText.Length>1) {
+
+			string[] messages = returnText.Split ('$');
+
+			for (int i = 0; i < messages.Length; i++) {
+
+				string[] messageParts = messages[i].Split ('|');
+				int roomNum = int.Parse (messageParts [1]);
+	
+				if (invitationNums.Contains (roomNum) == false) {
+					CreateInvitation (messageParts [0], roomNum);
+					invitationNums.Add (roomNum);
+				}
+			}
+		}
+	}
+
+	void CreateInvitation (string message, int roomNum){
+		
+		GameObject invitation = Instantiate (invitationPrefab, invitationPos.position, Quaternion.identity, invitationHolder);
+		invitation.GetComponent<InvitationScript> ().SetupInvitation (message, roomNum, this);
+
+	}
 
 }

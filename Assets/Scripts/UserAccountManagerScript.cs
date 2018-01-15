@@ -246,68 +246,10 @@ public class UserAccountManagerScript : MonoBehaviour {
 		yield return www;
 
 		RoomCreated room = JsonUtility.FromJson<RoomCreated>(www.text);
-		//DisplayRoom (room);
 
-		//string returnText = www.text;
-
-		//Debug.Log (returnText);
-
-//		IEnumerator e = DCP.RunCS ("turnRooms", "JoinCreateRoom", new string[3] { roomType, playerName, fate});
-//
-//		while (e.MoveNext ()) {
-//			yield return e.Current;
-//		}
-//
-//		string returnText = e.Current as string;
-
-//		if (returnText == "") {
-//
-//			Debug.Log ("Retrying new room. Came up blank.");
-//			RetryTurnRoom (roomType, playerName, fate);
-//
-//			yield break;
-//
-//		}
-//
-//		if (returnText.StartsWith ("<!")) {
-//		
-//			Debug.Log ("Retrying new room. Gobbly gook came up.");
-//			RetryTurnRoom (roomType, playerName, fate);
-//
-//			yield break;
-//		
-//		}
-//
-//		Debug.Log ("HERE?" + returnText);
-//
-//		string[] fates = returnText.Split ('|');
-//
-//		foreach (string data in fates) {
-//
-//			if (data.StartsWith ("[ID]")){
-//
-//				roomId = data.Substring ("[ID]".Length);
-//				roomId = roomId + "/";
-//
-//			}
-//			
-//		}
-//
-//		Debug.Log ("UserName: " + LoggedIn_Username);
-//		Debug.Log ("roomId: " + roomId);
-
-//		RoomManager.instance.CreateRoom (roomType, returnText, -2);
-		RoomManager.instance.CreateRoom (roomType, room.id, room.fate, room.playerNum, -2);
+		RoomManager.instance.CreateRoom (roomType, room.id, room.fate, room.playerNum, "", -2);
 
 	}
-
-//	void CreateRoom (RoomCreated room){
-//	
-//		Debug.Log ("Id: " + room.id);
-//		Debug.Log ("Fate: " + room.fate);
-//		Debug.Log ("Number: " + room.playerNum);
-//	
-//	}
 
 	void RetryTurnRoom(string tempRoomType, string tempPlayerName, string tempFate){
 
@@ -379,19 +321,6 @@ public class UserAccountManagerScript : MonoBehaviour {
 		string returnText = www.text;
 
 		Debug.Log ("Stored: " + www.text);
-
-
-//		IEnumerator e = DCP.RunCS ("accounts", "StoreRoomId", new string[2] { username, roomId });
-//
-//			while (e.MoveNext ()) {
-//				yield return e.Current;
-//			}
-//
-//		string returnText = e.Current as string;
-			
-		//activeRooms = returnText; 	
-
-//		Debug.Log ("Stored: " + returnText);
 	
 	}
 
@@ -434,6 +363,32 @@ public class UserAccountManagerScript : MonoBehaviour {
 	
 		tempGameobject.GetComponent<TurnRoomButton> ().TurnRoomClicked ();
 	
+	}
+
+	public void SendMessageToPlayersBox (string message, string[] player){
+	
+		StartCoroutine(sendMessageBox (message, player));
+
+	}
+
+	IEnumerator sendMessageBox (string message, string[] player){
+		string URL = "http://dupesite.000webhostapp.com/mailboxMessage.php";
+
+		//Debug.Log ("Message thing: " + message);
+
+		WWWForm form = new WWWForm ();
+		form.AddField ("username1Post", player[0]);
+		form.AddField ("username2Post", player[1]);
+		form.AddField ("username3Post", player[2]);
+		form.AddField ("messagePost", message);
+
+		WWW www = new WWW (URL, form);
+		yield return www;
+
+		string returnText = www.text;
+
+		Debug.Log ("Stored Message: " + www.text);
+
 	}
 
 }

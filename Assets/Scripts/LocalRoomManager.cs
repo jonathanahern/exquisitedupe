@@ -54,6 +54,8 @@ public class LocalRoomManager : MonoBehaviour {
 	public bool tutorialMode;
 	bool readyToMove;
 
+	UserAccountManagerScript userAccount;
+
 	// Use this for initialization
 	void Start () {
 
@@ -88,6 +90,8 @@ public class LocalRoomManager : MonoBehaviour {
 
 			return;
 		}
+
+
 		roomMan.GetComponent<RoomManager> ().CurtainsOut();
 		Vector3 punchSize = new Vector3 (.5f, .5f, .5f);
 		//Debug.Log (punchSize);
@@ -148,7 +152,7 @@ public class LocalRoomManager : MonoBehaviour {
 
 		backGroundDraw.color = pColors [myRoom.myActualColor - 1];
 
-		UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
+		userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
 
 		string roomsString = userAccount.activeRooms;
 
@@ -181,8 +185,34 @@ public class LocalRoomManager : MonoBehaviour {
 		} else {
 			Debug.Log ("Already logged room");
 		}
+
+		if (myRoom.portraits [myRoom.myColor] == "") {
+
+			StartCoroutine (sendPlayerData ());
+
+		}
 			
 		Invoke ("ReadyToMove", 3.0f);
+
+	}
+
+	IEnumerator sendPlayerData (){
+	
+		string roomIdString = myRoom.roomID.ToString();
+		string myPlayerNum = myRoom.myColor.ToString();
+
+		string URL = "http://dupesite.000webhostapp.com/addNotificationPortraits.php";
+
+		WWWForm form = new WWWForm ();
+		form.AddField ("idPost", roomIdString);
+		form.AddField ("notIdPost", userAccount.notificationId);
+		form.AddField ("portraitPost", userAccount.selfPortrait);
+		form.AddField ("mySpotPost", myPlayerNum);
+
+		WWW www = new WWW (URL, form);
+		yield return www;
+
+		Debug.Log ("Sent my pic and id:" + www.text);
 
 	}
 
