@@ -14,24 +14,35 @@ public class BrushScript : MonoBehaviour {
 	Vector3 parentBrushPos;
 	Vector3 brushPosMid;
 
+	public GameObject posHandle;
+	public GameObject negHandle;
+
 	bool hit;
+
+	public bool xBrush;
+	public bool yBrush;
 
 	// Use this for initialization
 	void Start () {
 
-		parentBrush = transform.parent.gameObject;
-		parentBrushPos = parentBrush.transform.position;
-
 		if (XNeg == true) {
+			parentBrush = transform.parent.gameObject;
+			parentBrushPos = parentBrush.transform.position;
 			brushPosMid = new Vector3 (parentBrushPos.x, parentBrushPos.y - .01f, parentBrushPos.z);
 
 		} else if (XPos == true) {
+			parentBrush = transform.parent.gameObject;
+			parentBrushPos = parentBrush.transform.position;
 			brushPosMid = new Vector3 (parentBrushPos.x, parentBrushPos.y + .01f, parentBrushPos.z);
 
 		} else if (YNeg == true) {
+			parentBrush = transform.parent.gameObject;
+			parentBrushPos = parentBrush.transform.position;
 			brushPosMid = new Vector3 (parentBrushPos.x - .01f, parentBrushPos.y, parentBrushPos.z);
 
 		} else if (YPos == true) {
+			parentBrush = transform.parent.gameObject;
+			parentBrushPos = parentBrush.transform.position;
 			brushPosMid = new Vector3 (parentBrushPos.x + .01f, parentBrushPos.y, parentBrushPos.z);
 
 		}
@@ -67,19 +78,19 @@ public class BrushScript : MonoBehaviour {
 		Invoke ("MakeUnHit", 1.5f);
 
 		if (XNeg == true) {
-			parentBrush.transform.DOLocalMoveY (.5f, 1.0f).SetEase(Ease.InQuart);
+			parentBrush.transform.DOLocalMoveY (1.0f, 1.0f).SetEase(Ease.InQuart);
 			parentBrush.transform.DOShakeRotation (.4f, 30, 10);
 		
 		} else if (XPos == true) {
-			parentBrush.transform.DOLocalMoveY (-.5f, 1.0f).SetEase(Ease.InQuart);
+			parentBrush.transform.DOLocalMoveY (-1.0f, 1.0f).SetEase(Ease.InQuart);
 			parentBrush.transform.DOShakeRotation (.4f, 30, 10);
 
 		} else if (YNeg == true) {
-			parentBrush.transform.DOLocalMoveX (.5f, 1.0f).SetEase(Ease.InQuart);
+			parentBrush.transform.DOLocalMoveX (1.0f, 1.0f).SetEase(Ease.InQuart);
 			parentBrush.transform.DOShakeRotation (.4f, 30, 10);
 
 		} else if (YPos == true) {
-			parentBrush.transform.DOLocalMoveX (-.5f, 1.0f).SetEase(Ease.InQuart);
+			parentBrush.transform.DOLocalMoveX (-1.0f, 1.0f).SetEase(Ease.InQuart);
 			parentBrush.transform.DOShakeRotation (.4f, 30, 10);
 
 		}
@@ -93,6 +104,52 @@ public class BrushScript : MonoBehaviour {
 	
 		hit = false;
 	
+	}
+
+	public void TurnOnHandle(int colorNum){
+	
+		if (colorNum == 1) {
+
+			if (xBrush == true) {
+				posHandle.SetActive (true);
+			}
+
+			if (yBrush == true) {
+				negHandle.SetActive (true);
+			}
+
+		} else if (colorNum == 2) {
+
+			if (xBrush == true) {
+				posHandle.SetActive (true);
+			}
+
+			if (yBrush == true) {
+				posHandle.SetActive (true);
+			}
+
+		} else if (colorNum == 3) {
+
+			if (xBrush == true) {
+				negHandle.SetActive (true);
+			}
+
+			if (yBrush == true) {
+				posHandle.SetActive (true);
+			}
+
+		} else if (colorNum == 4) {
+
+			if (xBrush == true) {
+				negHandle.SetActive (true);
+			}
+
+			if (yBrush == true) {
+				negHandle.SetActive (true);
+			}
+
+		}
+			
 	}
 
 }

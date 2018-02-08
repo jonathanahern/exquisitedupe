@@ -51,6 +51,7 @@ public class FullRoomData
 	public string vote4;
 	public string caughtEscape;
 	public string privateGroup;
+	public string score;
 
 }
 
@@ -106,6 +107,7 @@ public class RoomManager : MonoBehaviour {
 	public bool cameFromScoring = false;
 	public bool startingNew = false;
 	public bool cameFromTutorial = false;
+	public bool cameFromPrivate = false;
 
 	public string[] roomNum = new string[5];
 	public string[] playersReady = new string[5];
@@ -163,6 +165,7 @@ public class RoomManager : MonoBehaviour {
 
 	public bool beenToLobby = false;
 
+	public int nextRoomPrivate;
 
 	void Start (){
 
@@ -339,6 +342,12 @@ public class RoomManager : MonoBehaviour {
 
 		Debug.Log (www.text);
 
+	}
+
+	public void CreateNextPrivateRoom (){
+		string roomID = nextRoomPrivate.ToString ();
+		nextRoomPrivate = 0;
+		StartCoroutine (getRoomData(roomID));
 	}
 
 	// 0 for status update, 1 to create room
@@ -541,36 +550,41 @@ public class RoomManager : MonoBehaviour {
 		} else {
 			roomScript.privateRoom = true;
 			roomScript.nextRoom = int.Parse (roomData.privateGroup);
+
+			string[] scoreData = roomData.score.Split (':');
+			string[] scoresString = scoreData[0].Split ('/');
+			for (int i = 0; i < scoresString.Length; i++) {
+				roomScript.scores [i] = int.Parse (scoresString [i]);
+			}
+			Debug.Log (scoreData [1]);
+			roomScript.roundNum = int.Parse(scoreData [1]);
 		}
 
-//		int tempColor = roomScript.myColor;
-//		tempColor = tempColor + roomScript.colorMod;
-//		if (tempColor > 4) {
-//			tempColor = tempColor - 4;
-//		}
-//		roomScript.myActualColor = tempColor;
-//		roomScript.status = "waiting...";
-//		roomScript.statusNum = 0;
 		roomScript.statusServer = roomData.status1 + roomData.status2 + roomData.status3 + roomData.status4 + roomData.caughtEscape;
 		roomScript.dupeCaught = roomData.caughtEscape;
-		int dupeColor = roomScript.dupeNum;
-		dupeColor = dupeColor - roomScript.colorMod;
-		if (dupeColor < 1) {
-			dupeColor = dupeColor + 4;
-		}
-		if (dupeColor == 1) {
+
+		if (roomScript.dupeNum == 1) {
 			roomScript.votePoses =	roomData.vote2 + roomData.vote3 + roomData.vote4;
 			roomScript.dupeGuess = roomData.vote1;
-		} else if (dupeColor == 2) {
+		} else if (roomScript.dupeNum == 2) {
 			roomScript.votePoses =	roomData.vote1 + roomData.vote3 + roomData.vote4;
 			roomScript.dupeGuess = roomData.vote2;
-		} else if (dupeColor == 3) {
+		} else if (roomScript.dupeNum == 3) {
 			roomScript.votePoses =	roomData.vote1 + roomData.vote2 + roomData.vote4;
 			roomScript.dupeGuess = roomData.vote3;
-		} else if (dupeColor == 4) {
+		} else if (roomScript.dupeNum == 4) {
 			roomScript.votePoses =	roomData.vote1 + roomData.vote2 + roomData.vote3;
 			roomScript.dupeGuess = roomData.vote4;
 		}
+
+		int dupeColor = roomScript.dupeNum;
+		dupeColor = dupeColor + roomScript.colorMod;
+
+		if (dupeColor > 4) {
+			dupeColor = dupeColor - 4;
+		}
+
+		roomScript.dupeColor = dupeColor;
 
 		string stringID = roomScript.myColor.ToString ();
 		string stringIdLetter;
@@ -675,6 +689,8 @@ public class RoomManager : MonoBehaviour {
 	
 	}
 
+
+	//roomMan.CreateRoom (roomType, room.id, room.fate, room.playerNum, "", -2);
 	//RoomManager.instance.CreateRoom (roomType, room.id, room.fate, room.playerNum, -2);
 	public void CreateRoom(string roomType, string roomId, string newFate, string myPlayerNum, string privateData, int startRoom){
 
@@ -715,7 +731,7 @@ public class RoomManager : MonoBehaviour {
 
 				}
 			} else if (piece.StartsWith (FATE_SYM)) {
-
+				Debug.Log (piece);
 				string fateWhole = piece.Substring (FATE_SYM.Length);
 
 				string[] fate = fateWhole.Split('/');
@@ -738,6 +754,7 @@ public class RoomManager : MonoBehaviour {
 
 			}
 		}
+			
 
 		roomScript.myColor = int.Parse(myPlayerNum);
 		string realCat = roomType;
@@ -884,30 +901,45 @@ public class RoomManager : MonoBehaviour {
 		} else {
 			roomScript.privateRoom = true;
 			roomScript.nextRoom = int.Parse (roomData.privateGroup);
+
+			string[] scoreData = roomData.score.Split (':');
+			string[] scoresString = scoreData[0].Split ('/');
+			for (int i = 0; i < scoresString.Length; i++) {
+				roomScript.scores [i] = int.Parse (scoresString [i]);
+			}
+			Debug.Log (scoreData [1]);
+			roomScript.roundNum = int.Parse(scoreData [1]);
+
+
 		}
 
 		roomScript.status = "waiting...";
 		roomScript.statusNum = 0;
 		roomScript.statusServer = roomData.status1 + roomData.status2 + roomData.status3 + roomData.status4 + roomData.caughtEscape;
 		roomScript.dupeCaught = roomData.caughtEscape;
-		int dupeColor = roomScript.dupeNum;
-		dupeColor = dupeColor - roomScript.colorMod;
-		if (dupeColor < 1) {
-			dupeColor = dupeColor + 4;
-		}
-		if (dupeColor == 1) {
+
+		if (roomScript.dupeNum == 1) {
 			roomScript.votePoses =	roomData.vote2 + roomData.vote3 + roomData.vote4;
 			roomScript.dupeGuess = roomData.vote1;
-		} else if (dupeColor == 2) {
+		} else if (roomScript.dupeNum == 2) {
 			roomScript.votePoses =	roomData.vote1 + roomData.vote3 + roomData.vote4;
 			roomScript.dupeGuess = roomData.vote2;
-		} else if (dupeColor == 3) {
+		} else if (roomScript.dupeNum == 3) {
 			roomScript.votePoses =	roomData.vote1 + roomData.vote2 + roomData.vote4;
 			roomScript.dupeGuess = roomData.vote3;
-		} else if (dupeColor == 4) {
+		} else if (roomScript.dupeNum == 4) {
 			roomScript.votePoses =	roomData.vote1 + roomData.vote2 + roomData.vote3;
 			roomScript.dupeGuess = roomData.vote4;
 		}
+
+		int dupeColor = roomScript.dupeNum;
+
+		dupeColor = dupeColor + roomScript.colorMod;
+		if (dupeColor > 4) {
+			dupeColor = dupeColor - 4;
+		}
+
+		roomScript.dupeColor = dupeColor;
 
 		string stringID = roomScript.myColor.ToString ();
 		string stringIdLetter;
@@ -980,13 +1012,11 @@ public class RoomManager : MonoBehaviour {
 
 		string returnText = www.text;
 
-
 		if (returnText == "Good") {
 			userAccount.StoreRoom(roomIDstring);
 			Invoke("DelayedNewRoom", 1.0f);
 
 		} 
-
 			
 	}
 
@@ -999,7 +1029,6 @@ public class RoomManager : MonoBehaviour {
 
 
 	public void UpdateTurnRoomsFromLogin(int statusRoomId){
-		
 
 		if (statusHolder == null) {
 			statusHolder = GameObject.FindGameObjectWithTag ("Status Holder");
@@ -1039,49 +1068,7 @@ public class RoomManager : MonoBehaviour {
 				}
 
 				if (turnRoom.privateRoom == true) {
-					int roundNumber = 1;
-
-
-					if (afterDark == false) {
-						for (int t = 0; t < privateCat.Length; t++) {
-
-
-							if (privateCat [t].roomTypeString == turnRoom.roomType) {
-								roundNumber = t + 1;
-
-							}
-
-						}
-					} else {
-						
-						for (int t = 0; t < afterDarkCats.Length; t++) {
-
-
-							if (afterDarkCats [t].roomTypeString == turnRoom.roomType) {
-								roundNumber = t + 1;
-
-							}
-
-						}
-					
-					}
-					string roundString = "";
-
-					if (roundNumber == 1) {
-						roundString = "1";
-						turnRoom.roundNum = 1;
-					} else if (roundNumber == 2) {
-						roundString = "2";
-						turnRoom.roundNum = 2;
-					} else if (roundNumber == 3) {
-						roundString = "3";
-						turnRoom.roundNum = 3;
-					} else if (roundNumber == 4) {
-						roundString = "4";
-						turnRoom.roundNum = 4;
-					}
-
-					status.roundNumber.text = roundString;
+					status.roundNumber.text = "ROUND " + turnRoom.roundNum.ToString();
 
 				} else {
 					
@@ -1413,9 +1400,9 @@ public class RoomManager : MonoBehaviour {
 		Vector2 leftPos = new Vector2 (-950, 0);
 		Vector2 centerPos = new Vector2 (0, 1400);
 
-		rightCurtain.DOAnchorPos (rightPos, 1.0f).SetEase (Ease.InExpo);
-		leftCurtain.DOAnchorPos (leftPos, 1.0f).SetEase (Ease.InExpo);
-		centerCurtain.DOAnchorPos (centerPos, 1.0f).SetEase (Ease.InExpo).OnComplete(BackToNormalCurtains);
+		rightCurtain.DOAnchorPos (rightPos, .75f).SetEase (Ease.InExpo);
+		leftCurtain.DOAnchorPos (leftPos, .75f).SetEase (Ease.InExpo);
+		centerCurtain.DOAnchorPos (centerPos, .75f).SetEase (Ease.InExpo).OnComplete(BackToNormalCurtains);
 		curtainMoving = false;
 
 	}
@@ -1628,26 +1615,26 @@ public class RoomManager : MonoBehaviour {
 
 	}
 		
-	public void StartNextPrivateRound(string lastRoom){
-
-		int lastRound = 0;
-
-		for (int i = 0; i < catNames.Length; i++) {
-			if (lastRoom == catNames [i]) {
-				lastRound = i;
-			}
-		}
-
-		sign.SetActive (true);
-
-		if (afterDark == false) {
-			categoryName.text = privateCat [lastRound + 1].roomTypeString;
-			privateCat [lastRound + 1].NextPrivatePainting ();
-		} else {
-			categoryName.text = afterDarkCats [lastRound + 1].roomTypeString;
-			afterDarkCats [lastRound + 1].NextPrivatePainting ();
-		}
-	}
+//	public void StartNextPrivateRound(string lastRoom){
+//
+//		int lastRound = 0;
+//
+//		for (int i = 0; i < catNames.Length; i++) {
+//			if (lastRoom == catNames [i]) {
+//				lastRound = i;
+//			}
+//		}
+//
+//		sign.SetActive (true);
+//
+//		if (afterDark == false) {
+//			categoryName.text = privateCat [lastRound + 1].roomTypeString;
+//			privateCat [lastRound + 1].NextPrivatePainting ();
+//		} else {
+//			categoryName.text = afterDarkCats [lastRound + 1].roomTypeString;
+//			afterDarkCats [lastRound + 1].NextPrivatePainting ();
+//		}
+//	}
 
 }
 

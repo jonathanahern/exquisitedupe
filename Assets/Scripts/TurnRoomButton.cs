@@ -93,7 +93,7 @@ public class TurnRoomButton : MonoBehaviour {
 
 		newWords = newWords.TrimEnd ('/');
 
-		fate = "|[WORDS]" + newWords + "|[BRUSHES]" + brushes + "|" + grounding + "|[FATE]" + dupeNum + "/" + rightWord + "/" + wrongWord + "/" + awardNum + "/" + colorMod + "/1/5/9";
+		fate = "|[WORDS]" + newWords + "|[BRUSHES]" + brushes + "|" + grounding + "|[FATE]" + dupeNum + "/" + rightWord + "/" + wrongWord + "/" + awardNum + "/" + colorMod + "/0/0/0";
 
 		//Debug.Log ("From butt: " + fate);
 

@@ -21,6 +21,8 @@ public class CameraScript : MonoBehaviour {
 	public LocalRoomManager localRoomMan;
 	public TutorialPhaseOneScript tutorialOne;
 
+	private Vector3 _originalPos;
+	public static CameraShake _instance;
 
 	// Use this for initialization
 	void Start () {
@@ -143,5 +145,6 @@ public class CameraScript : MonoBehaviour {
 		tutorialOne.StartGame ();
 	
 	}
+
 
 }

@@ -38,13 +38,17 @@ public class LoginMenu : MonoBehaviour {
 	public GameObject notEnoughReg;
 	public GameObject noFunniesReg;
 	public GameObject enterButton;
+	public GameObject loadingHolder;
+	public GameObject backButton;
+	public GameObject registerButton;
+
 	//bool canRunSequences = false;
 
 	////These variables cannot be set in the Inspector:
 	
 	//the part of UI currently being shown
 	// 0 = login, 1 = register, 2 = logged in, 3 = loading
-	int part = 0;
+	//int part = 0;
 	//scene starts showing login
 
 	bool isDatabaseSetup = false;
@@ -104,34 +108,35 @@ public class LoginMenu : MonoBehaviour {
 
 	void Update () {
 
-//		if (Input.GetKeyDown (KeyCode.D)) {
-//
-//		}
+		if (Input.GetKeyDown (KeyCode.D)) {
 
-		if (isDatabaseSetup == true) {
-
-			//enables and disables the defferent objects to show correct part
-			if (part == 0) {
-				login_object.gameObject.SetActive (true);
-				register_object.gameObject.SetActive (false);
-				loading_object.gameObject.SetActive (false);
-			}
-			if (part == 1) {
-				login_object.gameObject.SetActive (false);
-				register_object.gameObject.SetActive (true);
-				loading_object.gameObject.SetActive (false);
-			}
-			if (part == 2) {
-				//We are logged in to new scene, hopefully
-			}
-			if (part == 3) {
-				login_object.gameObject.SetActive (false);
-				register_object.gameObject.SetActive (false);
-				loading_object.gameObject.SetActive (true);
-			}
-		
+			//GoFromEnterToLoading ();
 
 		}
+
+//		if (isDatabaseSetup == true) {
+//
+//			//enables and disables the defferent objects to show correct part
+//			if (part == 0) {
+//				login_object.gameObject.SetActive (true);
+//				register_object.gameObject.SetActive (false);
+//				loading_object.gameObject.SetActive (false);
+//			}
+//			if (part == 1) {
+//				login_object.gameObject.SetActive (false);
+//				register_object.gameObject.SetActive (true);
+//				loading_object.gameObject.SetActive (false);
+//			}
+//			if (part == 2) {
+//				//We are logged in to new scene, hopefully
+//			}
+//			if (part == 3) {
+//				login_object.gameObject.SetActive (false);
+//				register_object.gameObject.SetActive (false);
+//				loading_object.gameObject.SetActive (true);
+//			}
+//		
+//		}
 		
 	}
 
@@ -142,17 +147,17 @@ public class LoginMenu : MonoBehaviour {
 	}
 	
 	public void login_Register_Button () { //called when the 'Register' button on the login part is pressed
-		part = 1; //show register UI
+		//part = 1; //show register UI
 		blankErrors();
 	}
 	
 	public void register_Back_Button () { //called when the 'Back' button on the register part is pressed
-		part = 0; //goes back to showing login UI
+		//part = 0; //goes back to showing login UI
 		blankErrors();
 	}
 	
 	public void data_LogOut_Button () { //called when the 'Log Out' button on the data part is pressed
-		part = 0; //goes back to showing login UI
+		//part = 0; //goes back to showing login UI
 
 		UserAccountManagerScript.instance.LogOut ();
 
@@ -160,6 +165,8 @@ public class LoginMenu : MonoBehaviour {
 	}
 
 	public void login_login_Button () { //called when the 'Login' button on the login part is pressed
+
+		Debug.Log (input_login_username.text);
 
 		if (isDatabaseSetup == true) {
 		
@@ -171,17 +178,22 @@ public class LoginMenu : MonoBehaviour {
 					//string contains "-" so return error
 					//login_error.text = "Unsupported Symbol '-'";
 					noFunnies.SetActive(true);
-					Vector3 fullRotation = new Vector3 (0, 0, 360);
-					enterButton.transform.DOLocalRotate (fullRotation, 1.5f,RotateMode.FastBeyond360).SetEase (Ease.InOutFlash);
+					Vector3 punchSize = new Vector3 (15, 15, 15);
+					enterButton.transform.DOPunchPosition (punchSize,.5f, 10, 1);
+					//Vector3 fullRotation = new Vector3 (0, 0, 360);
+					//enterButton.transform.DOLocalRotate (fullRotation, 1.5f,RotateMode.FastBeyond360).SetEase (Ease.InOutFlash);
 					input_login_password.text = ""; //blank password field
-				} else if (input_login_username.text.Length < 5){
+				} else if (input_login_username.text.Length < 3){
 					notEnough.SetActive (true);
-					Vector3 fullRotation = new Vector3 (0, 0, 360);
-					enterButton.transform.DOLocalRotate (fullRotation, 1.5f,RotateMode.FastBeyond360).SetEase (Ease.InOutFlash);
+					//Vector3 fullRotation = new Vector3 (0, 0, 360);
+					Vector3 punchSize = new Vector3 (15, 15, 15);
+					enterButton.transform.DOPunchPosition (punchSize,.5f, 10, 1);
+					//enterButton.transform.DOLocalRotate (fullRotation, 1.5f,RotateMode.FastBeyond360).SetEase (Ease.InOutFlash);
 				} else {
 					//ready to send request
 					StartCoroutine (sendLoginRequest (input_login_username.text, input_login_password.text)); //calls function to send login request
-					part = 3; //show 'loading...'
+					//part = 3; //show 'loading...'
+					GoFromEnterToLoading();
 				}
 			
 			} else {
@@ -212,7 +224,7 @@ public class LoginMenu : MonoBehaviour {
 //				yield return e.Current;
 //			}
 
-			Debug.Log ("Sent login request");
+			Debug.Log ("Sent login request for: " + username);
 
 			string URL = "http://dupesite.000webhostapp.com/loginRequest.php";
 
@@ -224,7 +236,7 @@ public class LoginMenu : MonoBehaviour {
 
 			string returnText = www.text;
 			returnText = returnText.Replace("\n", "");
-			Debug.Log (returnText);
+			Debug.Log ("Web returned: " + returnText);
 
 //			if (returnText == "") {
 //				RetryLoginRequest (username, password);
@@ -249,7 +261,7 @@ public class LoginMenu : MonoBehaviour {
 
 				//Password was correct
 				blankErrors ();
-				part = 2; //show logged in UI
+				//part = 2; //show logged in UI
 			
 				//blank username field
 				input_login_username.text = ""; //password field is blanked at the end of this function, even when error is returned
@@ -267,14 +279,15 @@ public class LoginMenu : MonoBehaviour {
 				//Account with username not found in database
 				login_error.text = "Name not found. Register this username?";
 				blankErrors();
-				part = 1; //back to register UI
+				GoToRegisterButtonsFromLoading ();
+				//part = 1; //back to register UI
 				register_error.text = "Name not found. Register this username?";
 				input_register_username.text = username; //blank password field
 				input_register_password.text = password;
 				}
 			if (returnText == "PassError") {
 				//Account with username found, but password incorrect
-				part = 0; //back to login UI
+				//part = 0; //back to login UI
 				login_error.text = "Incorrect Password";
 			}
 //			if (returnText == "ContainsUnsupportedSymbol") {
@@ -323,7 +336,8 @@ public class LoginMenu : MonoBehaviour {
 							
 								//ready to send request
 								StartCoroutine (sendRegisterRequest (input_register_username.text, input_register_password.text, "Hello World!")); //calls function to send register request
-								part = 3; //show 'loading...'
+								//part = 3; //show 'loading...'
+
 							}
 						
 						} else {
@@ -391,7 +405,7 @@ public class LoginMenu : MonoBehaviour {
 
 			} else if (returnText == "Already exists") {
 				//Account Not Created due to username being used on another Account
-				part = 1;
+				//part = 1;
 				register_error.text = "Username Unavailable. Try another.";
 			} else {
 			
@@ -414,5 +428,37 @@ public class LoginMenu : MonoBehaviour {
 
 		
 	}
+
+	void GoFromEnterToLoading (){
+		notEnough.SetActive(false);
+		noFunnies.SetActive(false);
+		enterButton.transform.DOScale (Vector3.zero, .4f).SetEase(Ease.InBack).OnComplete(BringUpLoading);
+
+	}
+
+	void BringUpLoading (){
+		loadingHolder.SetActive (true);
+		loadingHolder.transform.DOScale (Vector3.one, .4f).SetEase(Ease.OutBack);
+	
+	}
+
+	void GoToRegisterButtonsFromLoading(){
+		loadingHolder.transform.DOScale (Vector3.zero, .4f).SetEase(Ease.InBack).OnComplete(BringUpRegisterButtons);
+
+	}
+
+	void BringUpRegisterButtons(){
+		loadingHolder.SetActive (false);
+		registerButton.transform.DOScale (Vector3.one, .4f).SetEase(Ease.OutBack);
+		backButton.transform.DOScale (Vector3.one, .4f).SetEase(Ease.OutBack);
+
+	}
+
+	void GrowButton (RectTransform button){
+
+		button.DOScale (Vector3.zero, .5f).SetEase (Ease.InBounce);
+
+	}
+
 }
 	

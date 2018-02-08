@@ -121,16 +121,10 @@ public class LobbyMenu : MonoBehaviour {
 			roomMan.InitialLobbySetup ();
 		}
 
-//		if (roomMan.cameFromTutorial == true) {
-//			GetAllCategories ();
-//			roomMan.cameFromTutorial = false;
-//		}
-
 		if (tutorialMode == true) {
 			return;
 		}
 
-		//roomMan.roomsReady = false;
 		if (roomMan.cameFromTurnBased == true) {
 			Debug.Log ("came From turn based");
 			TurnBasedClicked ();
@@ -141,7 +135,6 @@ public class LobbyMenu : MonoBehaviour {
 			StartCoroutine (getMessageData());
 			Invoke ("TurnOffFirstDone", 3.0f);
 
-			//roomMan.DropOffButtons ();
 		}
 
 
@@ -184,6 +177,17 @@ public class LobbyMenu : MonoBehaviour {
 				roomMan.UpdateTurnRoomsFromLogin (int.Parse (roomArray [i]));
 			}
 
+		}
+
+		if (roomMan.cameFromPrivate == true) {
+			TurnBasedClicked ();
+			Invoke ("CurtainsOpen", 1.0f);
+			roomMan.FindEmptyRooms ();
+			roomMan.startingNew = false;
+			roomMan.UpdateStatus ();
+			StartCoroutine (getMessageData());
+			roomMan.amIFirstDone = false;
+			roomMan.CreateNextPrivateRoom ();
 		}
 
 		InvokeRepeating ("AutoUpdateRooms", 1.0f, 10.0f);
@@ -284,9 +288,7 @@ public class LobbyMenu : MonoBehaviour {
 			Debug.Log ("no rooms found so no updates");
 			return;
 		}
-		//Debug.Log ("TURN ON");
 		refreshingScreen.SetActive (true);
-		//loadScreenWords.text = "refreshing...";
 		roomMan.UpdateStatus ();
 	}
 

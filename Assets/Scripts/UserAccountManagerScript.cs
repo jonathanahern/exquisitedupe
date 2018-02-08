@@ -105,9 +105,9 @@ public class UserAccountManagerScript : MonoBehaviour {
 		//Debug.Log ("User in as: " + username);
 		RoomManager.instance.CurtainsIn();
 		if (firstGame == 0) {
-			Invoke ("LoadPortrait", 2.0f);
+			Invoke ("LoadPortrait", 1.5f);
 		} else {
-			Invoke ("LoadLobby", 2.0f);
+			Invoke ("LoadLobby", 1.5f);
 		}
 	}
 
@@ -324,27 +324,27 @@ public class UserAccountManagerScript : MonoBehaviour {
 	
 	}
 
-	public void StoreEditedRooms (string roomId){
-
-		StartCoroutine (storeEditedRoomIds(LoggedIn_Username, roomId));
-
-	}
-
-	IEnumerator storeEditedRoomIds (string username, string roomId){
-
-		IEnumerator e = DCP.RunCS ("accounts", "ReplaceRoomData", new string[2] { username, roomId });
-
-		while (e.MoveNext ()) {
-			yield return e.Current;
-		}
-
-		string returnText = e.Current as string;
-
-		//activeRooms = returnText; 	
-
-		Debug.Log ("Stored: " + returnText);
-
-	}
+//	public void StoreEditedRooms (string roomId){
+//
+//		StartCoroutine (storeEditedRoomIds(LoggedIn_Username, roomId));
+//
+//	}
+//
+//	IEnumerator storeEditedRoomIds (string username, string roomId){
+//
+//		IEnumerator e = DCP.RunCS ("accounts", "ReplaceRoomData", new string[2] { username, roomId });
+//
+//		while (e.MoveNext ()) {
+//			yield return e.Current;
+//		}
+//
+//		string returnText = e.Current as string;
+//
+//		//activeRooms = returnText; 	
+//
+//		Debug.Log ("Stored: " + returnText);
+//
+//	}
 
 	void BackToLobbyError() {
 	

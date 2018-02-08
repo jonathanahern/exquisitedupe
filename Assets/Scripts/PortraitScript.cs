@@ -93,6 +93,9 @@ public class PortraitScript : MonoBehaviour {
 	public void DoneDrawing(){
 
 		GetDrawing ();
+		if (myLineString.Length < 1) {
+			return;
+		}
 		buttonBottom.DOAnchorPosY (-1000, 1.0f);
 		textTop.DOAnchorPosY (1000, 1.0f).OnComplete(MoveCamera);
 		SendDrawing ();
@@ -165,6 +168,11 @@ public class PortraitScript : MonoBehaviour {
 		string URL = "http://dupesite.000webhostapp.com/storePortrait.php";
 		UserAccountManagerScript userManager = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
 		string username = userManager.loggedInUsername;
+
+		if (myLineString == "") {
+			myLineString = "Empty";
+		}
+
 		userManager.selfPortrait = myLineString;
 
 		WWWForm form = new WWWForm ();

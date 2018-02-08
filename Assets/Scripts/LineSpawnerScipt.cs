@@ -14,11 +14,13 @@ public class LineSpawnerScipt : MonoBehaviour {
 	public GameObject greenPrefab;
 	public GameObject orangePrefab;
 	public GameObject blackPrefab;
+	public GameObject clearPrefab;
 
 	public GameObject redDot;
 	public GameObject blueDot;
 	public GameObject greenDot;
 	public GameObject orangeDot;
+	public GameObject clearDot;
 
 	LineScript activeLine;
 
@@ -106,6 +108,11 @@ public class LineSpawnerScipt : MonoBehaviour {
 			dotPrefab = orangeDot;
 		}
 	
+	}
+
+	public void TurnItClear(){
+		linePrefab = clearPrefab;
+		dotPrefab = clearDot;
 	}
 
 	

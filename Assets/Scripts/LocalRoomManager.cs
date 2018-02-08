@@ -16,7 +16,10 @@ public class LocalRoomManager : MonoBehaviour {
 	public GameObject brushHolder;
 	public Text subject;
 	public GameObject blackLine;
+	public GameObject whiteLine;
 	public Color[] pColors;
+	public Color blackBackground;
+	public Color whiteMatOrig;
 	public Image backGroundDraw;
 
 	public GameObject readyButtons;
@@ -39,10 +42,11 @@ public class LocalRoomManager : MonoBehaviour {
 
 	public Image undoButton;
 	public Material blackMat;
+	public Material whiteMat;
 
 	GameObject roomMan;
-	public GameObject frameMessage;
-	Vector2 offScreen;
+	//public GameObject frameMessage;
+	//Vector2 offScreen;
 
 	bool readyToAdvance = false;
 	bool okayToClick = false;
@@ -56,14 +60,49 @@ public class LocalRoomManager : MonoBehaviour {
 
 	UserAccountManagerScript userAccount;
 
+	public Image timerColor1;
+	public Image timerColor2;
+	public Image timerRing;
+	public Text timerText1;
+	public Text timerText2;
+	float timerFloat;
+	int timerInt;
+	string timerString;
+	bool timer;
+	float timerStart;
+	public GameObject unlimitedSign;
+
+	public RectTransform brushSign;
+	public Text signText;
+	float signStartPos;
+	float signOffPos;
+
+	bool signIsUp = false;
+	bool panelHasMoved = false;
+	public SpriteRenderer blackScreen;
+
+	public float shakeInt;
+
+	public GameObject youTheDupe;
+	public SpriteRenderer drawingBlocker;
+	public SpriteRenderer youTheDupeText;
+
+	bool gameEndMissedBrush = false;
+
 	// Use this for initialization
 	void Start () {
 
 		Invoke ("ShakeButton", 1.5f);
+		Invoke ("OpenCurtains", .5f);
 
 		panelScreen = bottomPanel.anchoredPosition;
 		panelScreenOff = new Vector3 (panelScreen.x, panelScreen.y - 500, panelScreen.z);
-		//bottomPanel.anchoredPosition = panelScreenOff;
+
+		brushSign.gameObject.SetActive (true);
+		signStartPos = brushSign.anchoredPosition.y;
+		signOffPos = signStartPos + 1300;
+		brushSign.DOAnchorPosY (signOffPos, 0.1f);
+
 
 		if (tutorialMode == true) {
 			
@@ -79,9 +118,28 @@ public class LocalRoomManager : MonoBehaviour {
 
 		if (Input.GetKeyDown (KeyCode.K)) {
 
-		
+			EDAnimations.Instance.BurstDisappear (youTheDupe);
+
 		}
 
+		if (timer == true) {
+			timerInt = Mathf.RoundToInt (timerFloat);
+			timerFloat -= Time.deltaTime;
+			timerString = timerInt.ToString ();
+			if (timerInt < 10) {
+				timerString = "0" + timerString;
+			}
+			timerText1.text = timerString[0].ToString();
+			timerText2.text = timerString [1].ToString ();
+			timerRing.fillAmount = timerFloat / timerStart;
+			if (timerFloat < .05f) {
+				timer = false;
+				timerFloat = 0;
+				timerInt = 0;
+				timerRing.fillAmount = 0;
+				TimerIsUp ();
+			}
+		}
 	}
 
 	void ShakeButton (){
@@ -90,14 +148,15 @@ public class LocalRoomManager : MonoBehaviour {
 
 			return;
 		}
-
-
-		roomMan.GetComponent<RoomManager> ().CurtainsOut();
+			
 		Vector3 punchSize = new Vector3 (.5f, .5f, .5f);
-		//Debug.Log (punchSize);
 		theDrawButton.transform.DOPunchScale (punchSize, 1.0f,10,.01f).SetDelay(3.0f).SetId("buttshake").OnComplete(ShakeButton);		
 
 	} 
+
+	void OpenCurtains(){
+		roomMan.GetComponent<RoomManager> ().CurtainsOut();
+	}
 
 	void FindMyRoom (){
 	
@@ -122,8 +181,14 @@ public class LocalRoomManager : MonoBehaviour {
 
 		Camera.main.GetComponent<CameraScript> ().ZoomIn (myRoom.myActualColor);
 
-		if (myRoom.dupeNum == myRoom.myActualColor) {
-			subject.text = myRoom.wrongword;
+		if (myRoom.dupeNum == myRoom.myColor) {
+
+			if (myRoom.mode [1] == true) {
+				subject.text = "???????????";
+			} else {
+				subject.text = myRoom.wrongword;
+			}
+
 		} else {
 			subject.text = myRoom.rightword;
 		}
@@ -151,6 +216,8 @@ public class LocalRoomManager : MonoBehaviour {
 		}
 
 		backGroundDraw.color = pColors [myRoom.myActualColor - 1];
+		timerColor1.color = pColors [myRoom.myActualColor - 1];
+		timerColor2.color = pColors [myRoom.myActualColor - 1];
 
 		userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
 
@@ -186,15 +253,76 @@ public class LocalRoomManager : MonoBehaviour {
 			Debug.Log ("Already logged room");
 		}
 
-		if (myRoom.portraits [myRoom.myColor] == "") {
+		lineSpawn.GetColor (myRoom.myActualColor);
 
-			StartCoroutine (sendPlayerData ());
-
+		if (myRoom.privateRoom == true) {
+			if (myRoom.portraits [myRoom.myColor - 1] == "") {
+				StartCoroutine (sendPlayerData ());
+			}
 		}
-			
-		Invoke ("ReadyToMove", 3.0f);
+
+		if (myRoom.time [0] == true) {
+			unlimitedSign.SetActive (true);
+			timerText1.text = "";
+			timerText2.text = "";
+		} else if (myRoom.time [1] == true) {
+			timerFloat = 15;
+			timerStart = 15;
+			timerText1.text = "1";
+			timerText2.text = "5";
+		} else if (myRoom.time [2] == true) {
+			timerFloat = 45;
+			timerStart = 45;
+			timerText1.text = "4";
+			timerText2.text = "5";
+		} else if (myRoom.time [3] == true) {
+			timerFloat = 60;
+			timerStart = 60;
+			timerText1.text = "6";
+			timerText2.text = "0";
+		} else {
+			unlimitedSign.SetActive (true);
+			timerText1.text = "";
+			timerText2.text = "";
+		}
+
+		if (myRoom.time [0] == false) {
+			Invoke ("TimedGameStartAlready", 10.0f);
+		}
+
+		if (myRoom.method [1] == true) {
+			lineSpawn.TurnItClear ();
+			blackScreen.color = blackBackground;
+			drawingBlocker.color = blackBackground;
+		}
+
+		if (myRoom.mode [1] == true && myRoom.dupeNum == myRoom.myColor) {
+			drawingBlocker.gameObject.SetActive (true);
+			youTheDupe.SetActive (true);
+			youTheDupeText.color = pColors [myRoom.myActualColor - 1];
+			Invoke ("HideTheDupeSign", 4.0f);
+		}
+
+		Invoke ("ReadyToMove", 2.0f);
 
 	}
+
+	void TimedGameStartAlready(){
+		if (panelHasMoved == false) {
+			MoveDownReady();
+		}
+	}
+
+	void HideTheDupeSign (){
+		Invoke ("HideTheScreenBlocker", 1.0f);
+		EDAnimations.Instance.BurstDisappear (youTheDupe);
+	}
+
+	void HideTheScreenBlocker (){
+		Color clearColor = new Vector4 (1, 1, 1, 0);
+		drawingBlocker.DOColor (clearColor, .75f);
+	}
+
 
 	IEnumerator sendPlayerData (){
 	
@@ -221,6 +349,7 @@ public class LocalRoomManager : MonoBehaviour {
 	}
 
 	public void MoveDownReady(){
+		panelHasMoved = true;
 		bottomPanel.DOAnchorPos (panelScreenOff, .5f);
 
 		if (readyToMove == true) {
@@ -239,11 +368,23 @@ public class LocalRoomManager : MonoBehaviour {
 	}
 
 	void HideLines (){
-		blackMat.DOColor (Color.white, 1.0f).OnComplete (DestroyLines);
+		if (myRoom.method[1] == false) {
+			blackMat.DOColor (Color.white, 1.0f).OnComplete (DestroyLines);
+		} else {
+			whiteMat.DOColor (blackBackground, 1.0f).OnComplete (DestroyLines);
+		}
 	}
 
 	void DestroyLines (){
-	
+		
+		if (myRoom.time [0] == false) {
+			timer = true;
+		}
+
+		if (myRoom.method [2] == true) {
+			Camera.main.gameObject.GetComponent<CameraShake> ().StartWiggle ();
+		}
+
 		GameObject[] lines = GameObject.FindGameObjectsWithTag ("Line");
 
 		foreach (GameObject line in lines) {
@@ -252,6 +393,7 @@ public class LocalRoomManager : MonoBehaviour {
 
 		Color grey = new Color (.2f, .2f, .2f, 1.0f);
 		blackMat.color = grey;
+		whiteMat.color = whiteMatOrig;
 	
 	}
 
@@ -265,7 +407,7 @@ public class LocalRoomManager : MonoBehaviour {
 		bottomPanel.DOAnchorPos (panelScreen, 1.0f);
 
 		Invoke ("LoadBrushes", .7f);
-		lineSpawn.GetColor (myRoom.myActualColor);
+	
 
 
 	}
@@ -280,8 +422,12 @@ public class LocalRoomManager : MonoBehaviour {
 
 	void DrawGrounding () {
 
+		if (myRoom.method [1] == true) {
+			blackLine = whiteLine;
+		}
 		Color grey = new Color (.2f, .2f, .2f, 1.0f);
 		blackMat.color = grey;
+		
 
 		string[] lines = myRoom.grounding.Split ('$');
 
@@ -329,6 +475,9 @@ public class LocalRoomManager : MonoBehaviour {
 				}
 
 				GameObject newBrush = (GameObject)Instantiate (brushPrefabY, newBrushPos, Quaternion.identity);
+				if (myRoom.method [2] == true) {
+					newBrush.GetComponent<BrushScript> ().TurnOnHandle (myColor);
+				}
 				newBrush.transform.SetParent (brushHolder.transform, false);
 				newBrush.transform.DOLocalMoveX (0, 1.0f);
 
@@ -343,6 +492,9 @@ public class LocalRoomManager : MonoBehaviour {
 				GameObject newBrush = (GameObject)Instantiate (brushPrefabX, newBrushPos, Quaternion.identity);
 				newBrush.transform.SetParent (brushHolder.transform, false);
 				newBrush.transform.DOLocalMoveY (0, 1.0f);
+				if (myRoom.method [2] == true) {
+					newBrush.GetComponent<BrushScript> ().TurnOnHandle (myColor);
+				}
 			}
 		}
 	}
@@ -351,7 +503,7 @@ public class LocalRoomManager : MonoBehaviour {
 		okayToClick = true;
 	}
 
-	public void CheckBrushes () {
+	public void DoneDrawingButton () {
 	
 		if (okayToClick == false) {
 			return;
@@ -360,6 +512,67 @@ public class LocalRoomManager : MonoBehaviour {
 		okayToClick = false; 
 		Invoke ("OkayToClick", 2.5f);
 
+
+
+		if (CheckBrushes() == true) {
+			CollectYourLineData ();
+			bottomPanel.DOAnchorPos (panelScreenOff, .5f);
+		} else {
+			StillHaveBrushes ();
+		}
+	
+	}
+
+	public void StillHaveBrushes(){
+
+		signIsUp = true;
+
+		signText.text = "YOU HAVE TO DRAW ON ALL THE BRUSHES";
+		brushSign.DOAnchorPosY (signStartPos, 1.0f).SetEase (Ease.OutBounce);
+		Invoke ("MoveOff", 2.5f);
+
+	}
+
+	void MissedABrushSign(){
+	
+		signText.text = "YOU MISSED A BRUSH!\n-1 POINT";
+		brushSign.DOAnchorPosY (signStartPos, 1.0f).SetEase (Ease.OutBounce);
+		//Invoke ("MoveOff", 2.5f);
+
+	}
+
+	void MoveOff() {
+
+		brushSign.DOAnchorPosY (signOffPos, 1.0f).OnComplete (OkForNewSign);
+
+	}
+
+	void OkForNewSign(){
+		okayToClick = true;
+		signIsUp = false;
+
+	}
+
+	void TimerIsUp(){
+	
+		lineSpawn.dontDraw = true;
+
+		if (CheckBrushes () == true) {
+			CollectYourLineData ();
+		} else {
+			CollectYourLineData ();
+			if (signIsUp == false) {
+				MissedABrushSign ();
+				gameEndMissedBrush = true;
+			} else {
+				Invoke ("MissedABrushSign", 2.1f);
+				gameEndMissedBrush = true;
+			}
+		}
+	}
+
+	bool CheckBrushes(){
+	
 		readyToAdvance = true;
 		int brushCount = brushHolder.transform.childCount;
 		int myColor = myRoom.myActualColor;
@@ -407,37 +620,17 @@ public class LocalRoomManager : MonoBehaviour {
 		}
 
 		if (readyToAdvance == true) {
-			CollectYourLineData ();
+			return true;
 		} else {
-			StillHaveBrushes ();
+			return false;
 		}
 	
 	}
-
-	public void StillHaveBrushes(){
-	
-		offScreen = frameMessage.transform.position;
-
-		frameMessage.transform.DOLocalMoveY(0,1.0f).SetEase (Ease.OutBounce);
-		Invoke ("MoveOff", 2.5f);
-	}
-
-	void MoveOff() {
-	
-		frameMessage.transform.DOLocalMoveY(offScreen.y * -1, 1.0f).OnComplete (MoveBack);
-
-	}
-
-	void MoveBack(){
-
-		frameMessage.transform.DOLocalMoveY(offScreen.y, 0.0f);
-		okayToClick = true;
-	}
+				
 
 	void CollectYourLineData () {
 		
 		roomMan.GetComponent<RoomManager> ().TurnOffSign ();
-		roomMan.GetComponent<RoomManager> ().CurtainsIn ();
 	
 		GameObject[] lines = GameObject.FindGameObjectsWithTag ("Line");
 
@@ -469,7 +662,6 @@ public class LocalRoomManager : MonoBehaviour {
 					myLineString = myLineString.Replace("0.", ".");
 					myLineString = myLineString.Replace("++", "+");
 					myLineString = myLineString.Replace(":+", ":");
-
 
 				}
 
@@ -515,13 +707,24 @@ public class LocalRoomManager : MonoBehaviour {
 		}
 
 		myLineString = myLineString.TrimEnd('+');
-		myLineString = myLineString + "$";
 
-//		Debug.Log (myRoom.roomID);
-//		Debug.Log (myLineString);
+		if (CheckBrushes () == true) {
+			myLineString = myLineString + ":0$";
+		} else {
+			myLineString = myLineString + ":1$";
+		}
+
+		if (myRoom.method [2] == true) {
+			Camera.main.gameObject.GetComponent<CameraShake> ().StopWiggle ();
+		}
 
 		StartCoroutine (doneDrawing(myRoom.roomID, myLineString));
 
+	}
+
+	void CloseCurtains(){
+		roomMan.GetComponent<RoomManager> ().CurtainsIn ();
+		Invoke ("GoToLobby", 1.0f);
 	}
 
 
@@ -542,33 +745,23 @@ public class LocalRoomManager : MonoBehaviour {
 
 		Debug.Log ("Drawing return:" + www.text);
 
-//		IEnumerator e = DCP.RunCS ("turnRooms", "AddDrawing", new string[3] { roomIdString, drawingArray, myRoom.myActualColor.ToString()});
-//
-//		while (e.MoveNext ()) {
-//			yield return e.Current;
-//		}
-//
-//		string returnText = e.Current as string;
-//
-//		Debug.Log ("Returned:" + returnText);
-//
-//		string drawingID = "[MYCOLOR]" + myRoom.myActualColor.ToString ();
-//
-//		if (returnText.Contains(drawingID) == false){
-//
-//			CollectYourLineData();
-//			yield break;
-//
-//		}
-
 		myRoom.activeRoom = false;
 		myRoom.status = "waiting";
 		myRoom.statusNum = 1;
 
+		float closingTime = 0.0f;
+		if (gameEndMissedBrush == true) {
+			closingTime = 3.0f;
+		}
+			
+		if (myRoom.time [0] == true) {
+			CloseCurtains ();
+		} else {
+			Invoke ("CloseCurtains", closingTime);
+		}
 
 		RoomManager.instance.cameFromTurnBased=true;
 		RoomManager.instance.amIFirstDone=true;
-		Invoke ("GoToLobby", 1.0f);
 
 	}
 

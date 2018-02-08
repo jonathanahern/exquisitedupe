@@ -196,9 +196,8 @@ public class TurnGameStatus : MonoBehaviour {
 				turnRoom.activeScoreRoom = true;
 				i = children;
 			}
-
 		}
-			
+
 		SceneManager.LoadScene ("Turn Based Scoring");
 
 	}

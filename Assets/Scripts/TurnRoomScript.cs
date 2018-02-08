@@ -15,6 +15,7 @@ public class TurnRoomScript : MonoBehaviour {
 	public string[] playersNotId;
 	public string[] portraits;
 	public int dupeNum;
+	public int dupeColor;
 	public string rightword;
 	public string wrongword;
 	public int awardNum;
@@ -23,7 +24,6 @@ public class TurnRoomScript : MonoBehaviour {
 	public bool[] time= new bool [4];
 	public bool[] method= new bool [4];
 	public bool[] mode= new bool [2];
-
 
 	public string drawings;
 	public string votePoses;
@@ -35,13 +35,12 @@ public class TurnRoomScript : MonoBehaviour {
 
 	public string dupeCaught;
 	public bool privateRoom;
-	public int roundNum;
 	public int colorMod;
 	public int myActualColor;
 	public string statusServer;
 	public bool needsToSendAlert = false;
 	public int nextRoom;
+	public int[] scores = new int[4];
+	public int roundNum;
 
-
-		
 }
