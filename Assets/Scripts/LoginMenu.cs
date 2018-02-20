@@ -9,19 +9,12 @@ using DatabaseControl;//This line is always needed for any C# script using the d
 using DG.Tweening;
 
 public class LoginMenu : MonoBehaviour {
-	////These variables are set in the Inspector:
-	
-	//they are enabled and disabled to show and hide the different parts of the UI
-	public GameObject login_object;
-	public GameObject register_object;
-	public GameObject loading_object;
 	
 	//these are the login input fields:
 	public UnityEngine.UI.InputField input_login_username;
 	public UnityEngine.UI.InputField input_login_password;
 	
 	//these are the register input fields:
-	public UnityEngine.UI.InputField input_register_username;
 	public UnityEngine.UI.InputField input_register_password;
 	public UnityEngine.UI.InputField input_register_confirmPassword;
 	
@@ -32,26 +25,13 @@ public class LoginMenu : MonoBehaviour {
 	string userNameLocation = "userNameLocation";
 	string passwordLocation = "passwordLocation";
 
-	string databaseName = "";
 	public GameObject notEnough;
 	public GameObject noFunnies;
-	public GameObject notEnoughReg;
-	public GameObject noFunniesReg;
 	public GameObject enterButton;
 	public GameObject loadingHolder;
 	public GameObject backButton;
 	public GameObject registerButton;
 
-	//bool canRunSequences = false;
-
-	////These variables cannot be set in the Inspector:
-	
-	//the part of UI currently being shown
-	// 0 = login, 1 = register, 2 = logged in, 3 = loading
-	//int part = 0;
-	//scene starts showing login
-
-	bool isDatabaseSetup = false;
 
 	void Start () {
 
@@ -64,45 +44,6 @@ public class LoginMenu : MonoBehaviour {
 		
 		}
 
-
-		//Gets the databaseName as it was setup through the editor
-		GameObject linkObj = GameObject.Find("Link");
-		if (linkObj == null)
-		{
-			Debug.LogError("DCP Error: Cannot find the link object in the scene so scripts running Command Sequences don't know the database name");
-		} else
-		{
-			DCP_Demos_LinkDatabaseName linkScript = linkObj.gameObject.GetComponent<DCP_Demos_LinkDatabaseName>() as DCP_Demos_LinkDatabaseName;
-			if (linkScript == null)
-			{
-				Debug.LogError("DCP Error: Cannot find the link script on link object so scripts running Command Sequences don't know the database name");
-			} else
-			{
-				if (linkScript.databaseName == "")
-				{
-					Debug.LogError("DCP Error: This demo scene has not been setup. Please setup the demo scene in the Setup window before use. Widnow>Database Control Pro>Setup Window");
-				} else
-				{
-					databaseName = linkScript.databaseName;
-					//canRunSequences = true;
-					isDatabaseSetup = true;
-				}
-			}
-		}
-
-		//this checks whether the database is setup. It is used to prevent errors for users who try to use the demos
-		//without having setup a database.
-		//You don't need to use this bool as it will work without it as long as the database has been setup
-//		TextAsset datafile = Resources.Load ("data") as TextAsset;
-//		string[] splitdatafile = datafile.text.Split (new string[] { "-" }, StringSplitOptions.None);
-//		if (splitdatafile [0] == "0") {
-//			isDatabaseSetup = false;
-//			Debug.Log ("These demos will not work out of the box. You need to setup a database first for it to work. Please read the Setup section of the PDF for more information");
-//		} else {
-//			isDatabaseSetup = true;
-//		}
-
-		//sets error Texts string to blank
 		blankErrors();
 	}
 
@@ -113,30 +54,6 @@ public class LoginMenu : MonoBehaviour {
 			//GoFromEnterToLoading ();
 
 		}
-
-//		if (isDatabaseSetup == true) {
-//
-//			//enables and disables the defferent objects to show correct part
-//			if (part == 0) {
-//				login_object.gameObject.SetActive (true);
-//				register_object.gameObject.SetActive (false);
-//				loading_object.gameObject.SetActive (false);
-//			}
-//			if (part == 1) {
-//				login_object.gameObject.SetActive (false);
-//				register_object.gameObject.SetActive (true);
-//				loading_object.gameObject.SetActive (false);
-//			}
-//			if (part == 2) {
-//				//We are logged in to new scene, hopefully
-//			}
-//			if (part == 3) {
-//				login_object.gameObject.SetActive (false);
-//				register_object.gameObject.SetActive (false);
-//				loading_object.gameObject.SetActive (true);
-//			}
-//		
-//		}
 		
 	}
 
@@ -146,29 +63,9 @@ public class LoginMenu : MonoBehaviour {
 		register_error.text = "";
 	}
 	
-	public void login_Register_Button () { //called when the 'Register' button on the login part is pressed
-		//part = 1; //show register UI
-		blankErrors();
-	}
-	
-	public void register_Back_Button () { //called when the 'Back' button on the register part is pressed
-		//part = 0; //goes back to showing login UI
-		blankErrors();
-	}
-	
-	public void data_LogOut_Button () { //called when the 'Log Out' button on the data part is pressed
-		//part = 0; //goes back to showing login UI
 
-		UserAccountManagerScript.instance.LogOut ();
-
-		blankErrors();
-	}
 
 	public void login_login_Button () { //called when the 'Login' button on the login part is pressed
-
-		Debug.Log (input_login_username.text);
-
-		if (isDatabaseSetup == true) {
 		
 			//check fields aren't blank
 			if (input_login_username.text != ""){// && (input_login_password.text != "")) {
@@ -202,7 +99,6 @@ public class LoginMenu : MonoBehaviour {
 				input_login_password.text = ""; //blank password field
 			}
 		
-		}
 		
 	}
 
@@ -214,15 +110,6 @@ public class LoginMenu : MonoBehaviour {
 	
 	IEnumerator sendLoginRequest (string username, string password) {
 
-		//Debug.Log (username + password);
-
-		if (isDatabaseSetup == true) {
-		
-//			IEnumerator e = DCP.RunCS (databaseName, "Login", new string[2] { username, password });
-//
-//			while (e.MoveNext ()) {
-//				yield return e.Current;
-//			}
 
 			Debug.Log ("Sent login request for: " + username);
 
@@ -264,7 +151,7 @@ public class LoginMenu : MonoBehaviour {
 				//part = 2; //show logged in UI
 			
 				//blank username field
-				input_login_username.text = ""; //password field is blanked at the end of this function, even when error is returned
+				//input_login_username.text = ""; //password field is blanked at the end of this function, even when error is returned
 		
 				PlayerPrefs.SetString (userNameLocation, username);
 				PlayerPrefs.SetString (passwordLocation, password);
@@ -282,7 +169,7 @@ public class LoginMenu : MonoBehaviour {
 				GoToRegisterButtonsFromLoading ();
 				//part = 1; //back to register UI
 				register_error.text = "Name not found. Register this username?";
-				input_register_username.text = username; //blank password field
+				input_login_username.text = username; //blank password field
 				input_register_password.text = password;
 				}
 			if (returnText == "PassError") {
@@ -304,18 +191,16 @@ public class LoginMenu : MonoBehaviour {
 			//blank password field
 			input_login_password.text = "";
 
-		}
+		
 	}
 
 	public void register_register_Button () { //called when the 'Register' button on the register part is pressed
 
-		if (isDatabaseSetup == true) {
-		
 			//check fields aren't blank
-			if ((input_register_username.text != "")){// && (input_register_password.text != "")) {// && (input_register_confirmPassword.text != "")) {
+		if ((input_login_username.text != "")){// && (input_register_password.text != "")) {// && (input_register_confirmPassword.text != "")) {
 			
-				//check username is longer than 4 characters
-				if (input_register_username.text.Length > 4) {
+				//check username is longer than 2 characters
+			if (input_login_username.text.Length > 2) {
 				
 					//check password is longer than 6 characters
 					if (input_register_password.text.Length > -1) {
@@ -323,9 +208,9 @@ public class LoginMenu : MonoBehaviour {
 						//check passwords are the same jonathan changed this so so confirm needed
 						if (input_register_password.text == input_register_password.text) {
 						
-							if ((input_register_username.text.Contains ("-")) || (input_register_username.text.Contains ("|")) || (input_register_username.text.Contains ("/"))|| (input_register_username.text.Contains ("$"))|| (input_register_username.text.Contains ("^"))|| (input_register_username.text.Contains ("@"))) {
+						if ((input_login_username.text.Contains ("-")) || (input_login_username.text.Contains ("|")) || (input_login_username.text.Contains ("/"))|| (input_login_username.text.Contains ("$"))|| (input_login_username.text.Contains ("^"))|| (input_login_username.text.Contains ("@"))) {
 							
-								noFunniesReg.SetActive (true);
+								noFunnies.SetActive (true);
 								//string contains "-" so return error
 								//register_error.text = "Unsupported Symbol";
 								input_login_password.text = ""; //blank password field
@@ -333,10 +218,13 @@ public class LoginMenu : MonoBehaviour {
 								register_error.text = "";
 							
 							} else {
-							
+							blankErrors ();
 								//ready to send request
-								StartCoroutine (sendRegisterRequest (input_register_username.text, input_register_password.text, "Hello World!")); //calls function to send register request
-								//part = 3; //show 'loading...'
+							StartCoroutine (sendRegisterRequest (input_login_username.text, input_register_password.text, "Hello World!")); //calls function to send register request
+							noFunnies.SetActive(false);
+							notEnough.SetActive(false);
+							HideRegisterButtons ();
+							//part = 3; //show 'loading...'
 
 							}
 						
@@ -357,7 +245,7 @@ public class LoginMenu : MonoBehaviour {
 				} else {
 					//return username too short error
 					//register_error.text = "Username too Short";
-					notEnoughReg.SetActive (true);
+					notEnough.SetActive (true);
 					input_register_password.text = ""; //blank password fields
 					//input_register_confirmPassword.text = "";
 					register_error.text = "";
@@ -370,8 +258,6 @@ public class LoginMenu : MonoBehaviour {
 				//input_register_confirmPassword.text = "";
 			}
 
-		}
-		
 	}
 	
 	IEnumerator sendRegisterRequest (string username, string password, string data) {
@@ -395,28 +281,21 @@ public class LoginMenu : MonoBehaviour {
 
 				PlayerPrefs.SetString (userNameLocation, username);
 				PlayerPrefs.SetString (passwordLocation, password);
-
 				blankErrors();
-				//part = 2; //show logged in UI
-				//blank username field
-				input_register_username.text = ""; //password field is blanked at the end of this function, even when error is returned
 				
 			UserAccountManagerScript.instance.LogIn (username, password, "", notId, "", 0);
 
 			} else if (returnText == "Already exists") {
 				//Account Not Created due to username being used on another Account
 				//part = 1;
+				GoToRegisterButtonsFromLoading();
 				register_error.text = "Username Unavailable. Try another.";
 			} else {
-			
+				GoToRegisterButtonsFromLoading ();
 				register_error.text = "Error";
 			
 			}
-//			if (returnText == "ContainsUnsupportedSymbol") {
-//				//Account Not Created as one of the parameters contained a - symbol
-//				part = 1;
-//				register_error.text = "Unsupported Symbol '-'";
-//			}
+
 //			if (returnText == "Error") {
 //				//Account Not Created, another error occurred
 //				part = 1;
@@ -438,26 +317,36 @@ public class LoginMenu : MonoBehaviour {
 
 	void BringUpLoading (){
 		loadingHolder.SetActive (true);
-		loadingHolder.transform.DOScale (Vector3.one, .4f).SetEase(Ease.OutBack);
+		loadingHolder.transform.DOScale (Vector3.one, .4f).SetId("Loading").SetEase(Ease.OutBack);
 	
 	}
 
 	void GoToRegisterButtonsFromLoading(){
+		DOTween.Kill ("Loading");
 		loadingHolder.transform.DOScale (Vector3.zero, .4f).SetEase(Ease.InBack).OnComplete(BringUpRegisterButtons);
-
 	}
 
 	void BringUpRegisterButtons(){
 		loadingHolder.SetActive (false);
 		registerButton.transform.DOScale (Vector3.one, .4f).SetEase(Ease.OutBack);
 		backButton.transform.DOScale (Vector3.one, .4f).SetEase(Ease.OutBack);
-
 	}
 
-	void GrowButton (RectTransform button){
+	void HideRegisterButtons(){
+		registerButton.transform.DOScale (Vector3.zero, .4f).SetEase(Ease.InBack);
+		backButton.transform.DOScale (Vector3.zero, .4f).SetEase(Ease.InBack).OnComplete(BringUpLoading);
+	}
 
-		button.DOScale (Vector3.zero, .5f).SetEase (Ease.InBounce);
+	public void BackButton(){
+		registerButton.transform.DOScale (Vector3.zero, .4f).SetEase(Ease.InBack);
+		backButton.transform.DOScale (Vector3.zero, .4f).SetEase(Ease.InBack).OnComplete(BringUpEnter);
+		blankErrors();
+		notEnough.SetActive(false);
+		noFunnies.SetActive(false);
+	}
 
+	void BringUpEnter(){
+		enterButton.transform.DOScale (Vector3.one, .4f).SetEase(Ease.OutBack);
 	}
 
 }

@@ -57,6 +57,7 @@ public class LobbyMenu : MonoBehaviour {
 	int roomCount;
 	public AnimationCurve moveItOut;
 	public AnimationCurve moveItIn;
+	public AnimationCurve scaleBounce;
 
 	public Text playersName;
 	public Transform inviteHolder;
@@ -66,17 +67,15 @@ public class LobbyMenu : MonoBehaviour {
 	public Transform categoryPrivateHolder;
 	public GameObject categoryPrivatePrefab;
 
-	public Text selectText;
 	public int selectCount;
 	//public string[] artistsSelected;
 	public List<string> artistsSelected;
 	bool wasAtZeroInvites = false;
 
 	public Text selectCatsText;
-	public int catsCount;
+	//public int catsCount;
 //	public string[] catsSelected;
 	public List<string> catsSelected;
-	bool wasAtZeroCats = false;
 
 	public Toggle[] gameOption;
 	public string optionString;
@@ -90,7 +89,22 @@ public class LobbyMenu : MonoBehaviour {
 	public Transform invitationHolder;
 	public RectTransform invitationPos;
 
-	string inviteMessage = " has challenged you to a contest of wits and stupid art!";
+	public RectTransform buttonPalette;
+	float paletteStartPos;
+	public RectTransform nextButtonNG;
+	public RectTransform backButtonNG;
+	float backButtonNGStartPos;
+	public GameObject nextText;
+	public GameObject nextButton;
+	public AnimationCurve signRotate;
+
+
+	public Text roundCount;
+	public RectTransform twelveLimit;
+
+	int stepNG = 0;
+
+	//string inviteMessage = " has challenged you to a contest of wits and stupid art!";
 
 	// Use this for initialization
 	void Awake () {
@@ -101,6 +115,9 @@ public class LobbyMenu : MonoBehaviour {
 
 	void Start(){
 
+		paletteStartPos = buttonPalette.anchoredPosition.y;
+		backButtonNGStartPos = backButtonNG.anchoredPosition.y;
+		backButtonNG.DOAnchorPosY (backButtonNGStartPos - 600, 0.0f);
 		statusLoad = GameObject.FindGameObjectWithTag ("Status Load");
 		oneEighty = new Vector3 (0, 0, 180.0f);
 		zeroCounter = new Vector3 (0, 0, 360.0f);
@@ -108,11 +125,10 @@ public class LobbyMenu : MonoBehaviour {
 		roomMan = GameObject.FindGameObjectWithTag ("Room Manager").GetComponent<RoomManager> ();
 
 		selectCount = 3;
-		selectText.text = "SELECT " + selectCount + " ARTISTS";
 		artistsSelected = new List<string> ();
 
-		catsCount = 4;
-		selectCatsText.text = "SELECT " + catsCount + " CATEGORIES";
+		//catsCount = 4;
+		//selectCatsText.text = "SELECT " + catsCount + " CATEGORIES";
 		catsSelected = new List<string> ();
 
 		invitationNums = new List<int> ();
@@ -340,13 +356,15 @@ public class LobbyMenu : MonoBehaviour {
 		okToClick = false;
 
 		Invoke ("OkToClickAgain", 1.5f);
-		if (roomCount > 4) {
-			FiveRoomsOnly ();
-			return;
-		}
-	
-		newCats.DOLocalMoveX (0, 1.5f).SetEase(moveItIn);
-		centerTurnButts.DOLocalMoveX (startPos * -1.0f, 1.5f).SetEase(moveItOut);
+//		if (roomCount > 4) {
+//			FiveRoomsOnly ();
+//			return;
+//		}
+		stepNG = 1;
+		HideLobbyButtons ();
+		newCats.DOAnchorPosX (0, 1.5f).SetEase(moveItIn);
+		centerTurnButts.DOAnchorPosX (-1200, 1.5f).SetEase(moveItOut);
+		Invoke ("BringInBackButtonNG", .5f);
 
 	}
 
@@ -363,8 +381,8 @@ public class LobbyMenu : MonoBehaviour {
 		if (inviteHolder.childCount < 1) {
 			CreateFriendsList ();
 		}
-		addFriendsRect.DOAnchorPosY (0, 1.5f).SetEase(moveItIn);
-		startNewMain.DOAnchorPosY (-2100, 1.2f).SetEase(moveItOut);
+		addFriendsRect.DOAnchorPosX (0, 1.5f).SetEase(moveItIn);
+		startNewMain.DOAnchorPosX (-1600, 1.2f).SetEase(moveItOut);
 
 	}
 
@@ -404,23 +422,25 @@ public class LobbyMenu : MonoBehaviour {
 
 	}
 
-	//From Add Cats
+	//From Main Start Screen
 	public void GoToGameOptionsScreen() {
 
 		if (okToClick == false) {
 			return;
 		}
 
-		if (catsSelected.Count < 4 ) {
-			return;
-		}
+//		if (catsSelected.Count < 4 ) {
+//			return;
+//		}
 
 		okToClick = false;
 
 		Invoke ("OkToClickAgain", 1.5f);
+		stepNG = 2;
+		startNewMain.DOAnchorPosX (-1600, 1.2f).SetEase(moveItOut);
+		gameOptionsScreen.DOAnchorPosX (0, 1.5f).SetEase(moveItIn);
+		nextButtonNG.DOAnchorPosY(backButtonNGStartPos, 1.0f).SetEase (Ease.OutBounce);
 
-		addCategories.DOAnchorPosY (-2100, 1.2f).SetEase(moveItOut);
-		gameOptionsScreen.DOAnchorPosY (0, 1.5f).SetEase(moveItIn);
 
 	}
 
@@ -430,9 +450,7 @@ public class LobbyMenu : MonoBehaviour {
 		if (okToClick == false) {
 			return;
 		}
-
 		okToClick = false;
-
 		Invoke ("OkToClickAgain", 1.5f);
 
 		addCategories.DOAnchorPosY (0, 1.5f).SetEase(moveItIn);
@@ -440,7 +458,28 @@ public class LobbyMenu : MonoBehaviour {
 
 	}
 
-	void CreateFriendsList(){
+	public void RefreshCreateFriendsList (){
+
+		if (selectCount != 3) {
+			selectCount = 3;
+			artistsSelected.Clear ();
+
+			if (wasAtZeroInvites == true) {
+				wasAtZeroInvites = false;
+				ReactivateSelection (inviteHolder);
+				FlipSignToBack ();
+			}
+		}
+
+		selectPlayerLoading.SetActive (true);
+		for (int i = 0; i < inviteHolder.childCount; i++) {
+			Destroy (inviteHolder.GetChild (i).gameObject);
+		}
+		roomMan.RefreshPlayerNames ();
+
+	}
+
+	public void CreateFriendsList(){
 
 		for (int i = 0; i < roomMan.otherPlayers.Count; i++) {
 
@@ -478,11 +517,98 @@ public class LobbyMenu : MonoBehaviour {
 	}
 
 
-	public void NewCatsOffScreen(){
+	public void BackButtonNG(){
+
+		if (okToClick == false) {
+			return;
+		}
+		okToClick = false;
+		Invoke ("OkToClickAgain", 1.25f);
+
+
+		if (stepNG == 1) {
+			newCats.DOLocalMoveX (startPos, 1.5f).SetEase (moveItOut);
+			centerTurnButts.DOLocalMoveX (0, 1.5f).SetEase (moveItIn);
+			backButtonNG.DOAnchorPosY (backButtonNGStartPos - 600, 1.0f);
+			Invoke ("BringBackLobbyButtons", .5f);
+		
+		} else if (stepNG == 2) {
+			startNewMain.DOAnchorPosX (0, 1.5f).SetEase(moveItIn);
+			gameOptionsScreen.DOAnchorPosX (1600, 1.2f).SetEase(moveItOut);
+			nextButtonNG.DOAnchorPosY(backButtonNGStartPos - 600, 1.0f);
+			stepNG = 1;
+		} else if (stepNG == 3) {
+			gameOptionsScreen.DOAnchorPosX (0, 1.5f).SetEase(moveItIn);
+			addCategories.DOAnchorPosX (1600, 1.2f).SetEase(moveItOut);
+			stepNG = 2;
+		} else if (stepNG == 4) {
+			addCategories.DOAnchorPosX (0, 1.5f).SetEase(moveItIn);
+			addFriendsRect.DOAnchorPosX (1600, 1.2f).SetEase(moveItOut);
+			stepNG = 3;
+		}
 	
-		newCats.DOLocalMoveX (startPos, 1.5f).SetEase(moveItOut);
-		centerTurnButts.DOLocalMoveX (0, 1.5f).SetEase(moveItIn);
-	
+	}
+
+	public void NextButtonNG(){
+
+		if (okToClick == false) {
+			return;
+		}
+		okToClick = false;
+		Invoke ("OkToClickAgain", 1.25f);
+
+		if (stepNG == 2) {
+
+			if (categoryPrivateHolder.childCount < 1) {
+				CreateCategoriesList ();
+			}
+
+			gameOptionsScreen.DOAnchorPosX (-1600, 1.2f).SetEase (moveItOut);
+			addCategories.DOAnchorPosX (0, 1.5f).SetEase (moveItIn);
+			stepNG = 3;
+
+		} else if (stepNG == 3) {
+
+			if (catsSelected.Count < 4 ) {
+					return;
+			}
+
+			stepNG = 4;
+			addCategories.DOAnchorPosX (-1600, 1.2f).SetEase(moveItOut);
+			addFriendsRect.DOAnchorPosX (0, 1.5f).SetEase(moveItIn);
+			FlipSignToBack ();
+
+			if (inviteHolder.childCount < 1) {
+				CreateFriendsList ();
+			}
+
+		} else if (stepNG == 4) {
+
+			Debug.Log ("start the game");
+
+		}
+
+	}
+
+	void FlipSignToBack(){
+		Vector3 oneEighty = new Vector3 (0, 180, 0);
+		nextButtonNG.DORotate (oneEighty, 1.0f).SetEase(signRotate);
+		Invoke ("TurnIntoText", .71f);
+	}
+
+	void FlipSignToFront(){
+		nextButtonNG.DORotate (Vector3.zero, 1.0f).SetEase(signRotate);
+		Invoke ("TurnIntoButton", .71f);
+	}
+
+	void TurnIntoText (){
+		nextButton.SetActive (false);
+		nextText.SetActive (true);
+	}
+
+	void TurnIntoButton (){
+		nextButton.SetActive (true);
+		nextText.SetActive (false);
 	}
 
 	public void LoadingScreenFromNewCats (){
@@ -532,14 +658,14 @@ public class LobbyMenu : MonoBehaviour {
 
 	}
 
-	public void FiveRoomsOnly(){
-		tutorialWords.SetActive (false);
-		fiveRooms.SetActive (true);
-		offScreen = frameMessage.transform.position;
-
-		frameMessage.transform.DOLocalMoveY(0,1.0f).SetEase (Ease.OutBounce);
-		Invoke ("MoveOff", 2.5f);
-	}
+//	public void FiveRoomsOnly(){
+//		tutorialWords.SetActive (false);
+//		fiveRooms.SetActive (true);
+//		offScreen = frameMessage.transform.position;
+//
+//		frameMessage.transform.DOLocalMoveY(0,1.0f).SetEase (Ease.OutBounce);
+//		Invoke ("MoveOff", 2.5f);
+//	}
 
 	void MoveOff() {
 
@@ -732,25 +858,24 @@ public class LobbyMenu : MonoBehaviour {
 
 	public void ArtistSelected (string name){
 
-		selectText.text = "SELECT " + selectCount + " ARTISTS";
-		Debug.Log (name + " " + (selectCount));
 		artistsSelected.Add(name);
 
 		if (selectCount == 0) {
 			wasAtZeroInvites = true;
 			DeactivateSelection (inviteHolder);
+			FlipSignToFront ();
 		}
 
 	}
 
 	public void ArtistSubtracted (string name){
 
-		selectText.text = "SELECT " + selectCount + " ARTISTS";
 		artistsSelected.Remove (name);
 
 		if (wasAtZeroInvites == true) {
 			wasAtZeroInvites = false;
 			ReactivateSelection (inviteHolder);
+			FlipSignToBack ();
 		}
 
 
@@ -758,28 +883,46 @@ public class LobbyMenu : MonoBehaviour {
 
 	public void CatSelected (string name){
 
-		selectCatsText.text = "SELECT " + catsCount + " CATEGORIES";
+		//selectCatsText.text = "SELECT " + catsCount + " CATEGORIES";
 		catsSelected.Add(name);
 
-		if (catsCount == 0) {
-			wasAtZeroCats = true;
-			DeactivateSelection (categoryPrivateHolder);
-		}
+//		if (catsCount == 0) {
+//			wasAtZeroCats = true;
+//			DeactivateSelection (categoryPrivateHolder);
+//		}
+
+		roundCount.text = catsSelected.Count.ToString ();
 
 	}
 
 	public void CatSubtracted (string name){
 
-		selectCatsText.text = "SELECT " + catsCount + " CATEGORIES";
+		//selectCatsText.text = "SELECT " + catsCount + " CATEGORIES";
 
 		catsSelected.Remove (name);
 
-		if (wasAtZeroCats == true) {
-			wasAtZeroCats = false;
-			ReactivateSelection (categoryPrivateHolder);
+//		if (wasAtZeroCats == true) {
+//			wasAtZeroCats = false;
+//			ReactivateSelection (categoryPrivateHolder);
+//		}
+
+		roundCount.text = catsSelected.Count.ToString ();
+
+
+	}
+
+	public void LimitToTwelve(){
+
+		twelveLimit.DOScale (Vector3.one, .75f).SetEase (scaleBounce);
+		if (twelveLimit.localScale.x > .5f) {
+			Vector3 punchSize = new Vector3 (.4f, .4f, .4f);
+			twelveLimit.DOPunchScale (punchSize, 1.0f, 10, .01f).OnComplete (BackToOneScale);
 		}
 
+	}
 
+	void BackToOneScale(){
+		twelveLimit.DOScale (Vector3.one, .1f);
 	}
 
 	void DeactivateSelection(Transform theHolder){
@@ -982,6 +1125,18 @@ public class LobbyMenu : MonoBehaviour {
 		GameObject invitation = Instantiate (invitationPrefab, invitationPos.position, Quaternion.identity, invitationHolder);
 		invitation.GetComponent<InvitationScript> ().SetupInvitation (message, roomNum, this);
 
+	}
+
+	void HideLobbyButtons(){
+		buttonPalette.DOAnchorPosY (paletteStartPos - 800, .5f).SetEase (Ease.OutBack);
+	}
+
+	void BringBackLobbyButtons(){
+		buttonPalette.DOAnchorPosY (paletteStartPos, .5f).SetEase (Ease.InBack);
+	}
+
+	void BringInBackButtonNG(){
+		backButtonNG.DOAnchorPosY(backButtonNGStartPos, 1.0f).SetEase (Ease.OutBounce);
 	}
 
 }

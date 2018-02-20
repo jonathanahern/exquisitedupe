@@ -164,6 +164,7 @@ public class RoomManager : MonoBehaviour {
 	public string currentRoomsTemp;
 
 	public bool beenToLobby = false;
+	bool refreshingPlayers = false;
 
 	public int nextRoomPrivate;
 
@@ -221,19 +222,27 @@ public class RoomManager : MonoBehaviour {
 	
 	}
 
-	public void AfterDarkMode (){
-	
-		afterDark = true;
+//	public void AfterDarkMode (){
+//	
+//		afterDark = true;
+//
+//		Camera.main.backgroundColor = Color.black;
+//
+//		catNames = new string[afterDarkCats.Length];
+//
+//		for (int i = 0; i < catNames.Length; i++) {
+//
+//			catNames [i] = afterDarkCats [i].roomTypeString;
+//
+//		}
+//
+//	}
 
-		Camera.main.backgroundColor = Color.black;
+	public void RefreshPlayerNames(){
+		otherPlayers.Clear ();
+		refreshingPlayers = true;
+		StartCoroutine (getAllPlayerNames());
 
-		catNames = new string[afterDarkCats.Length];
-
-		for (int i = 0; i < catNames.Length; i++) {
-
-			catNames [i] = afterDarkCats [i].roomTypeString;
-
-		}
 
 	}
 		
@@ -249,7 +258,7 @@ public class RoomManager : MonoBehaviour {
 		string returnText = www.text;
 		returnText = returnText.Replace("\n", "");
 		returnText = returnText.TrimEnd ('|');
-		Debug.Log ("Everyone: " + returnText);
+		//Debug.Log ("Everyone: " + returnText);
 		otherPlayers = new List<string>();
 		string[] names = returnText.Split ('|');
 		for (int i = 0; i < names.Length; i++) {
@@ -257,6 +266,11 @@ public class RoomManager : MonoBehaviour {
 		}
 		otherPlayers.Remove (username);
 		otherPlayers.Sort ();
+		if (refreshingPlayers == true) {
+			lobbyMenu = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
+			lobbyMenu.CreateFriendsList ();
+			refreshingPlayers = false;
+		}
 
 	}
 

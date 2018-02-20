@@ -6,12 +6,16 @@ using UnityEngine.UI;
 public class SelectPlayerScript : MonoBehaviour {
 
 	public Text theName;
+	public Text catCount;
+	int catCountInt = 0;
 	public bool choosen;
 
 	public Toggle onOff;
+	LobbyMenu lobby;
 
 	// Use this for initialization
 	void Start () {
+		lobby = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
 		
 	}
 	
@@ -22,7 +26,7 @@ public class SelectPlayerScript : MonoBehaviour {
 
 	public void AddToPlayerList (bool newValue){
 
-		LobbyMenu lobby = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
+		lobby = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
 //		if (lobby.selectCount < 1) {
 //			return;
 //		}
@@ -55,21 +59,46 @@ public class SelectPlayerScript : MonoBehaviour {
 		onOff.interactable = true;
 	}
 
-	public void AddToCategoryList (bool newValue){
+//	public void AddToCategoryList (bool newValue){
+//
+//		LobbyMenu lobby = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
+//
+//		choosen = newValue;
+//
+//		if (newValue == false) {
+//			++lobby.catsCount;
+//			lobby.CatSubtracted (theName.text);
+//
+//		} else {
+//			--lobby.catsCount;
+//			lobby.CatSelected (theName.text);
+//		}
+//
+//	}
 
-		LobbyMenu lobby = GameObject.FindGameObjectWithTag ("Lobby Menu").GetComponent<LobbyMenu> ();
+	public void PlusButton (){
 
-		choosen = newValue;
-
-		if (newValue == false) {
-			++lobby.catsCount;
-			lobby.CatSubtracted (theName.text);
-
-		} else {
-			--lobby.catsCount;
-			lobby.CatSelected (theName.text);
+		if (lobby.catsSelected.Count > 11) {
+			lobby.LimitToTwelve ();
+			return;
 		}
 
+		catCountInt = catCountInt + 1;
+		catCount.text = catCountInt.ToString ();
+		lobby.CatSelected (theName.text);
 	}
+
+	public void MinusButton (){
+
+		if (catCountInt < 1) {
+			return;
+		}
+
+		lobby.CatSubtracted (theName.text);
+
+		catCountInt = catCountInt - 1;
+		catCount.text = catCountInt.ToString ();
+	}
+
 }
 
