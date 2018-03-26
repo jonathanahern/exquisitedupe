@@ -349,5 +349,26 @@ public class LoginMenu : MonoBehaviour {
 		enterButton.transform.DOScale (Vector3.one, .4f).SetEase(Ease.OutBack);
 	}
 
+	public void ClearRooms(){
+	
+		StartCoroutine (clearRoomsRoutine());
+	
+	}
+
+	IEnumerator clearRoomsRoutine (){
+	
+		string URL = "http://dupesite.000webhostapp.com/clearRooms.php";
+
+		WWWForm form = new WWWForm ();
+
+		WWW www = new WWW (URL, form);
+		yield return www;
+
+		string returnText = www.text;
+
+		Debug.Log (returnText);
+	
+	}
+
 }
 	

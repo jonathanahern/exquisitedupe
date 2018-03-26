@@ -35,8 +35,6 @@ public class TurnGameStatus : MonoBehaviour {
 
 	int loadedStatus;
 
-	public Image icon;
-	public Sprite randomIcon;
 
 	// Use this for initialization
 	void Start () {
@@ -245,11 +243,11 @@ public class TurnGameStatus : MonoBehaviour {
 
 	}
 
-	public void MakeItSolo(){
-	
-		icon.sprite = randomIcon;
-
-	}
+//	public void MakeItSolo(){
+//	
+//		//icon.sprite = randomIcon;
+//
+//	}
 
 //	public void SetupFakeStatus (string catName, string roundNum){
 //	

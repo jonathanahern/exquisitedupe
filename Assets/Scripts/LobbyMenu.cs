@@ -52,7 +52,7 @@ public class LobbyMenu : MonoBehaviour {
 	public GameObject refreshingScreen;
 	public Text loadScreenWords;
 
-	public GameObject loadingAnimationCenter;
+	//public GameObject loadingAnimationCenter;
 	public bool tutorialMode = false;
 	int roomCount;
 	public AnimationCurve moveItOut;
@@ -66,6 +66,7 @@ public class LobbyMenu : MonoBehaviour {
 	public GameObject selectCategoriesLoading;
 	public Transform categoryPrivateHolder;
 	public GameObject categoryPrivatePrefab;
+	public GameObject scroller;
 
 	public int selectCount;
 	//public string[] artistsSelected;
@@ -79,9 +80,11 @@ public class LobbyMenu : MonoBehaviour {
 
 	public Toggle[] gameOption;
 	public string optionString;
-	public List<TurnRoomButton> gameData;
+	//public List<TurnRoomButton> gameData;
 	public List<string> fateData;
 	List<int> playerBag;
+	List<int> modeBag;
+	List<int> dupeNums;
 	public List<int> invitationNums;
 
 	UserAccountManagerScript userAccount;
@@ -96,13 +99,15 @@ public class LobbyMenu : MonoBehaviour {
 	float backButtonNGStartPos;
 	public GameObject nextText;
 	public GameObject nextButton;
+	public GameObject sendInvitesButton;
 	public AnimationCurve signRotate;
 
 
 	public Text roundCount;
-	public RectTransform twelveLimit;
+	public RectTransform eightLimit;
 
 	int stepNG = 0;
+	WWWForm privateForm;
 
 	//string inviteMessage = " has challenged you to a contest of wits and stupid art!";
 
@@ -126,6 +131,9 @@ public class LobbyMenu : MonoBehaviour {
 
 		selectCount = 3;
 		artistsSelected = new List<string> ();
+
+		playerBag = new List<int> ();
+		modeBag = new List<int> ();
 
 		//catsCount = 4;
 		//selectCatsText.text = "SELECT " + catsCount + " CATEGORIES";
@@ -184,8 +192,8 @@ public class LobbyMenu : MonoBehaviour {
 			if (frameText == null) {
 				frameText = GameObject.FindGameObjectWithTag ("Frame Text");
 			}
-			frameText.GetComponent<Text> ().text = "YOU ART NOT A PART\nOF ANY PAINTINGS";
-			loadingAnimationCenter.SetActive (false);
+			frameText.GetComponent<Text> ().text = "YOU ART NOT A PART OF ANY PAINTINGS";
+			refreshingScreen.SetActive (false);
 		} else {
 			//Debug.Log (roomCount);
 			for (int i = 0; i < roomCount; i++) {
@@ -193,6 +201,10 @@ public class LobbyMenu : MonoBehaviour {
 				roomMan.UpdateTurnRoomsFromLogin (int.Parse (roomArray [i]));
 			}
 
+		}
+
+		if (roomCount > 5) {
+			scroller.SetActive (true);
 		}
 
 		if (roomMan.cameFromPrivate == true) {
@@ -545,6 +557,12 @@ public class LobbyMenu : MonoBehaviour {
 			addCategories.DOAnchorPosX (0, 1.5f).SetEase(moveItIn);
 			addFriendsRect.DOAnchorPosX (1600, 1.2f).SetEase(moveItOut);
 			stepNG = 3;
+			if (selectCount == 0) {
+				FlipSignBackToNornal ();
+			} else {
+				FlipSignToFront ();
+			}
+
 		}
 	
 	}
@@ -569,14 +587,19 @@ public class LobbyMenu : MonoBehaviour {
 
 		} else if (stepNG == 3) {
 
-			if (catsSelected.Count < 4 ) {
+			if (catsSelected.Count < 1 ) {
 					return;
+			}
+
+			if (selectCount == 0) {
+				FlipSignToFrontDone ();
+			} else {
+				FlipSignToBack ();
 			}
 
 			stepNG = 4;
 			addCategories.DOAnchorPosX (-1600, 1.2f).SetEase(moveItOut);
 			addFriendsRect.DOAnchorPosX (0, 1.5f).SetEase(moveItIn);
-			FlipSignToBack ();
 
 			if (inviteHolder.childCount < 1) {
 				CreateFriendsList ();
@@ -601,13 +624,44 @@ public class LobbyMenu : MonoBehaviour {
 		Invoke ("TurnIntoButton", .71f);
 	}
 
+	void FlipSignToFrontWithDoneButton(){
+		nextButtonNG.DORotate (Vector3.zero, 1.0f).SetEase(signRotate);
+		Invoke ("TurnIntoDoneButton", .71f);
+	}
+
+	void FlipSignBackToNornal (){
+		Vector3 oneEighty = new Vector3 (0, 180, 0);
+		nextButtonNG.DORotate (oneEighty, 1.0f).SetEase(signRotate);
+		Invoke ("TurnIntoText", .71f);
+		Invoke ("FlipSignToFront", 1.0f);
+	}
+
+	void FlipSignToFrontDone (){
+		Vector3 oneEighty = new Vector3 (0, 180, 0);
+		nextButtonNG.DORotate (oneEighty, 1.0f).SetEase(signRotate);
+		Invoke ("TurnIntoText", .71f);
+		Invoke ("FlipSignToFrontWithDoneButton", 1.0f);
+	}
+
+	void FlipSign(){
+		Vector3 oneEighty = new Vector3 (0, 180, 0);
+		nextButtonNG.DORotate (oneEighty, 1.0f).SetEase(signRotate);
+		Invoke ("TurnIntoText", .71f);
+	}
+
 	void TurnIntoText (){
 		nextButton.SetActive (false);
+		sendInvitesButton.SetActive (false);
 		nextText.SetActive (true);
 	}
 
 	void TurnIntoButton (){
 		nextButton.SetActive (true);
+		nextText.SetActive (false);
+	}
+
+	void TurnIntoDoneButton (){
+		sendInvitesButton.SetActive (true);
 		nextText.SetActive (false);
 	}
 
@@ -830,20 +884,20 @@ public class LobbyMenu : MonoBehaviour {
 		SceneManager.LoadScene ("Tutorial Lobby Menu");
 	}
 
-	public void StartPrivateGame (){
-	
-		UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
-		string roomsString = userAccount.activeRooms;
-
-		if (roomsString.Length > 3) {
-			return;
-		}
-
-		roomMan = GameObject.FindGameObjectWithTag ("Room Manager").GetComponent<RoomManager> ();
-		roomMan.StartNewPrivateGame ();
-		roomMan.TurnOnSign ();
-	
-	}
+//	public void StartPrivateGame (){
+//	
+//		UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
+//		string roomsString = userAccount.activeRooms;
+//
+//		if (roomsString.Length > 3) {
+//			return;
+//		}
+//
+//		roomMan = GameObject.FindGameObjectWithTag ("Room Manager").GetComponent<RoomManager> ();
+//		roomMan.StartNewPrivateGame ();
+//		roomMan.TurnOnSign ();
+//	
+//	}
 
 	public void SignOut(){
 		GameObject roomManagerObj = GameObject.FindGameObjectWithTag ("Room Manager");
@@ -861,9 +915,10 @@ public class LobbyMenu : MonoBehaviour {
 		artistsSelected.Add(name);
 
 		if (selectCount == 0) {
+			FlipSignToFrontWithDoneButton ();
 			wasAtZeroInvites = true;
 			DeactivateSelection (inviteHolder);
-			FlipSignToFront ();
+
 		}
 
 	}
@@ -911,18 +966,18 @@ public class LobbyMenu : MonoBehaviour {
 
 	}
 
-	public void LimitToTwelve(){
+	public void LimitToEight(){
 
-		twelveLimit.DOScale (Vector3.one, .75f).SetEase (scaleBounce);
-		if (twelveLimit.localScale.x > .5f) {
+		eightLimit.DOScale (Vector3.one, .75f).SetEase (scaleBounce);
+		if (eightLimit.localScale.x > .5f) {
 			Vector3 punchSize = new Vector3 (.4f, .4f, .4f);
-			twelveLimit.DOPunchScale (punchSize, 1.0f, 10, .01f).OnComplete (BackToOneScale);
+			eightLimit.DOPunchScale (punchSize, 1.0f, 10, .01f).OnComplete (BackToOneScale);
 		}
 
 	}
 
 	void BackToOneScale(){
-		twelveLimit.DOScale (Vector3.one, .1f);
+		eightLimit.DOScale (Vector3.one, .1f);
 	}
 
 	void DeactivateSelection(Transform theHolder){
@@ -950,31 +1005,51 @@ public class LobbyMenu : MonoBehaviour {
 	public void LaunchPrivateGame (){
 
 		RoomManager.instance.CurtainsIn ();
+		int roundCount = catsSelected.Count;
+
+		privateForm = new WWWForm ();
+
+//		for (int i = 0; i < roundCount; ++i) {
+//			int r = Random.Range(i, roundCount);
+//			string tmp = catsSelected[i];
+//			catsSelected[i] = catsSelected[r];
+//			catsSelected[r] = tmp;
+//		}
+
+		for (int i = roundCount - 1; i > 0; i--) {
+			int r = Random.Range(0,i);
+			string tmp = catsSelected[i];
+			catsSelected[i] = catsSelected[r];
+			catsSelected[r] = tmp;
+		}
+
+		for (int i = 0; i < catsSelected.Count; i++) {
+			catsSelected [i] = "v2" + catsSelected [i];
+			privateForm.AddField ("catPost[]", catsSelected[i]);
+		}
+
+		dupeNums  = new List<int> ();
+		playerBag.Clear ();
+
+		for (int i = 0; i < roundCount; i++) {
+			int newNum;
+			if (playerBag.Count == 0) {
+				ResetPlayerBag ();
+			}
+			int randomNum = Random.Range (0, playerBag.Count);
+			newNum = playerBag [randomNum];
+			playerBag.RemoveAt (randomNum);
+			dupeNums.Add(newNum);
+		}
+
+		for (int i = roundCount - 1; i > 0; i--) {
+			int r = Random.Range(0,i);
+			int tmp = dupeNums[i];
+			dupeNums[i] = dupeNums[r];
+			dupeNums[r] = tmp;
+		}
 
 		fateData = new List<string> ();
-
-		playerBag = new List<int> ();
-		playerBag.Add (1);
-		playerBag.Add (2);
-		playerBag.Add (3);
-		playerBag.Add (4);
-
-		int playerRemove = Random.Range (1, 5);
-		int secondaryNum = Random.Range (1, 5);
-		int randoNum = Random.Range (0, 2);
-		if (randoNum == 0) {
-			playerBag.Remove (playerRemove);
-			playerBag.Add (secondaryNum);
-		}
-
-		int count = playerBag.Count;
-		int last = count - 1;
-		for (int i = 0; i < last; ++i) {
-			int r = Random.Range(i, count);
-			int tmp = playerBag[i];
-			playerBag[i] = playerBag[r];
-			playerBag[r] = tmp;
-		}
 
 		List<int> finalGameOptions;
 		finalGameOptions = new List<int>();
@@ -990,14 +1065,15 @@ public class LobbyMenu : MonoBehaviour {
 
 		int[] finalOptions = finalGameOptions.ToArray ();
 	
-		gameData = new List<TurnRoomButton>();
-
+		//gameData = new List<TurnRoomButton>();
+		//Debug.Log ("got here 1st");
 		for (int r = 0; r < catsSelected.Count; r++) {
-
+			//Debug.Log ("got here");
 			for (int t = 0; t < roomMan.buttonHolder.childCount; t++) {
-
 				TurnRoomButton currentButt = roomMan.buttonHolder.GetChild (t).GetComponent<TurnRoomButton> ();
-				if (currentButt.roomTypeString == catsSelected [r]) {
+				//Debug.Log (currentButt.roomTypeString + " == " + catsSelected [r]);
+				if ("v2" + currentButt.roomTypeString == catsSelected [r]) {
+					//Debug.Log ("got here3");
 					PrivateRoomMaker (currentButt, finalOptions);
 				}
 
@@ -1008,10 +1084,26 @@ public class LobbyMenu : MonoBehaviour {
 		StartCoroutine(createPrivateRooms());
 	}
 
+	void ResetPlayerBag(){
+		playerBag = new List<int> ();
+		playerBag.Add (1);
+		playerBag.Add (2);
+		playerBag.Add (3);
+		playerBag.Add (4);
+
+	}
+
+	void ResetModeBag(){
+		modeBag = new List<int> ();
+		modeBag.Add (0);
+		modeBag.Add (1);
+		modeBag.Add (2);
+	}
+
 	void PrivateRoomMaker(TurnRoomButton turnRoom, int[] finalOptions){
 		
-		int dupeNum = playerBag [0];
-		playerBag.RemoveAt (0);
+		int dupeNum = dupeNums[0];
+		dupeNums.RemoveAt (0);
 		int rightWord = Random.Range (1, 11);
 		int wrongWord = Random.Range (1, 11);
 		int colorMod = Random.Range (0, 4);
@@ -1025,9 +1117,13 @@ public class LobbyMenu : MonoBehaviour {
 
 		string modeString;
 	
-		if (finalOptions [2] == 8) {
-			int rando = Random.Range (5, 8);
-			modeString = rando.ToString ();
+		if (finalOptions [2] == 3) {
+			if (modeBag.Count == 0) {
+				ResetModeBag ();
+			}
+			int rando = Random.Range (0, 4);
+			modeString = modeBag[rando].ToString ();
+			modeBag.RemoveAt (rando);
 		} else {
 			modeString = finalOptions [2].ToString ();
 		}
@@ -1037,6 +1133,8 @@ public class LobbyMenu : MonoBehaviour {
 
 		string fate = "|[WORDS]" + turnRoom.words + "|[BRUSHES]" + turnRoom.brushes + "|" + turnRoom.grounding + "|[FATE]" + dupeNum + "/" + rightWord + "/" + wrongWord + "/" + awardNum + "/" + colorMod + optionString;
 
+		privateForm.AddField ("fatePost[]", fate);
+		//Debug.Log ("fate added");
 		fateData.Add (fate);
 
 	}
@@ -1050,35 +1148,36 @@ public class LobbyMenu : MonoBehaviour {
 		string selfPortrait = UserAccountManagerScript.instance.selfPortrait;
 		string URL = "http://dupesite.000webhostapp.com/createPrivateRooms.php";
 
-		WWWForm form = new WWWForm ();
-		form.AddField ("usernamePost", playerName);
-		form.AddField ("notIdPost", notificationId);
-		form.AddField ("portraitPost", selfPortrait);
-		form.AddField ("playerPost2", artistsSelected[0]);
-		form.AddField ("playerPost3", artistsSelected[1]);
-		form.AddField ("playerPost4", artistsSelected[2]);
+		//WWWForm form = new WWWForm ();
+		privateForm.AddField ("usernamePost", playerName);
+		privateForm.AddField ("notIdPost", notificationId);
+		privateForm.AddField ("portraitPost", selfPortrait);
+		privateForm.AddField ("playerPost2", artistsSelected[0]);
+		privateForm.AddField ("playerPost3", artistsSelected[1]);
+		privateForm.AddField ("playerPost4", artistsSelected[2]);
 
-		form.AddField ("catPost1", "v2" + catsSelected[0]);
-		form.AddField ("catPost2", "v2" + catsSelected[1]);
-		form.AddField ("catPost3", "v2" + catsSelected[2]);
-		form.AddField ("catPost4", "v2" + catsSelected[3]);
+		//privateForm.AddField ("roundNumPost", catsSelected.Count);
 
-		form.AddField ("fatePost1", fateData[0]);
-		form.AddField ("fatePost2", fateData[1]);
-		form.AddField ("fatePost3", fateData[2]);
-		form.AddField ("fatePost4", fateData[3]);
 
-		WWW www = new WWW (URL, form);
+		//form.AddField ("catPost[]", catsSelected.ToArray);
+		//form.AddField ("fatePost[]", fateData.ToArray);
+
+		WWW www = new WWW (URL, privateForm);
 		yield return www;
 
-		Debug.Log (www.text);
+
 		//RoomManager.instance.CreateRoom (roomType, room.id, room.fate, room.playerNum, -2);
 
-		string[] rooms = www.text.Split ('|');
+		string returnText = www.text;
+		returnText = returnText.TrimStart ('|');
+		Debug.Log ("Returned text: " + returnText);
 
-		string privateData = UserAccountManagerScript.instance.selfPortrait;
 
-		RoomManager.instance.CreateRoom (catsSelected[0], rooms[0], fateData[0], "1", privateData, -2);
+		string[] rooms = returnText.Split ('|');
+
+		//string privateData = UserAccountManagerScript.instance.selfPortrait;
+
+		RoomManager.instance.CreateRoom (catsSelected[0], rooms[0], fateData[0], "1", selfPortrait, -2);
 		string message = playerName + "|" + rooms[0] + "$";
 		UserAccountManagerScript.instance.SendMessageToPlayersBox (message, artistsSelected.ToArray ());
 

@@ -78,8 +78,8 @@ public class SelectPlayerScript : MonoBehaviour {
 
 	public void PlusButton (){
 
-		if (lobby.catsSelected.Count > 11) {
-			lobby.LimitToTwelve ();
+		if (lobby.catsSelected.Count > 7) {
+			lobby.LimitToEight ();
 			return;
 		}
 

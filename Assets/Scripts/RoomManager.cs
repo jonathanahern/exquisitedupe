@@ -190,9 +190,9 @@ public class RoomManager : MonoBehaviour {
 
 	void Update () {
 
-//		if (Input.GetKeyDown (KeyCode.R)) {
+		if (Input.GetKeyDown (KeyCode.R)) {
 
-//			CurtainsIn ();
+			CurtainsIn ();
 //			Vector2 newStretch = new Vector2 (leftCurtain.sizeDelta.x + 5, leftCurtain.sizeDelta.y);
 //			leftCurtain.DOSizeDelta (newStretch, 1.0f).SetEase(bigJitter);
 //			leftCurtain.DOShakeRotation (1.0f, 5, 10, 90);
@@ -201,12 +201,12 @@ public class RoomManager : MonoBehaviour {
 //			rightCurtain.DOSizeDelta (newStretchRight, 1.0f).SetEase(bigJitter);
 //			rightCurtain.DOShakeRotation (1.0f, 5, 10, 90);
 
-//		}
+		}
 
-//		if (Input.GetKeyDown (KeyCode.S)) {
-//			CurtainsOut ();
-//		}
-//
+		if (Input.GetKeyDown (KeyCode.S)) {
+			CurtainsOut ();
+		}
+
 	}
 
 	public void InitialLobbySetup(){
@@ -1087,7 +1087,7 @@ public class RoomManager : MonoBehaviour {
 				} else {
 					
 					status.roundNumber.text = "";
-					status.MakeItSolo();
+					//status.MakeItSolo();
 				
 				}
 			} 
@@ -1615,19 +1615,19 @@ public class RoomManager : MonoBehaviour {
 		//Destroy(gameObject);
 	}
 
-	public void StartNewPrivateGame(){
-	
-		//PlayerPrefs.SetInt (currentRoundLoc, 1);
-		if (afterDark == false) {
-			categoryName.text = privateCat [0].roomTypeString;
-			privateCat [0].TurnRoomClicked ();
-		} else {
-			categoryName.text = afterDarkCats [0].roomTypeString;
-			afterDarkCats [0].TurnRoomClicked ();
-
-		}
-
-	}
+//	public void StartNewPrivateGame(){
+//	
+//		//PlayerPrefs.SetInt (currentRoundLoc, 1);
+//		if (afterDark == false) {
+//			categoryName.text = privateCat [0].roomTypeString;
+//			privateCat [0].TurnRoomClicked ();
+//		} else {
+//			categoryName.text = afterDarkCats [0].roomTypeString;
+//			afterDarkCats [0].TurnRoomClicked ();
+//
+//		}
+//
+//	}
 		
 //	public void StartNextPrivateRound(string lastRoom){
 //
