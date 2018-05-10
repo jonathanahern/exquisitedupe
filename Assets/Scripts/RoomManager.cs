@@ -16,6 +16,7 @@ public class RoomCreated
 	public string id;
 	public string fate;
 	public string playerNum;
+	public string catColor;
 }
 
 [Serializable]
@@ -25,6 +26,7 @@ public class FullRoomData
 	public string error;
 	public string category;
 	public string fate;
+	public string catColor;
 	public string player1;
 	public string notId1;
 	public string portrait1;
@@ -52,6 +54,7 @@ public class FullRoomData
 	public string caughtEscape;
 	public string privateGroup;
 	public string score;
+
 
 }
 
@@ -551,6 +554,17 @@ public class RoomManager : MonoBehaviour {
 		roomScript.portraits [2] = roomData.portrait3;
 		roomScript.portraits [3] = roomData.portrait4;
 
+		Debug.Log ("newish: " + roomData.catColor);
+		string other = roomData.catColor;
+		string[] otherSplit = other.Split ('$');
+		string[] colorSplit = otherSplit [0].Split ('/');
+		float r = float.Parse (colorSplit [0]) / 255.0f;
+		float g = float.Parse (colorSplit [1]) / 255.0f;
+		float b = float.Parse (colorSplit [2]) / 255.0f;
+		Color catColor = new Color (r,g,b);
+		roomScript.description = otherSplit[1];
+		roomScript.catColor = catColor;
+
 		roomScript.myColor = myColor;
 		string realCat = roomData.category;
 		realCat = realCat.TrimStart('v');
@@ -570,7 +584,7 @@ public class RoomManager : MonoBehaviour {
 			for (int i = 0; i < scoresString.Length; i++) {
 				roomScript.scores [i] = int.Parse (scoresString [i]);
 			}
-			Debug.Log (scoreData [1]);
+			//Debug.Log (scoreData [1]);
 			roomScript.roundNum = int.Parse(scoreData [1]);
 		}
 
@@ -706,7 +720,7 @@ public class RoomManager : MonoBehaviour {
 
 	//roomMan.CreateRoom (roomType, room.id, room.fate, room.playerNum, "", -2);
 	//RoomManager.instance.CreateRoom (roomType, room.id, room.fate, room.playerNum, -2);
-	public void CreateRoom(string roomType, string roomId, string newFate, string myPlayerNum, string privateData, int startRoom){
+	public void CreateRoom(string roomType, string roomId, string newFate, string catColor, string myPlayerNum, string privateData, int startRoom){
 
 		//Debug.Log ("New Room: " + roomId);
 		GameObject newRoom = (GameObject)Instantiate(roomPrefab, Vector3.zero, Quaternion.identity);
@@ -769,6 +783,15 @@ public class RoomManager : MonoBehaviour {
 			}
 		}
 			
+		string other = catColor;
+		string[] otherSplit = other.Split ('$');
+		string[] colorSplit = otherSplit [0].Split ('/');
+		float r = float.Parse (colorSplit [0]) / 255.0f;
+		float g = float.Parse (colorSplit [1]) / 255.0f;
+		float b = float.Parse (colorSplit [2]) / 255.0f;
+		Color catColorNew = new Color (r,g,b);
+		roomScript.description = otherSplit[1];
+		roomScript.catColor = catColorNew;
 
 		roomScript.myColor = int.Parse(myPlayerNum);
 		string realCat = roomType;
@@ -865,8 +888,6 @@ public class RoomManager : MonoBehaviour {
 			}
 		}
 
-
-
 		if (username == null) {
 			UserAccountManagerScript userAccount = GameObject.FindGameObjectWithTag ("User Account Manager").GetComponent<UserAccountManagerScript> ();
 			username = userAccount.loggedInUsername;
@@ -894,6 +915,17 @@ public class RoomManager : MonoBehaviour {
 		roomScript.portraits [1] = roomData.portrait2;
 		roomScript.portraits [2] = roomData.portrait3;
 		roomScript.portraits [3] = roomData.portrait4;
+
+		//Debug.Log ("newish: " + roomData.catColor);
+		string other = roomData.catColor;
+		string[] otherSplit = other.Split ('$');
+		string[] colorSplit = otherSplit [0].Split ('/');
+		float r = float.Parse (colorSplit [0]) / 255.0f;
+		float g = float.Parse (colorSplit [1]) / 255.0f;
+		float b = float.Parse (colorSplit [2]) / 255.0f;
+		Color catColor = new Color (r,g,b);
+		roomScript.description = otherSplit[1];
+		roomScript.catColor = catColor;
 
 		roomScript.myColor = myColor;
 		string realCat = roomData.category;
@@ -1066,6 +1098,7 @@ public class RoomManager : MonoBehaviour {
 				status.roomId = turnRoom.roomID;
 				status.categoryName.text = turnRoom.roomType;
 				status.gameStatus.text = turnRoom.status;
+				status.categoryName.color = turnRoom.catColor;
 
 				//Debug.Log ("status num creation: " + turnRoom.statusNum);
 

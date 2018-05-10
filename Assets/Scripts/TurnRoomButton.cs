@@ -13,8 +13,14 @@ public class TurnRoomButton : MonoBehaviour {
 	public string grounding;
 	private string fate;
 	bool alreadyClicked;
+	public string description;
+	public Color catColor;
 
 	public bool privateRoom;
+
+	public Sprite[] plaque;
+	public Image plaqueImage;
+	public Text descriptionText;
 
 	// Use this for initialization
 	void Start () {
@@ -35,6 +41,26 @@ public class TurnRoomButton : MonoBehaviour {
 //			TurnRoomClicked ();
 //
 //				}
+
+	}
+
+	public void SetupButton (int buttonOrder){
+		Debug.Log ("order: " + buttonOrder);
+		plaqueImage.sprite = plaque [buttonOrder];
+		float rotAngle = Random.Range(-1.2f, 1.1f);
+//		if (buttonOrder == 0) {
+//			rotAngle = -1.2f;
+//		} else if (buttonOrder == 1){
+//			rotAngle = 1.03f;
+//		} else {
+//			rotAngle = -1.33f;
+//		}
+		RectTransform rectTran = GetComponent<RectTransform> ();
+		rectTran.rotation = Quaternion.Euler(0,0, rotAngle);
+
+		plaqueImage.color = catColor;
+		descriptionText.text = description;
+
 
 	}
 
@@ -103,7 +129,13 @@ public class TurnRoomButton : MonoBehaviour {
 			roomToSend = "v2" + roomToSend;
 		}
 
-		UserAccountManagerScript.instance.TurnRoomSearch(roomToSend, fate, gameObject);
+		string r = (Mathf.Round(catColor.r * 255)).ToString();
+		string g = (Mathf.Round(catColor.g * 255)).ToString();
+		string b = (Mathf.Round(catColor.b * 255)).ToString();
+
+		string catColorString = r + "/" + g + "/" + b + "$" + description;
+
+		UserAccountManagerScript.instance.TurnRoomSearch(roomToSend, fate, gameObject, catColorString);
 
 		//LobbyMenu.instance.LoadingScreenFromNewCats ();
 	
@@ -148,7 +180,13 @@ public class TurnRoomButton : MonoBehaviour {
 			roomToSend = "v2" + roomToSend;
 		}
 
-		UserAccountManagerScript.instance.TurnRoomSearch(roomToSend, fate, gameObject);
+		string r = (Mathf.Round(catColor.r * 255)).ToString();
+		string g = (Mathf.Round(catColor.g * 255)).ToString();
+		string b = (Mathf.Round(catColor.b * 255)).ToString();
+
+		string catColorString = r + "/" + g + "/" + b + "$" + description;
+
+		UserAccountManagerScript.instance.TurnRoomSearch(roomToSend, fate, gameObject, catColorString);
 	
 	}
 

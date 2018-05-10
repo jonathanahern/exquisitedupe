@@ -48,6 +48,7 @@ public class LobbyMenu : MonoBehaviour {
 	private static string WORDS_SYM = "[WORDS]";
 	private static string BRUSHES_SYM = "[BRUSHES]";
 	private static string GROUNDING_SYM = "[GROUNDING]";
+	private static string OTHER_SYM = "[OTHER]";
 
 	public GameObject refreshingScreen;
 	public Text loadScreenWords;
@@ -82,6 +83,7 @@ public class LobbyMenu : MonoBehaviour {
 	public string optionString;
 	//public List<TurnRoomButton> gameData;
 	public List<string> fateData;
+	List<string>catColors;
 	List<int> playerBag;
 	List<int> modeBag;
 	List<int> dupeNums;
@@ -134,6 +136,7 @@ public class LobbyMenu : MonoBehaviour {
 
 		playerBag = new List<int> ();
 		modeBag = new List<int> ();
+		catColors = new List<string> ();
 
 		//catsCount = 4;
 		//selectCatsText.text = "SELECT " + catsCount + " CATEGORIES";
@@ -510,10 +513,9 @@ public class LobbyMenu : MonoBehaviour {
 
 		for (int i = 0; i < catHolder.childCount; i++) {
 
-			string catName = catHolder.GetChild (i).GetComponent<TurnRoomButton> ().roomTypeString;
-
+			TurnRoomButton turnButt = catHolder.GetChild (i).GetComponent<TurnRoomButton> ();
 			GameObject catObjSelect = Instantiate (categoryPrivatePrefab, categoryPrivateHolder);
-			catObjSelect.GetComponent<SelectPlayerScript> ().InsertName (catName);
+			catObjSelect.GetComponent<SelectPlayerScript> ().InsertCategory (turnButt.roomTypeString, turnButt.description,turnButt.catColor);
 
 		}
 
@@ -838,6 +840,21 @@ public class LobbyMenu : MonoBehaviour {
 
 					turnButt.grounding = item [i];
 
+				} else if (item [i].StartsWith (OTHER_SYM)) {
+
+					//Debug.Log ("returned: " + item [i]);
+
+					string other = item[i].Substring (OTHER_SYM.Length);
+					string[] otherSplit = other.Split ('$');
+					string[] colorSplit = otherSplit [0].Split ('/');
+					float r = float.Parse (colorSplit [0]) / 255.0f;
+					float g = float.Parse (colorSplit [1]) / 255.0f;
+					float b = float.Parse (colorSplit [2]) / 255.0f;
+
+					Color catColor = new Color (r,g,b);
+					turnButt.description = otherSplit[1];
+					turnButt.catColor = catColor;
+
 				}
 
 			}
@@ -861,8 +878,9 @@ public class LobbyMenu : MonoBehaviour {
 
 			if (turnHolder.childCount < 3){
 
-				GameObject buutonObj = Instantiate(turnButtons[i], turnHolder);
-				buutonObj.GetComponent<RectTransform>().localScale = new Vector3 (1,1,1);
+				GameObject buttonObj = Instantiate(turnButtons[i], turnHolder);
+				buttonObj.GetComponent<RectTransform>().localScale = new Vector3 (1,1,1);
+				buttonObj.GetComponent<TurnRoomButton> ().SetupButton (i);
 
 		}
 
@@ -938,15 +956,22 @@ public class LobbyMenu : MonoBehaviour {
 
 	public void CatSelected (string name){
 
-		//selectCatsText.text = "SELECT " + catsCount + " CATEGORIES";
 		catsSelected.Add(name);
-
-//		if (catsCount == 0) {
-//			wasAtZeroCats = true;
-//			DeactivateSelection (categoryPrivateHolder);
-//		}
-
 		roundCount.text = catsSelected.Count.ToString ();
+
+	}
+
+	public void UndoCatsSelected(){
+	
+		catsSelected.Clear ();
+		roundCount.text = catsSelected.Count.ToString ();
+
+		int childCount = categoryPrivateHolder.childCount;
+		for (int i = 0; i < childCount; i++) {
+			SelectPlayerScript selectScript = categoryPrivateHolder.GetChild(i).GetComponent<SelectPlayerScript>();
+			selectScript.ResetToZero ();
+		}
+
 
 	}
 
@@ -1133,7 +1158,16 @@ public class LobbyMenu : MonoBehaviour {
 
 		string fate = "|[WORDS]" + turnRoom.words + "|[BRUSHES]" + turnRoom.brushes + "|" + turnRoom.grounding + "|[FATE]" + dupeNum + "/" + rightWord + "/" + wrongWord + "/" + awardNum + "/" + colorMod + optionString;
 
+		string r = (Mathf.Round(turnRoom.catColor.r * 255)).ToString();
+		string g = (Mathf.Round(turnRoom.catColor.g * 255)).ToString();
+		string b = (Mathf.Round(turnRoom.catColor.b * 255)).ToString();
+
+		string catColorString = r + "/" + g + "/" + b + "$" + turnRoom.description;
+
+		catColors.Add (catColorString);
+
 		privateForm.AddField ("fatePost[]", fate);
+		privateForm.AddField ("catColorPost[]", catColorString);
 		//Debug.Log ("fate added");
 		fateData.Add (fate);
 
@@ -1177,7 +1211,7 @@ public class LobbyMenu : MonoBehaviour {
 
 		//string privateData = UserAccountManagerScript.instance.selfPortrait;
 
-		RoomManager.instance.CreateRoom (catsSelected[0], rooms[0], fateData[0], "1", selfPortrait, -2);
+		RoomManager.instance.CreateRoom (catsSelected[0], rooms[0], fateData[0], catColors[0], "1", selfPortrait, -2);
 		string message = playerName + "|" + rooms[0] + "$";
 		UserAccountManagerScript.instance.SendMessageToPlayersBox (message, artistsSelected.ToArray ());
 
@@ -1231,7 +1265,7 @@ public class LobbyMenu : MonoBehaviour {
 	}
 
 	void BringBackLobbyButtons(){
-		buttonPalette.DOAnchorPosY (paletteStartPos, .5f).SetEase (Ease.InBack);
+		buttonPalette.DOAnchorPosY (paletteStartPos, .5f).SetEase (moveItIn);
 	}
 
 	void BringInBackButtonNG(){

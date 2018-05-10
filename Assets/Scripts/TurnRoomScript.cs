@@ -24,6 +24,8 @@ public class TurnRoomScript : MonoBehaviour {
 	public bool[] time= new bool [4];
 	public bool[] method= new bool [4];
 	public bool[] mode= new bool [2];
+	public Color catColor;
+	public string description;
 
 	public string drawings;
 	public string votePoses;

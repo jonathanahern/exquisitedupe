@@ -45,6 +45,8 @@ public class UserAccountManagerScript : MonoBehaviour {
 	public string notificationId;
 	public string selfPortrait;
 
+	string catColorStringRetry;
+
 	void Start(){
 		notificationId = "Nothing";
 	}
@@ -217,21 +219,23 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 	}
 
-	public void TurnRoomSearch(string roomType, string fate, GameObject buttonClicked){
+	public void TurnRoomSearch(string roomType, string fate, GameObject buttonClicked, string catColor){
 
 		tempGameobject = buttonClicked;
+		catColorStringRetry = catColor;
 
-		StartCoroutine (turnRoom(roomType, LoggedIn_Username, fate));
+		StartCoroutine (turnRoom(roomType, LoggedIn_Username, fate, catColor));
 
-	}
-
-	void RetryTurnRoomNothingFound(string tempRoomType, string tempPlayerName, string tempFate){
-
-		StartCoroutine (turnRoom(tempRoomType, tempPlayerName, tempFate));
 
 	}
 
-	IEnumerator turnRoom (string roomType, string playerName, string fate){
+	void RetryTurnRoomNothingFound(string tempRoomType, string tempPlayerName, string tempFate, string catColor){
+
+		StartCoroutine (turnRoom(tempRoomType, tempPlayerName, tempFate, catColor));
+
+	}
+
+	IEnumerator turnRoom (string roomType, string playerName, string fate, string catColor){
 
 		string URL = "http://dupesite.000webhostapp.com/createJoin.php";
 
@@ -239,6 +243,7 @@ public class UserAccountManagerScript : MonoBehaviour {
 		form.AddField ("usernamePost", playerName);
 		form.AddField ("categoryPost", roomType);
 		form.AddField ("fatePost", fate);
+		form.AddField ("catColorPost", catColor);
 		form.AddField ("notIdPost", notificationId);
 		form.AddField ("portraitPost", selfPortrait);
 
@@ -247,7 +252,7 @@ public class UserAccountManagerScript : MonoBehaviour {
 
 		RoomCreated room = JsonUtility.FromJson<RoomCreated>(www.text);
 
-		RoomManager.instance.CreateRoom (roomType, room.id, room.fate, room.playerNum, "", -2);
+		RoomManager.instance.CreateRoom (roomType, room.id, room.fate, room.catColor, room.playerNum, "", -2);
 
 	}
 
@@ -275,7 +280,7 @@ public class UserAccountManagerScript : MonoBehaviour {
 			yield break;
 
 		} else if (returnText == "Nothing Found"){
-			RetryTurnRoomNothingFound (roomType, playerName, fate);
+			RetryTurnRoomNothingFound (roomType, playerName, fate, catColorStringRetry);
 			yield break;
 		}
 

@@ -5,10 +5,13 @@ using UnityEngine.UI;
 
 public class SelectPlayerScript : MonoBehaviour {
 
+	public Text description;
+	public Image buttColor;
 	public Text theName;
 	public Text catCount;
 	int catCountInt = 0;
 	public bool choosen;
+	public RectTransform buttonRect;
 
 	public Toggle onOff;
 	LobbyMenu lobby;
@@ -51,6 +54,17 @@ public class SelectPlayerScript : MonoBehaviour {
 
 	}
 
+	public void InsertCategory(string nameString, string descriptionString, Color catColor){
+
+		theName.text = nameString;
+		buttColor.color = catColor;
+		description.text = descriptionString;
+
+		float randomAngle = Random.Range (-2.8f, 2.0f);
+		buttonRect.rotation = Quaternion.Euler(0,0, randomAngle);
+
+	}
+
 	public void TurnOffToggle(){
 		onOff.interactable = false;
 	}
@@ -88,17 +102,22 @@ public class SelectPlayerScript : MonoBehaviour {
 		lobby.CatSelected (theName.text);
 	}
 
-	public void MinusButton (){
-
-		if (catCountInt < 1) {
-			return;
-		}
-
-		lobby.CatSubtracted (theName.text);
-
-		catCountInt = catCountInt - 1;
+	public void ResetToZero(){
+		catCountInt = 0;
 		catCount.text = catCountInt.ToString ();
 	}
+
+//	public void MinusButton (){
+//
+//		if (catCountInt < 1) {
+//			return;
+//		}
+//
+//		lobby.CatSubtracted (theName.text);
+//
+//		catCountInt = catCountInt - 1;
+//		catCount.text = catCountInt.ToString ();
+//	}
 
 }
 
